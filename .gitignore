@@ -1,0 +1,11 @@
+# Personal credentials — NEVER commit these
+# manifest.json contains YOUR Google OAuth client_id (copy it from manifest.template.json)
+manifest.json
+# key.pem pins your personal extension ID
+key.pem
+key.pem.backup
+*.pem
+
+# OS noise
+.DS_Store
+Thumbs.db

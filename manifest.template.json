@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Page2Task",
+  "version": "1.0.0",
+  "description": "Turn any page into a Google Task or Calendar event: detects video length, article reading time, and deadlines in emails.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Page2Task — Set Todo / Set Calendar"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "permissions": ["identity", "activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "https://tasks.googleapis.com/*",
+    "https://www.googleapis.com/*",
+    "https://api.anthropic.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://openidconnect.googleapis.com/*",
+    "https://accounts.google.com/*"
+  ],
+  "oauth2": {
+    "client_id": "PASTE_YOUR_CLIENT_ID_HERE.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/tasks",
+      "https://www.googleapis.com/auth/calendar.events",
+      "openid",
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

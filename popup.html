@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icons/icon48.png" alt="" class="logo">
+    <h1>Page2Task</h1>
+    <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+  </header>
+  <main>
+    <div id="notice" class="notice hidden"></div>
+    <div id="chip" class="chip hidden"></div>
+    <div id="aiStatus" class="ai-status hidden">🤖 AI is reading…</div>
+    <div id="aiWarn" class="ai-warn hidden"></div>
+    <div class="paste-hint">🖼 Tip: paste (⌘V) or drop a screenshot here to turn it into a to-do</div>
+
+    <div id="candBox" class="cand hidden">
+      <div class="cand-head">Several deadlines found — pick the one you mean:</div>
+      <div id="candList" class="cand-list"></div>
+    </div>
+
+    <label class="field">
+      <span>Title</span>
+      <input type="text" id="titleInput" placeholder="Task name">
+    </label>
+
+    <div class="row">
+      <label class="field">
+        <span>Due date</span>
+        <input type="date" id="dateInput">
+      </label>
+      <label class="field">
+        <span>Time (optional)</span>
+        <div class="time-wrap">
+          <input type="time" id="timeInput">
+          <button id="clearTime" class="time-clear" type="button" title="Clear time">✕</button>
+        </div>
+      </label>
+    </div>
+    <div id="timeHint" class="hint hidden">Google Tasks only stores the date — the time will be saved into the notes</div>
+    <div id="matchedLine" class="matched hidden"></div>
+
+    <label class="field">
+      <span>Notes</span>
+      <textarea id="notesInput" rows="3"></textarea>
+    </label>
+
+    <label class="field hidden" id="listField">
+      <span>Task list</span>
+      <select id="listSelect"></select>
+    </label>
+
+    <div id="banner" class="banner hidden"></div>
+
+    <div id="actions" class="actions">
+      <button id="todoBtn" class="btn primary">
+        <span class="btn-main">✓ Set Todo</span>
+        <span class="btn-sub">Google Tasks</span>
+      </button>
+      <button id="calBtn" class="btn secondary">
+        <span class="btn-main">📅 Set Calendar</span>
+        <span class="btn-sub">Google Calendar</span>
+      </button>
+    </div>
+
+    <div id="setupPanel" class="setup hidden">
+      One more step: a one-time Google authorization setup (~10 minutes) is needed.<br>
+      Open <b>SETUP.md</b> in the project folder and follow the steps, or simply ask Claude to do it with you.
+    </div>
+
+    <div id="accountLine" class="account hidden"></div>
+  </main>
+
+  <script src="lib/vendor/chrono.js"></script>
+  <script src="lib/dateparse.js"></script>
+  <script src="lib/ai.js"></script>
+  <script src="pageAnalyzer.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Page2Task Settings</title>
+  <link rel="stylesheet" href="popup.css">
+  <style>
+    body { width: auto; max-width: 560px; margin: 0 auto; padding: 8px 0 32px; }
+    .key-row { display: flex; gap: 8px; align-items: flex-end; }
+    .key-row .field { flex: 1; }
+    .key-row button { white-space: nowrap; }
+    .field select {
+      border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px;
+      font: inherit; background: var(--bg); color: var(--fg);
+    }
+    .plain-btn {
+      border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+      border-radius: 8px; padding: 7px 14px; font: inherit; cursor: pointer;
+    }
+    .plain-btn:hover { background: var(--chip-bg); }
+    .save-btn {
+      background: var(--accent); border-color: var(--accent); color: var(--on-accent);
+      font-weight: 600;
+    }
+    .save-btn:hover { background: var(--accent-hover); }
+    .status { color: var(--green-fg); margin-left: 8px; }
+    #testResult { margin-top: 8px; }
+    h2 { font-size: 15px; margin: 24px 0 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="icons/icon48.png" alt="" class="logo">
+    <h1>Page2Task Settings</h1>
+  </header>
+  <main>
+    <h2>AI recognition (optional)</h2>
+    <p class="hint">
+      Works without any key — free local rules detect the dates.<br>
+      With an AI key, the model reads the text and writes proper task titles like
+      “Submit Service Now ticket to cancel housing”.<br>
+      <b>Google Gemini has a free tier</b>: get a key at aistudio.google.com (no credit card needed).
+    </p>
+
+    <label class="field" style="max-width: 280px;">
+      <span>AI provider</span>
+      <select id="provider">
+        <option value="gemini">Google Gemini (free tier)</option>
+        <option value="claude">Anthropic Claude</option>
+      </select>
+    </label>
+
+    <div class="key-row">
+      <label class="field">
+        <span>Gemini API key</span>
+        <input type="password" id="geminiKey" placeholder="AIza…">
+      </label>
+      <button id="toggleGeminiKey" class="plain-btn" type="button">Show</button>
+    </div>
+
+    <div class="key-row">
+      <label class="field">
+        <span>Anthropic API key</span>
+        <input type="password" id="apiKey" placeholder="sk-ant-…">
+      </label>
+      <button id="toggleKey" class="plain-btn" type="button">Show</button>
+    </div>
+
+    <div>
+      <button id="testBtn" class="plain-btn" type="button">Test AI recognition</button>
+      <div id="testResult" class="hint"></div>
+    </div>
+
+    <h2>Google account</h2>
+    <p class="hint">
+      Tasks and events are saved to the account you picked in the Google authorization window:
+      <b id="accountEmail">checking…</b><br>
+      To switch accounts, disconnect below — the next save will show the account picker again.
+    </p>
+    <div>
+      <button id="disconnectBtn" class="plain-btn" type="button">Disconnect Google account</button>
+      <span id="disconnectStatus" class="hint"></span>
+    </div>
+
+    <h2>Calendar</h2>
+    <label class="field" style="max-width: 240px;">
+      <span>Default event duration (minutes)</span>
+      <input type="number" id="eventMinutes" min="5" max="480" step="5">
+    </label>
+
+    <div style="margin-top: 24px;">
+      <button id="saveBtn" class="plain-btn save-btn" type="button">Save</button>
+      <span id="saveStatus" class="status"></span>
+    </div>
+  </main>
+
+  <script src="lib/ai.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
