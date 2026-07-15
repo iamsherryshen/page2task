@@ -1,32 +1,25 @@
+/* Google-Calendar-blue theme (light-only, per design handoff) */
 :root {
-  --bg: #ffffff;
-  --fg: #1f1f1f;
-  --muted: #5f6368;
-  --border: #dadce0;
-  --accent: #1a73e8;
-  --accent-hover: #1765cc;
-  --on-accent: #ffffff;
-  --green-bg: #e6f4ea;
+  --bg-grad: linear-gradient(180deg, #FAFCFF 0%, #F2F6FE 45%, #DDE9FD 80%, #C8DDFB 100%);
+  --fg: #1F1F1F;
+  --muted: #5F6368;
+  --label: #1967D2;
+  --border: rgba(11, 87, 208, 0.14);
+  --border-soft: rgba(11, 87, 208, 0.12);
+  --accent: #0B57D0;
+  --accent-hover: #0842A0;
+  --on-accent: #FFFFFF;
+  --seg-active: #C2E7FF;
+  --seg-active-fg: #001D35;
+  --chip-bg: #E8F0FE;
+  --input-bg: #F0F4FC;
+  --dashed: #669DF6;
+  --green-bg: #E6F4EA;
   --green-fg: #137333;
-  --red-bg: #fce8e6;
-  --red-fg: #c5221f;
-  --chip-bg: #f1f3f4;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #202124;
-    --fg: #e8eaed;
-    --muted: #9aa0a6;
-    --border: #3c4043;
-    --accent: #8ab4f8;
-    --accent-hover: #aecbfa;
-    --on-accent: #202124;
-    --green-bg: #103c22;
-    --green-fg: #81c995;
-    --red-bg: #3c1512;
-    --red-fg: #f28b82;
-    --chip-bg: #2d2e31;
-  }
+  --red-bg: #FCE8E6;
+  --red-fg: #C5221F;
+  --shadow-card: 0 1px 2px rgba(20, 45, 90, 0.05), 0 8px 20px -8px rgba(20, 45, 90, 0.16);
+  --shadow-cta: 0 20px 40px -14px rgba(11, 87, 208, 0.4);
 }
 
 * { box-sizing: border-box; }
@@ -34,53 +27,148 @@
 body {
   width: 360px;
   margin: 0;
-  background: var(--bg);
+  background: var(--bg-grad);
   color: var(--fg);
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  font-family: Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 13px;
 }
 
-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px 8px; }
+header { display: flex; align-items: center; gap: 8px; padding: 14px 16px 10px; }
 header .logo { width: 20px; height: 20px; border-radius: 5px; }
-header h1 { font-size: 15px; margin: 0; flex: 1; font-weight: 600; }
+header h1 { font-size: 15px; margin: 0; flex: 1; font-weight: 700; }
 
-.icon-btn { border: none; background: none; cursor: pointer; font-size: 15px; padding: 4px 6px; border-radius: 6px; }
+.icon-btn { border: none; background: none; cursor: pointer; padding: 4px 6px; border-radius: 6px; display: flex; align-items: center; }
 .icon-btn:hover { background: var(--chip-bg); }
 
-main { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 
 .hidden { display: none !important; }
 
-.notice { background: var(--chip-bg); color: var(--muted); padding: 8px 10px; border-radius: 8px; }
-.chip { display: inline-flex; align-self: flex-start; background: var(--chip-bg); border-radius: 999px; padding: 4px 12px; font-weight: 500; }
+.notice { background: rgba(255, 255, 255, 0.75); color: var(--muted); padding: 8px 10px; border-radius: 8px; }
+.chip {
+  display: inline-flex; align-self: flex-start;
+  background: var(--chip-bg); color: var(--label);
+  border-radius: 999px; padding: 4px 12px;
+  font-size: 12px; font-weight: 500;
+}
 .ai-status { color: var(--muted); }
 
+/* One-click enabling of Chrome's free on-device AI */
+.builtin-offer {
+  border: 1px solid var(--border);
+  background: var(--chip-bg);
+  color: var(--label);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.builtin-offer:hover:not(:disabled) { background: #DDE9FD; }
+.builtin-offer:disabled { cursor: default; opacity: 0.8; }
+
+/* Segmented "what to create" switch — the first decision, so it sits on top */
+.mode-seg {
+  display: flex; gap: 4px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+}
+.seg {
+  flex: 1;
+  padding: 7px 2px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+}
+.seg:hover:not(.active) { background: rgba(255, 255, 255, 0.9); }
+.seg.active { background: var(--seg-active); color: var(--seg-active-fg); font-weight: 700; }
+
+/* One import zone: the textarea IS the paste target, focused on open.
+   The placeholder is an overlay so "upload a file" can be a real link. */
+.import-zone {
+  position: relative;
+  border: 1.5px dashed var(--dashed);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 9px;
+}
+.import-zone.dragover, .import-zone:focus-within { border-color: var(--accent); background: #FFFFFF; }
+.import-zone textarea {
+  display: block;
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  font: inherit;
+  color: var(--fg);
+  width: 100%;
+  resize: vertical;
+  outline: none;
+  line-height: 1.5;
+}
+.import-placeholder {
+  position: absolute;
+  top: 11px; left: 13px; right: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  pointer-events: none;
+}
+.upload-link {
+  pointer-events: auto;
+  border: none; background: none; padding: 0;
+  font: inherit;
+  color: var(--label);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* White card grouping the form fields */
+.form-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+}
+
 .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-.field span { color: var(--muted); font-size: 12px; }
+.field span { color: var(--label); font-size: 12px; font-weight: 500; }
 .field input, .field textarea, .field select {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 7px 9px;
   font: inherit;
-  background: var(--bg);
+  background: var(--input-bg);
   color: var(--fg);
   width: 100%;
 }
-.field input:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.field input::placeholder, .field textarea::placeholder { color: var(--muted); }
+.field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .field textarea { resize: vertical; }
+#titleInput { text-overflow: ellipsis; }
 input.error { outline: 2px solid var(--red-fg); }
 
 .row { display: flex; gap: 10px; }
 
 .hint, .matched { color: var(--muted); font-size: 12px; line-height: 1.5; }
 .ai-warn { color: var(--red-fg); font-size: 12px; line-height: 1.5; }
-.paste-hint { color: var(--muted); font-size: 11px; }
 .account { color: var(--muted); font-size: 11px; text-align: center; margin-top: 2px; }
 
-.time-wrap { display: flex; gap: 4px; align-items: center; }
-.time-wrap input { flex: 1; min-width: 0; }
+.time-row { align-items: flex-end; }
 .time-clear {
-  border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+  border: 1px solid var(--border); background: var(--input-bg); color: var(--muted);
   border-radius: 8px; width: 28px; height: 32px; cursor: pointer; font-size: 12px;
   flex: none;
 }
@@ -91,31 +179,38 @@ input.error { outline: 2px solid var(--red-fg); }
 .banner.error { background: var(--red-bg); color: var(--red-fg); }
 .banner a { color: inherit; font-weight: 600; }
 
-.actions { display: flex; gap: 10px; margin-top: 2px; }
+.actions { display: flex; margin-top: 2px; }
+/* A single pill CTA — the mode switch above already made the choice */
 .btn {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  padding: 9px 6px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--fg);
+  padding: 10px 6px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
   cursor: pointer;
+  font-family: inherit;
+  box-shadow: var(--shadow-cta);
 }
-.btn .btn-main { font-size: 13px; font-weight: 600; }
-.btn .btn-sub { font-size: 10px; color: var(--muted); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.btn.primary .btn-sub { color: var(--on-accent); opacity: 0.75; }
-.btn.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
-.btn.secondary:hover:not(:disabled) { background: var(--chip-bg); }
+.btn .btn-main { font-size: 14px; font-weight: 700; }
+.btn .btn-sub { font-size: 10px; font-weight: 500; color: rgba(255, 255, 255, 0.85); }
+.btn:hover:not(:disabled) { background: var(--accent-hover); }
 .btn:disabled { opacity: 0.6; cursor: default; }
 
 .setup { background: var(--chip-bg); border-radius: 8px; padding: 10px 12px; line-height: 1.7; }
 
-.cand { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.cand {
+  background: #FFFFFF;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 6px;
+  box-shadow: var(--shadow-card);
+}
 .cand-head { font-size: 12px; color: var(--muted); }
 .cand-list { display: flex; flex-direction: column; gap: 4px; }
 .cand-item {
@@ -131,7 +226,7 @@ input.error { outline: 2px solid var(--red-fg); }
   font: inherit;
   cursor: pointer;
 }
-.cand-item:hover { background: var(--chip-bg); }
+.cand-item:hover { background: var(--input-bg); }
 .cand-item.selected { border-color: var(--accent); background: var(--chip-bg); }
 .cand-date { font-weight: 600; white-space: nowrap; }
 .cand-snip {

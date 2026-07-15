@@ -8,61 +8,80 @@
   <header>
     <img src="icons/icon48.png" alt="" class="logo">
     <h1>Page2Task</h1>
-    <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+    <button id="settingsBtn" class="icon-btn" title="Settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#5F6368" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+    </button>
   </header>
   <main>
+    <div class="mode-seg" id="modeSeg" role="tablist" aria-label="What to create">
+      <button type="button" class="seg active" data-mode="todo">To-do</button>
+      <button type="button" class="seg" data-mode="calendar">Calendar</button>
+      <button type="button" class="seg" data-mode="both">Both</button>
+    </div>
+
     <div id="notice" class="notice hidden"></div>
     <div id="chip" class="chip hidden"></div>
-    <div id="aiStatus" class="ai-status hidden">🤖 AI is reading…</div>
+    <div id="aiStatus" class="ai-status hidden">AI is reading…</div>
     <div id="aiWarn" class="ai-warn hidden"></div>
-    <div class="paste-hint">🖼 Tip: paste (⌘V) or drop a screenshot here to turn it into a to-do</div>
+    <button id="builtinOffer" class="builtin-offer hidden" type="button"></button>
+
+    <div id="importZone" class="import-zone">
+      <div id="importPlaceholder" class="import-placeholder">Paste a screenshot or text here, or <button type="button" id="screenshotBtn" class="upload-link">upload a file</button></div>
+      <textarea id="pasteText" rows="2"></textarea>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" class="hidden">
 
     <div id="candBox" class="cand hidden">
       <div class="cand-head">Several deadlines found — pick the one you mean:</div>
       <div id="candList" class="cand-list"></div>
     </div>
 
-    <label class="field">
-      <span>Title</span>
-      <input type="text" id="titleInput" placeholder="Task name">
-    </label>
-
-    <div class="row">
+    <div class="form-card">
       <label class="field">
-        <span>Due date</span>
+        <span>Title</span>
+        <input type="text" id="titleInput" placeholder="Task name">
+      </label>
+
+      <label class="field">
+        <span id="dateLabel">Date (optional)</span>
         <input type="date" id="dateInput">
       </label>
-      <label class="field">
-        <span>Time (optional)</span>
-        <div class="time-wrap">
+      <div class="row time-row hidden" id="timeRow">
+        <label class="field">
+          <span>Start time (optional)</span>
           <input type="time" id="timeInput">
-          <button id="clearTime" class="time-clear" type="button" title="Clear time">✕</button>
-        </div>
+        </label>
+        <label class="field">
+          <span>End time</span>
+          <input type="time" id="endTimeInput">
+        </label>
+        <button id="clearTime" class="time-clear" type="button" title="Clear time">✕</button>
+      </div>
+      <div id="timeHint" class="hint hidden">Google Tasks saves only the date (any time goes into the notes). For a calendar event, start &amp; end set its length.</div>
+      <div id="matchedLine" class="matched hidden"></div>
+
+      <label class="field hidden" id="locationField">
+        <span>Location</span>
+        <input type="text" id="locationInput" placeholder="e.g. GSB Coupa Café">
+      </label>
+
+      <label class="field">
+        <span>Notes</span>
+        <textarea id="notesInput" rows="3"></textarea>
+      </label>
+
+      <label class="field hidden" id="listField">
+        <span>Task list</span>
+        <select id="listSelect"></select>
       </label>
     </div>
-    <div id="timeHint" class="hint hidden">Google Tasks only stores the date — the time will be saved into the notes</div>
-    <div id="matchedLine" class="matched hidden"></div>
-
-    <label class="field">
-      <span>Notes</span>
-      <textarea id="notesInput" rows="3"></textarea>
-    </label>
-
-    <label class="field hidden" id="listField">
-      <span>Task list</span>
-      <select id="listSelect"></select>
-    </label>
 
     <div id="banner" class="banner hidden"></div>
 
     <div id="actions" class="actions">
-      <button id="todoBtn" class="btn primary">
-        <span class="btn-main">✓ Set Todo</span>
+      <button id="submitBtn" class="btn">
+        <span class="btn-main">Add to-do</span>
         <span class="btn-sub">Google Tasks</span>
-      </button>
-      <button id="calBtn" class="btn secondary">
-        <span class="btn-main">📅 Set Calendar</span>
-        <span class="btn-sub">Google Calendar</span>
       </button>
     </div>
 

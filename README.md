@@ -8,7 +8,8 @@ A Chrome extension that turns whatever you're looking at into a **Google Task** 
 - **🗂 Multiple deadlines** — if an email mentions several dates (fee tiers, staged deadlines), a picker appears so you choose the one you mean;
 - **📺 Video pages** — reads the video length ("~23 min long") and sizes the calendar block to match;
 - **📖 Articles** — estimates reading time from word count (English and CJK text counted separately);
-- **🖼 Screenshots** — paste (⌘V) or drop a screenshot (a WeChat/Slack chat, a poster, an email) into the popup and the AI reads the to-do out of the image;
+- **🖼 Screenshots** — click the screenshot button (or paste with ⌘V, or drop an image) to feed a screenshot — a WeChat/Slack chat, a poster, an email — and the AI reads the to-do out of the image;
+- **📝 Pasted text** — paste any message or blurb into the popup (or into the text box) and the AI extracts the to-dos and appointments from it;
 - **🔗 Any page** — select some text before clicking the extension and it analyzes the selection first;
 - **📄 PDFs** — Chrome's PDF viewer hides the text from extensions, so Page2Task falls back to the file name as the title;
 - **🗃 Task lists** — if your Google Tasks has several lists (Family, School work…), the AI suggests the best-fitting one and you can always override it;

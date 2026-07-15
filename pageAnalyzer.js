@@ -19,8 +19,6 @@ function analyzePage() {
     url: location.href,
     siteName: location.hostname.replace(/^www\./, ''),
     videoMinutes: null,
-    readingMinutes: null,
-    wordCount: null,
     emailSubject: null,
     emailSender: null,
     bodyText: null,
@@ -99,7 +97,7 @@ function analyzePage() {
     return Object.assign(base, { kind: 'video', videoMinutes: Math.ceil(seconds / 60) });
   }
 
-  // 3) 文章:统计正文字数估算阅读时间(中英文分开计)
+  // 3) 文章:正文字数够多就算文章(只用于分类,不再估算阅读时间)
   const root = document.querySelector('article') || document.querySelector('main');
   let text = '';
   if (root) {
@@ -114,11 +112,7 @@ function analyzePage() {
   const enWords = (text.match(/[A-Za-z0-9'’-]+/g) || []).length;
   const cjkChars = (text.match(/[一-鿿぀-ヿ]/g) || []).length;
   if (enWords + cjkChars >= 200) {
-    return Object.assign(base, {
-      kind: 'article',
-      readingMinutes: Math.max(1, Math.ceil(enWords / 230 + cjkChars / 400)),
-      wordCount: enWords + cjkChars,
-    });
+    return Object.assign(base, { kind: 'article' });
   }
 
   // 4) 普通网页
