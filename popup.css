@@ -68,6 +68,21 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .builtin-offer:hover:not(:disabled) { background: #DDE9FD; }
 .builtin-offer:disabled { cursor: default; opacity: 0.8; }
 
+/* Quiet "AI is off" notice — dotted underline hints at the hover tooltip */
+.ai-hint {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  padding: 0 2px;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.ai-hint:hover { color: var(--label); }
+
 /* Segmented "what to create" switch — the first decision, so it sits on top */
 .mode-seg {
   display: flex; gap: 4px;

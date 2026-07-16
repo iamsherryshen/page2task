@@ -232,7 +232,24 @@ async function getAiConfig() {
   const avail = await AiExtract.builtinAvailability();
   if (avail === 'available') return { provider: 'builtin', apiKey: null };
   offerBuiltinSetup(avail);
+  showAiOffHint();
   return { provider: null, apiKey: null };
+}
+
+// When no AI tier is active, say so instead of degrading silently — with a
+// tooltip that answers the natural worries (whose key, stored where, who sees it)
+let aiHintShown = false;
+function showAiOffHint() {
+  if (aiHintShown || builtinOfferShown) return; // the download button already offers a setup path
+  aiHintShown = true;
+  const el = $('aiHint');
+  el.textContent = 'AI is off — using basic date rules. Click to set up free AI.';
+  el.title =
+    'Add your own AI key in Settings — Google Gemini has a free tier (no credit card needed). ' +
+    'Your key is stored only on this computer, sent only to the AI provider, ' +
+    'and never visible to the developer.';
+  el.classList.remove('hidden');
+  el.addEventListener('click', () => chrome.runtime.openOptionsPage());
 }
 
 // The on-device model needs a one-time download, and Chrome only starts it on a
@@ -243,6 +260,10 @@ function offerBuiltinSetup(state) {
   builtinOfferShown = true;
   const btn = $('builtinOffer');
   btn.textContent = 'Enable free AI — one-time ~2 GB download, runs on your computer';
+  btn.title =
+    "Chrome's built-in AI model. It runs entirely on your computer — no account, " +
+    'no API key, and nothing you analyze leaves your device. The model is shared ' +
+    "by all of Chrome's AI features, so it only ever downloads once.";
   btn.classList.remove('hidden');
   btn.addEventListener('click', async () => {
     btn.disabled = true;
