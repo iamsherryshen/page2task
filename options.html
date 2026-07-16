@@ -53,7 +53,7 @@
     <div class="key-row">
       <label class="field">
         <span>Gemini API key</span>
-        <input type="password" id="geminiKey" placeholder="AIza…">
+        <input type="password" id="geminiKey" placeholder="AIza…" autocomplete="off">
       </label>
       <button id="toggleGeminiKey" class="plain-btn" type="button">Show</button>
     </div>
@@ -61,10 +61,15 @@
     <div class="key-row">
       <label class="field">
         <span>Anthropic API key</span>
-        <input type="password" id="apiKey" placeholder="sk-ant-…">
+        <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off">
       </label>
       <button id="toggleKey" class="plain-btn" type="button">Show</button>
     </div>
+
+    <p class="hint">
+      Keys are stored <b>only on this computer</b> — never synced to your Google account,
+      never sent anywhere except Google's / Anthropic's official APIs. The developer cannot see them.
+    </p>
 
     <div>
       <button id="testBtn" class="plain-btn" type="button">Test AI recognition</button>

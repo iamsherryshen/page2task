@@ -4,13 +4,12 @@ const $ = (id) => document.getElementById(id);
 document.addEventListener('DOMContentLoaded', async () => {
   const cfg = await chrome.storage.sync.get({
     aiProvider: 'gemini',
-    geminiApiKey: '',
-    anthropicApiKey: '',
     defaultEventMinutes: 30,
   });
+  const keys = await AiExtract.loadKeys(); // local-only storage; migrates keys old versions kept in sync
   $('provider').value = cfg.aiProvider === 'claude' ? 'claude' : 'gemini';
-  $('geminiKey').value = cfg.geminiApiKey;
-  $('apiKey').value = cfg.anthropicApiKey;
+  $('geminiKey').value = keys.geminiApiKey;
+  $('apiKey').value = keys.anthropicApiKey;
   $('eventMinutes').value = cfg.defaultEventMinutes;
 
   const refreshAccount = () => {
@@ -42,10 +41,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   wireToggle('toggleKey', 'apiKey');
 
   $('saveBtn').addEventListener('click', async () => {
-    await chrome.storage.sync.set({
-      aiProvider: $('provider').value === 'claude' ? 'claude' : 'gemini',
+    // Keys go to LOCAL storage only (this computer); preferences may sync
+    await chrome.storage.local.set({
       geminiApiKey: $('geminiKey').value.trim(),
       anthropicApiKey: $('apiKey').value.trim(),
+    });
+    await chrome.storage.sync.set({
+      aiProvider: $('provider').value === 'claude' ? 'claude' : 'gemini',
       defaultEventMinutes: Math.min(480, Math.max(5, parseInt($('eventMinutes').value, 10) || 30)),
     });
     $('saveStatus').textContent = 'Saved ✓';

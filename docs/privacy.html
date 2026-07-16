@@ -40,7 +40,8 @@
 
 <h2>What is stored</h2>
 <ul>
-  <li>Settings (chosen mode, default event length, last-used task list, and any API keys you enter) are stored in Chrome's extension storage (<code>chrome.storage.sync</code>), which Chrome may sync across your own signed-in browsers.</li>
+  <li>Preferences (chosen mode, default event length, last-used task list) are stored in Chrome's extension storage (<code>chrome.storage.sync</code>), which Chrome may sync across your own signed-in browsers.</li>
+  <li>Any API keys you enter are stored in <b>local-only</b> extension storage (<code>chrome.storage.local</code>): they stay on the computer where you typed them, are never synced, and are sent only to the AI provider they belong to.</li>
   <li>The extension keeps <b>no history</b> of pages, emails, screenshots, or created tasks.</li>
 </ul>
 

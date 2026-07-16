@@ -219,12 +219,13 @@ function setMode(m, save = true) {
 // 2. Chrome's built-in on-device AI — free, keyless, nothing leaves the device
 // 3. none — callers fall back to the local date-parsing rules
 async function getAiConfig() {
-  const cfg = await chrome.storage.sync.get({ aiProvider: 'gemini', geminiApiKey: '', anthropicApiKey: '' });
+  const cfg = await chrome.storage.sync.get({ aiProvider: 'gemini' });
+  const keys = await AiExtract.loadKeys(); // keys are local-only; loadKeys migrates old synced ones
   let provider = cfg.aiProvider === 'claude' ? 'claude' : 'gemini';
-  let apiKey = provider === 'gemini' ? cfg.geminiApiKey : cfg.anthropicApiKey;
+  let apiKey = provider === 'gemini' ? keys.geminiApiKey : keys.anthropicApiKey;
   if (!apiKey) {
-    if (cfg.geminiApiKey) { provider = 'gemini'; apiKey = cfg.geminiApiKey; }
-    else if (cfg.anthropicApiKey) { provider = 'claude'; apiKey = cfg.anthropicApiKey; }
+    if (keys.geminiApiKey) { provider = 'gemini'; apiKey = keys.geminiApiKey; }
+    else if (keys.anthropicApiKey) { provider = 'claude'; apiKey = keys.anthropicApiKey; }
   }
   if (apiKey) return { provider, apiKey };
 
@@ -241,7 +242,7 @@ function offerBuiltinSetup(state) {
   if (builtinOfferShown || (state !== 'downloadable' && state !== 'downloading')) return;
   builtinOfferShown = true;
   const btn = $('builtinOffer');
-  btn.textContent = 'Enable free AI — one-time download, runs on your computer';
+  btn.textContent = 'Enable free AI — one-time ~2 GB download, runs on your computer';
   btn.classList.remove('hidden');
   btn.addEventListener('click', async () => {
     btn.disabled = true;
