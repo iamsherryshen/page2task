@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('disconnectStatus').textContent = 'Disconnecting…';
     chrome.runtime.sendMessage({ action: 'disconnect' }, () => {
       void chrome.runtime.lastError;
-      $('disconnectStatus').textContent = 'Disconnected — the next save will ask you to pick an account';
+      $('disconnectStatus').textContent = 'Disconnected. The next save will ask you to pick an account.';
       refreshAccount();
     });
   });
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!r.items || !r.items.length) throw new Error('AI returned no items for a sentence with an obvious deadline');
       const it = r.items[0];
       out.textContent =
-        '✓ AI extraction works: “' + (it.title || '—') + '” due ' + (it.dueDate || '—') +
+        '✓ AI extraction works: “' + (it.title || 'n/a') + '” due ' + (it.dueDate || 'n/a') +
         (it.dueTime ? ' ' + it.dueTime : '');
     } catch (e) {
       out.textContent = '✗ ' + ((e && e.message) || 'Test failed');

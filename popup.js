@@ -5,7 +5,8 @@ const dateStrOf = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + p
 const todayStr = () => dateStrOf(new Date());
 
 let pageInfo = null;
-let candidates = []; // unified: { title|null, dueDate|null, dueTime|null, matchedText|null, location|null }
+let candidates = []; // unified: { title|null, dueDate|null, dueTime|null, endTime|null, matchedText|null, location|null, checked, notes }
+let activeIndex = 0; // which candidate the form is currently editing
 let pastedInput = false; // true when candidates came from a pasted screenshot or pasted text (not the page)
 let taskLists = []; // the user's Google Tasks lists, e.g. [{id, title: 'School work'}]
 let defaultEventMinutes = 30; // fallback calendar-event length; loaded from settings
@@ -31,13 +32,21 @@ async function init() {
   $('timeInput').addEventListener('change', () => {
     const t = $('timeInput').value;
     if (t && !$('endTimeInput').value) $('endTimeInput').value = addMinutesToTimeStr(t, preferredDurationMin());
+    syncActiveCandidate();
     updateTimeHint();
   });
   $('clearTime').addEventListener('click', () => {
     $('timeInput').value = '';
     $('endTimeInput').value = '';
+    syncActiveCandidate();
     updateTimeHint();
   });
+
+  // Form edits flow back into the candidate being edited, so with several
+  // checkboxes ticked every deadline keeps its own (possibly edited) values
+  ['titleInput', 'dateInput', 'timeInput', 'endTimeInput', 'locationInput', 'notesInput'].forEach((id) =>
+    $(id).addEventListener('input', syncActiveCandidate)
+  );
   chrome.storage.sync.get({ defaultEventMinutes: 30 }).then((c) => {
     defaultEventMinutes = c.defaultEventMinutes || 30;
   });
@@ -118,7 +127,7 @@ async function init() {
     );
 
   if (restricted) {
-    showNotice("This page can't be read automatically — fill in the fields manually");
+    showNotice("This page can't be read automatically. Fill in the fields manually.");
     applyDefaults();
     return;
   }
@@ -131,7 +140,7 @@ async function init() {
   }
 
   if (!pageInfo) {
-    showNotice("This page can't be read automatically — fill in the fields manually");
+    showNotice("This page can't be read automatically. Fill in the fields manually.");
     applyDefaults();
     return;
   }
@@ -140,7 +149,7 @@ async function init() {
   $('titleInput').value = pageInfo.emailSubject || pageInfo.title || '';
   $('notesInput').value = pageInfo.url || '';
   if (pageInfo.kind === 'pdf') {
-    showNotice("Chrome's PDF viewer doesn't let extensions read the text — title taken from the file name");
+    showNotice("Chrome's PDF viewer doesn't let extensions read the text. Title taken from the file name.");
   }
 
   const sourceText = pageInfo.selectionText || pageInfo.bodyText;
@@ -148,6 +157,7 @@ async function init() {
   if (sourceText) {
     const { provider, apiKey } = await getAiConfig();
     if (provider) {
+      $('aiStatusText').textContent = 'AI is reading this page…';
       $('aiStatus').classList.remove('hidden');
       let aiError = null;
       try {
@@ -166,7 +176,7 @@ async function init() {
       }
       $('aiStatus').classList.add('hidden');
       if (aiError) {
-        $('aiWarn').textContent = 'AI unavailable (' + aiError + ') — using local rules';
+        $('aiWarn').textContent = 'AI unavailable (' + aiError + '). Using local rules.';
         $('aiWarn').classList.remove('hidden');
       }
     }
@@ -185,7 +195,7 @@ async function init() {
     applyCandidate(0);
   } else {
     if (pageInfo.kind === 'email' && sourceText) {
-      showNotice('No upcoming deadline found — the dates in this email may have already passed');
+      showNotice('No upcoming deadline found. The dates in this email may have already passed.');
     }
     applyDefaults();
   }
@@ -195,9 +205,9 @@ async function init() {
 // What the user is creating. Everything mode-specific hangs off this:
 // which fields are visible and what the one submit button says/does.
 const MODE_LABELS = {
-  todo: { main: 'Add to-do', sub: 'Google Tasks' },
-  calendar: { main: 'Add event', sub: 'Google Calendar' },
-  both: { main: 'Add both', sub: 'Google Tasks + Calendar' },
+  todo: { main: 'Add to-do', multi: 'Add {n} to-dos', sub: 'Google Tasks' },
+  calendar: { main: 'Add event', multi: 'Add {n} events', sub: 'Google Calendar' },
+  both: { main: 'Add both', multi: 'Add {n} to both', sub: 'Google Tasks + Calendar' },
 };
 
 function setMode(m, save = true) {
@@ -208,10 +218,19 @@ function setMode(m, save = true) {
   $('locationField').classList.toggle('hidden', m === 'todo'); // Tasks has no location field either
   $('listField').classList.toggle('hidden', m === 'calendar' || taskLists.length <= 1);
   $('dateLabel').textContent = m === 'todo' ? 'Date (optional)' : 'Date';
-  $('submitBtn').querySelector('.btn-main').textContent = MODE_LABELS[m].main;
-  $('submitBtn').querySelector('.btn-sub').textContent = MODE_LABELS[m].sub;
+  updateSubmitLabel();
   updateTimeHint();
   if (save) chrome.storage.sync.set({ lastMode: m });
+}
+
+// The button says how many will be created: "Add 3 events" when 3 are checked
+function updateSubmitLabel() {
+  const multi = !$('candBox').classList.contains('hidden');
+  const n = multi ? candidates.filter((c) => c.checked).length : 1;
+  const L = MODE_LABELS[mode];
+  $('submitBtn').querySelector('.btn-main').textContent =
+    n > 1 ? L.multi.replace('{n}', String(n)) : L.main;
+  $('submitBtn').querySelector('.btn-sub').textContent = L.sub;
 }
 
 // Resolve how to run AI, in order of preference:
@@ -243,9 +262,9 @@ function showAiOffHint() {
   if (aiHintShown || builtinOfferShown) return; // the download button already offers a setup path
   aiHintShown = true;
   const el = $('aiHint');
-  el.textContent = 'AI is off — using basic date rules. Click to set up free AI.';
+  el.textContent = 'AI is off (using basic date rules). Click to set up free AI.';
   el.title =
-    'Add your own AI key in Settings — Google Gemini has a free tier (no credit card needed). ' +
+    'Add your own AI key in Settings. Google Gemini has a free tier (no credit card needed). ' +
     'Your key is stored only on this computer, sent only to the AI provider, ' +
     'and never visible to the developer.';
   el.classList.remove('hidden');
@@ -259,9 +278,9 @@ function offerBuiltinSetup(state) {
   if (builtinOfferShown || (state !== 'downloadable' && state !== 'downloading')) return;
   builtinOfferShown = true;
   const btn = $('builtinOffer');
-  btn.textContent = 'Enable free AI — one-time ~2 GB download, runs on your computer';
+  btn.textContent = 'Enable free AI (one-time ~2 GB download, runs on your computer)';
   btn.title =
-    "Chrome's built-in AI model. It runs entirely on your computer — no account, " +
+    "Chrome's built-in AI model. It runs entirely on your computer: no account, " +
     'no API key, and nothing you analyze leaves your device. The model is shared ' +
     "by all of Chrome's AI features, so it only ever downloads once.";
   btn.classList.remove('hidden');
@@ -275,7 +294,7 @@ function offerBuiltinSetup(state) {
       location.reload(); // re-runs the page analysis, this time with AI
     } catch (e) {
       btn.disabled = false;
-      btn.textContent = 'Download failed — click to retry';
+      btn.textContent = 'Download failed. Click to retry.';
     }
   });
 }
@@ -297,7 +316,7 @@ async function runAi(opts) {
   if (!provider) {
     flashError(
       builtinOfferShown
-        ? 'AI is one click away — use the "Enable free AI" line above'
+        ? 'AI is one click away. Use the "Enable free AI" line above.'
         : 'AI recognition needs a newer Chrome (built-in AI) or an API key in Settings (the gear icon)'
     );
     return;
@@ -310,6 +329,8 @@ async function runAi(opts) {
   $('aiWarn').classList.add('hidden');
   $('banner').className = 'banner hidden';
   $('candBox').classList.add('hidden');
+  updateSubmitLabel();
+  $('aiStatusText').textContent = opts.progress || 'AI is reading…';
   $('aiStatus').classList.remove('hidden');
 
   try {
@@ -336,11 +357,23 @@ async function runAi(opts) {
 }
 
 const extractFromImage = (image) =>
-  runAi({ image, chip: 'Screenshot', emptyMsg: 'Nothing to add was found in this screenshot', failMsg: 'Screenshot recognition failed' });
+  runAi({
+    image,
+    chip: 'Screenshot',
+    progress: 'AI is reading the screenshot…',
+    emptyMsg: 'Nothing to add was found in this screenshot',
+    failMsg: 'Screenshot recognition failed',
+  });
 
 const extractFromText = (text) => {
   lastAnalyzedText = text;
-  return runAi({ text, chip: 'Pasted text', emptyMsg: 'Nothing to add was found in this text', failMsg: "Couldn't read this text" });
+  return runAi({
+    text,
+    chip: 'Pasted text',
+    progress: 'AI is reading the text…',
+    emptyMsg: 'Nothing to add was found in this text',
+    failMsg: "Couldn't read this text",
+  });
 };
 
 // Preferred calendar-event length: a video's own length, else the setting
@@ -355,10 +388,11 @@ function addMinutesToTimeStr(hhmm, mins) {
   return pad(Math.floor(total / 60)) + ':' + pad(total % 60);
 }
 
-// Set the start time and propose a matching end time (or clear both)
-function setStartTime(hhmm) {
+// Set the start time and the end time: the real one when it was detected,
+// else a proposed one (start + preferred length); clears both when no start
+function setStartTime(hhmm, end) {
   $('timeInput').value = hhmm || '';
-  $('endTimeInput').value = hhmm ? addMinutesToTimeStr(hhmm, preferredDurationMin()) : '';
+  $('endTimeInput').value = hhmm ? (end || addMinutesToTimeStr(hhmm, preferredDurationMin())) : '';
   updateTimeHint();
 }
 
@@ -374,21 +408,40 @@ function titleFromSentence(s) {
   return t || null;
 }
 
+// Copy the form's current values into the candidate being edited
+function syncActiveCandidate() {
+  const c = candidates[activeIndex];
+  if (!c) return;
+  c.title = $('titleInput').value;
+  c.dueDate = $('dateInput').value || null;
+  c.dueTime = $('timeInput').value || null;
+  c.endTime = $('endTimeInput').value || null;
+  c.location = $('locationInput').value || null;
+  c.notes = $('notesInput').value;
+}
+
+// The default notes for a candidate: the source URL plus the sentence it came from
+function defaultNotesFor(c) {
+  const lines = [];
+  if (!pastedInput && pageInfo && pageInfo.url) lines.push(pageInfo.url);
+  if (c.matchedText) lines.push(c.matchedText);
+  return lines.join('\n');
+}
+
 function applyCandidate(i) {
   const c = candidates[i];
   if (!c) return;
+  activeIndex = i;
   $('titleInput').value = c.title || (pageInfo && (pageInfo.emailSubject || pageInfo.title)) || '';
   $('dateInput').value = c.dueDate || '';
-  setStartTime(c.dueTime || '');
+  setStartTime(c.dueTime || '', c.endTime || '');
   $('locationInput').value = c.location || ''; // real Location field — editable, sent to Calendar as such
   if (c.list && taskLists.length > 1) {
     const hit = taskLists.find((l) => l.title.toLowerCase() === String(c.list).toLowerCase());
     if (hit) $('listSelect').value = hit.id; // AI's suggestion — user can still change it
   }
-  const lines = [];
-  if (!pastedInput && pageInfo && pageInfo.url) lines.push(pageInfo.url);
-  if (c.matchedText) lines.push(c.matchedText);
-  $('notesInput').value = lines.join('\n');
+  if (c.notes === undefined) c.notes = defaultNotesFor(c);
+  $('notesInput').value = c.notes;
   if (c.matchedText) {
     $('matchedLine').textContent = 'Detected from: “' + c.matchedText + '”';
     $('matchedLine').classList.remove('hidden');
@@ -396,6 +449,7 @@ function applyCandidate(i) {
     $('matchedLine').classList.add('hidden');
   }
   document.querySelectorAll('.cand-item').forEach((el, idx) => el.classList.toggle('selected', idx === i));
+  updateSubmitLabel();
   updateTimeHint();
 }
 
@@ -403,9 +457,19 @@ function renderCandidateChooser() {
   const list = $('candList');
   list.textContent = '';
   candidates.forEach((c, i) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'cand-item';
+    if (typeof c.checked !== 'boolean') c.checked = i === 0; // first one preselected
+    const row = document.createElement('div');
+    row.className = 'cand-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'cand-check';
+    cb.checked = c.checked;
+    cb.title = 'Include this one when adding';
+    cb.addEventListener('click', (e) => e.stopPropagation()); // row click = edit, checkbox = include
+    cb.addEventListener('change', () => {
+      c.checked = cb.checked;
+      updateSubmitLabel();
+    });
     const due = new Date(c.dueDate + 'T00:00:00');
     const opts = { month: 'short', day: 'numeric' };
     if (due.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric'; // "Jun 1" alone would hide next-year dates
@@ -418,11 +482,12 @@ function renderCandidateChooser() {
     const s = document.createElement('span');
     s.className = 'cand-snip';
     s.textContent = c.title || c.matchedText || (pageInfo && (pageInfo.emailSubject || pageInfo.title)) || '';
-    btn.append(d, s);
-    btn.addEventListener('click', () => applyCandidate(i));
-    list.appendChild(btn);
+    row.append(cb, d, s);
+    row.addEventListener('click', () => applyCandidate(i));
+    list.appendChild(row);
   });
   $('candBox').classList.remove('hidden');
+  updateSubmitLabel();
 }
 
 function renderChip(info) {
@@ -544,7 +609,7 @@ function callBackground(action, args) {
         return;
       }
       if (le || !resp) {
-        reject(new Error('The request is still finishing in the background — check Google Tasks/Calendar before retrying'));
+        reject(new Error('The request is still finishing in the background. Check Google Tasks/Calendar before retrying.'));
         return;
       }
       if (resp.ok) {
@@ -576,74 +641,119 @@ async function withPending(btn, fn) {
   }
 }
 
-// One submit button; the mode decides what gets created
-async function onSubmit() {
-  const title = $('titleInput').value.trim();
-  if (!title) { flashError('Please enter a title'); return; }
+// What gets submitted when there is no candidate chooser: the form as-is
+function itemFromForm() {
+  return {
+    title: $('titleInput').value.trim(),
+    dueDate: $('dateInput').value || null,
+    dueTime: $('timeInput').value || null,
+    endTime: $('endTimeInput').value || null,
+    location: ($('locationInput').value || '').trim() || null,
+    notes: $('notesInput').value,
+  };
+}
 
-  if (mode !== 'todo' && !$('dateInput').value) {
-    $('dateInput').classList.add('error');
-    flashError('Please pick a date first — a calendar event needs one');
-    return;
+// A checked candidate, with the same fallbacks the form applies when showing one
+function resolveItem(c) {
+  return {
+    title: (c.title || (pageInfo && (pageInfo.emailSubject || pageInfo.title)) || '').trim(),
+    dueDate: c.dueDate || null,
+    dueTime: c.dueTime || null,
+    endTime: c.endTime || null,
+    location: (c.location || '').trim() || null,
+    notes: c.notes !== undefined ? c.notes : defaultNotesFor(c),
+  };
+}
+
+// One submit button; the mode decides what gets created. With the checkbox
+// list showing, every checked deadline is created, each with its own values.
+async function onSubmit() {
+  const multi = !$('candBox').classList.contains('hidden') && candidates.length > 1;
+  const checked = multi ? candidates.filter((c) => c.checked) : [];
+  const items = checked.length ? checked.map(resolveItem) : [itemFromForm()];
+
+  for (let i = 0; i < items.length; i++) {
+    if (!items[i].title) { flashError('Please enter a title'); return; }
+    if (mode !== 'todo' && !items[i].dueDate) {
+      if (items.length === 1) $('dateInput').classList.add('error');
+      flashError(items.length > 1
+        ? 'Item ' + (i + 1) + ' has no date. Calendar events need one.'
+        : 'Please pick a date first. A calendar event needs one.');
+      return;
+    }
   }
   $('dateInput').classList.remove('error');
 
   await withPending($('submitBtn'), async () => {
+    const listId = mode !== 'calendar' && taskLists.length > 1 ? $('listSelect').value : null;
+    let added = 0;
+    let lastEvent = null;
+    try {
+      for (const it of items) {
+        lastEvent = await submitItem(it, listId);
+        added++;
+      }
+    } catch (e) {
+      const prefix = items.length > 1 ? 'Item ' + (added + 1) + ' of ' + items.length + ': ' : '';
+      const suffix = added > 0 ? ' (' + added + ' already added)' : '';
+      throw Object.assign(
+        new Error(prefix + ((e && e.message) || 'Something went wrong') + suffix),
+        { code: e && e.code }
+      );
+    }
+    if (listId) chrome.storage.sync.set({ lastListId: listId });
+
     const links = [];
-    let taskDone = false;
     if (mode !== 'calendar') {
-      const listName = await createTaskFromForm(title);
-      taskDone = true;
+      const listName = listId && (taskLists.find((l) => l.id === listId) || {}).title;
       links.push({ text: 'Open Google Tasks' + (listName ? ' (' + listName + ')' : ''), href: 'https://tasks.google.com' });
     }
     if (mode !== 'todo') {
-      let ev;
-      try {
-        ev = await createEventFromForm(title);
-      } catch (e) {
-        if (!taskDone) throw e;
-        // Don't hide a half-success: the task exists even though the event failed
-        throw new Error('The to-do was saved, but the calendar event failed: ' + ((e && e.message) || 'please try again'));
-      }
-      links.push({ text: 'View in Calendar', href: (ev && ev.htmlLink) || 'https://calendar.google.com' });
+      links.push({ text: 'View in Calendar', href: (items.length === 1 && lastEvent && lastEvent.htmlLink) || 'https://calendar.google.com' });
     }
+    const n = items.length;
     const doneMsg =
-      mode === 'todo' ? 'Added to Google Tasks ✓'
-      : mode === 'calendar' ? 'Added to Google Calendar ✓'
-      : 'Added to Google Tasks & Calendar ✓';
+      mode === 'todo' ? (n > 1 ? 'Added ' + n + ' to-dos to Google Tasks ✓' : 'Added to Google Tasks ✓')
+      : mode === 'calendar' ? (n > 1 ? 'Added ' + n + ' events to Google Calendar ✓' : 'Added to Google Calendar ✓')
+      : (n > 1 ? 'Added ' + n + ' items to Tasks & Calendar ✓' : 'Added to Google Tasks & Calendar ✓');
     showSuccess(doneMsg, links);
   });
 }
 
-// Returns the list name the task went into (null for the default list)
-async function createTaskFromForm(title) {
-  let notes = $('notesInput').value;
-  const start = $('timeInput').value;
-  const end = $('endTimeInput').value;
-  if (start) notes = notes + '\nTime ' + start + (end ? '–' + end : ''); // Google Tasks only stores the date
-  const loc = $('locationInput').value.trim();
-  if (loc) notes = notes + '\nLocation: ' + loc; // Tasks has no location field — keep it in the notes
-
-  const listId = taskLists.length > 1 ? $('listSelect').value : null;
-  await callBackground('createTask', { title, notes, dueDate: $('dateInput').value || null, listId });
-  if (listId) chrome.storage.sync.set({ lastListId: listId });
-  return (listId && (taskLists.find((l) => l.id === listId) || {}).title) || null;
+// Creates the task and/or event for one item, per the current mode
+async function submitItem(it, listId) {
+  let taskDone = false;
+  if (mode !== 'calendar') {
+    await createTaskItem(it, listId);
+    taskDone = true;
+  }
+  if (mode !== 'todo') {
+    try {
+      return await createEventItem(it);
+    } catch (e) {
+      if (!taskDone) throw e;
+      // Don't hide a half-success: the task exists even though the event failed
+      throw new Error('The to-do was saved, but the calendar event failed: ' + ((e && e.message) || 'please try again'));
+    }
+  }
+  return null;
 }
 
-async function createEventFromForm(title) {
-  const dateStr = $('dateInput').value;
-  const startTime = $('timeInput').value;
-  const endTime = $('endTimeInput').value;
-  const description = $('notesInput').value;
-  const location = $('locationInput').value.trim() || null;
+function createTaskItem(it, listId) {
+  let notes = it.notes || '';
+  if (it.dueTime) notes = notes + '\nTime ' + it.dueTime + (it.endTime ? '-' + it.endTime : ''); // Google Tasks only stores the date
+  if (it.location) notes = notes + '\nLocation: ' + it.location; // Tasks has no location field — keep it in the notes
+  return callBackground('createTask', { title: it.title, notes, dueDate: it.dueDate, listId });
+}
 
-  if (startTime) {
-    const [y, mo, d] = dateStr.split('-').map(Number);
-    const [h, mi] = startTime.split(':').map(Number);
+function createEventItem(it) {
+  if (it.dueTime) {
+    const [y, mo, d] = it.dueDate.split('-').map(Number);
+    const [h, mi] = it.dueTime.split(':').map(Number);
     const start = new Date(y, mo - 1, d, h, mi);
     let end;
-    if (endTime) {
-      const [eh, em] = endTime.split(':').map(Number);
+    if (it.endTime) {
+      const [eh, em] = it.endTime.split(':').map(Number);
       end = new Date(y, mo - 1, d, eh, em);
       if (end <= start) end = new Date(end.getTime() + 24 * 3600 * 1000); // end past midnight
     } else {
@@ -653,10 +763,12 @@ async function createEventFromForm(title) {
       dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate()) +
       'T' + pad(dt.getHours()) + ':' + pad(dt.getMinutes()) + ':00';
     return callBackground('createEvent', {
-      title, description, allDay: false,
+      title: it.title, description: it.notes, allDay: false,
       startISO: toLocalISO(start), endISO: toLocalISO(end),
-      location,
+      location: it.location,
     });
   }
-  return callBackground('createEvent', { title, description, allDay: true, dateStr, location });
+  return callBackground('createEvent', {
+    title: it.title, description: it.notes, allDay: true, dateStr: it.dueDate, location: it.location,
+  });
 }

@@ -21,7 +21,7 @@
 
     <div id="notice" class="notice hidden"></div>
     <div id="chip" class="chip hidden"></div>
-    <div id="aiStatus" class="ai-status hidden">AI is reading…</div>
+    <div id="aiStatus" class="ai-status hidden"><span class="spinner" aria-hidden="true"></span><span id="aiStatusText">AI is reading…</span></div>
     <div id="aiWarn" class="ai-warn hidden"></div>
     <button id="builtinOffer" class="builtin-offer hidden" type="button"></button>
     <button id="aiHint" class="ai-hint hidden" type="button"></button>
@@ -33,7 +33,7 @@
     <input type="file" id="fileInput" accept="image/*" class="hidden">
 
     <div id="candBox" class="cand hidden">
-      <div class="cand-head">Several deadlines found — pick the one you mean:</div>
+      <div class="cand-head">Several deadlines found. Check the ones to add, click a row to edit it:</div>
       <div id="candList" class="cand-list"></div>
     </div>
 
