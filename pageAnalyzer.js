@@ -109,6 +109,15 @@ function analyzePage() {
       .forEach((el) => el.remove());
     text = clone.textContent || '';
   }
+  // 页面正文喂给 AI/本地规则(此前只有 Gmail 会填 bodyText,
+  // 导致普通页面上 AI 永远没有输入,只能靠用户先选中文字)
+  const pageText = text
+    .replace(/[ \t ]+/g, ' ')
+    .replace(/\s*\n\s*/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  base.bodyText = pageText ? cap(pageText, 6000) : null;
+
   const enWords = (text.match(/[A-Za-z0-9'’-]+/g) || []).length;
   const cjkChars = (text.match(/[一-鿿぀-ヿ]/g) || []).length;
   if (enWords + cjkChars >= 200) {
