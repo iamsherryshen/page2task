@@ -33,11 +33,11 @@
     <input type="file" id="fileInput" accept="image/*" class="hidden">
 
     <div id="candBox" class="cand hidden">
-      <div class="cand-head">Several deadlines found. Check the ones to add, click a row to edit it:</div>
+      <div class="cand-head">Several deadlines found. Check the ones to add; edit each one below:</div>
       <div id="candList" class="cand-list"></div>
     </div>
 
-    <div class="form-card">
+    <div class="form-card" id="formCard">
       <label class="field">
         <span>Title</span>
         <input type="text" id="titleInput" placeholder="Task name">
@@ -76,6 +76,8 @@
         <select id="listSelect"></select>
       </label>
     </div>
+
+    <div id="itemCards" class="hidden"></div>
 
     <div id="banner" class="banner hidden"></div>
 

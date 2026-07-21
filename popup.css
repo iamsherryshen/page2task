@@ -291,21 +291,20 @@ input.error { outline: 2px solid var(--red-fg); }
   transform: rotate(45deg);
 }
 
-/* Per-row task-list selector, indented under the title */
-.cand-list-sel {
-  align-self: flex-start;
-  margin-left: 24px;
-  max-width: 220px;
-  font: inherit;
-  font-size: 11px;
-  color: var(--fg);
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 3px 6px;
+/* One editable card per checked deadline */
+#itemCards { display: flex; flex-direction: column; gap: 10px; }
+.item-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
 }
+.item-card-head { color: var(--label); font-size: 12px; font-weight: 700; }
 .cand-item:hover { background: var(--input-bg); }
-.cand-item.selected { border-color: var(--accent); background: var(--chip-bg); }
 .cand-date { font-weight: 600; white-space: nowrap; }
 .cand-snip {
   color: var(--muted);

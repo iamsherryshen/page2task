@@ -49,10 +49,7 @@ async function init() {
   );
   $('listSelect').addEventListener('change', () => {
     const c = candidates[activeIndex];
-    if (!c) return;
-    c.listId = $('listSelect').value;
-    const rowSel = document.querySelectorAll('.cand-list-sel')[activeIndex];
-    if (rowSel) rowSel.value = c.listId; // mirror into the row's own selector
+    if (c) c.listId = $('listSelect').value;
   });
 
   // Textareas grow with their content (up to a cap) so long pasted text or
@@ -204,8 +201,8 @@ async function init() {
   }
 
   if (candidates.length) {
-    if (candidates.length > 1) renderCandidateChooser();
-    applyCandidate(0);
+    if (candidates.length > 1) renderCandidateChooser(); // checked ones become editable cards
+    else applyCandidate(0);
   } else {
     if (pageInfo.kind === 'email' && sourceText) {
       showNotice('No upcoming deadline found. The dates in this email may have already passed.');
@@ -230,8 +227,8 @@ function setMode(m, save = true) {
   $('timeRow').classList.toggle('hidden', m === 'todo'); // Google Tasks only stores a date anyway
   $('locationField').classList.toggle('hidden', m === 'todo'); // Tasks has no location field either
   $('listField').classList.toggle('hidden', m === 'calendar' || taskLists.length <= 1);
-  document.querySelectorAll('.cand-list-sel').forEach((el) => el.classList.toggle('hidden', m === 'calendar'));
   $('dateLabel').textContent = m === 'todo' ? 'Date (optional)' : 'Date';
+  renderItemCards(); // per-item cards show mode-specific fields, so rebuild them
   updateSubmitLabel();
   updateTimeHint();
   if (save) chrome.storage.sync.set({ lastMode: m });
@@ -344,6 +341,7 @@ async function runAi(opts) {
   $('banner').className = 'banner hidden';
   $('candBox').classList.add('hidden');
   updateSubmitLabel();
+  renderItemCards(); // back to the single form while a new read is in flight
   $('aiStatusText').textContent = opts.progress || 'AI is reading…';
   $('aiStatus').classList.remove('hidden');
 
@@ -361,8 +359,8 @@ async function runAi(opts) {
       flashError(opts.emptyMsg);
       return;
     }
-    if (candidates.length > 1) renderCandidateChooser();
-    applyCandidate(0);
+    if (candidates.length > 1) renderCandidateChooser(); // checked ones become editable cards
+    else applyCandidate(0);
   } catch (e) {
     flashError((e && e.message) || opts.failMsg);
   } finally {
@@ -469,7 +467,6 @@ function applyCandidate(i) {
   } else {
     $('matchedLine').classList.add('hidden');
   }
-  document.querySelectorAll('.cand-item').forEach((el, idx) => el.classList.toggle('selected', idx === i));
   updateSubmitLabel();
   updateTimeHint();
 }
@@ -490,7 +487,6 @@ function renderCandidateChooser() {
   list.textContent = '';
   candidates.forEach((c, i) => {
     if (typeof c.checked !== 'boolean') c.checked = i === 0; // first one preselected
-    if (!c.listId) c.listId = resolveListId(c);
     const row = document.createElement('div');
     row.className = 'cand-item';
     const main = document.createElement('div');
@@ -500,10 +496,11 @@ function renderCandidateChooser() {
     cb.className = 'cand-check';
     cb.checked = c.checked;
     cb.title = 'Include this one when adding';
-    cb.addEventListener('click', (e) => e.stopPropagation()); // row click = edit, checkbox = include
+    cb.addEventListener('click', (e) => e.stopPropagation()); // avoid double-toggling via the row handler
     cb.addEventListener('change', () => {
       c.checked = cb.checked;
       updateSubmitLabel();
+      renderItemCards();
     });
     const due = new Date(c.dueDate + 'T00:00:00');
     const opts = { month: 'short', day: 'numeric' };
@@ -519,32 +516,118 @@ function renderCandidateChooser() {
     s.textContent = c.title || c.matchedText || (pageInfo && (pageInfo.emailSubject || pageInfo.title)) || '';
     main.append(cb, d, s);
     row.append(main);
-    // Each row carries its own task-list selector, so with several items
-    // checked the AI's per-item categorization is visible and fixable in place
-    if (taskLists.length > 1) {
-      const sel = document.createElement('select');
-      sel.className = 'cand-list-sel';
-      sel.title = 'Task list for this item';
-      for (const l of taskLists) {
-        const o = document.createElement('option');
-        o.value = l.id;
-        o.textContent = l.title;
-        sel.appendChild(o);
-      }
-      if (c.listId) sel.value = c.listId;
-      if (mode === 'calendar') sel.classList.add('hidden');
-      sel.addEventListener('click', (e) => e.stopPropagation());
-      sel.addEventListener('change', () => {
-        c.listId = sel.value;
-        if (i === activeIndex) $('listSelect').value = sel.value; // keep the form's dropdown in step
-      });
-      row.append(sel);
-    }
-    row.addEventListener('click', () => applyCandidate(i));
+    // Clicking anywhere on the row toggles inclusion, same as the checkbox
+    row.addEventListener('click', () => {
+      cb.checked = !cb.checked;
+      c.checked = cb.checked;
+      updateSubmitLabel();
+      renderItemCards();
+    });
     list.appendChild(row);
   });
   $('candBox').classList.remove('hidden');
   updateSubmitLabel();
+  renderItemCards();
+}
+
+// When deadlines are checked above, the single form is replaced by one
+// editable card per checked item: every dimension is adjustable per item
+function renderItemCards() {
+  const wrap = $('itemCards');
+  const chooserVisible = !$('candBox').classList.contains('hidden');
+  const checkedList = chooserVisible ? candidates.filter((c) => c.checked) : [];
+  wrap.textContent = '';
+  if (!checkedList.length) {
+    wrap.classList.add('hidden');
+    $('formCard').classList.remove('hidden');
+    return;
+  }
+  $('formCard').classList.add('hidden');
+  checkedList.forEach((c, idx) => wrap.appendChild(buildItemCard(c, idx + 1)));
+  wrap.classList.remove('hidden');
+}
+
+function cardField(labelText, inputEl) {
+  const label = document.createElement('label');
+  label.className = 'field';
+  const span = document.createElement('span');
+  span.textContent = labelText;
+  label.append(span, inputEl);
+  return label;
+}
+
+function buildItemCard(c, n) {
+  const card = document.createElement('div');
+  card.className = 'item-card';
+
+  const head = document.createElement('div');
+  head.className = 'item-card-head';
+  head.textContent = 'Item ' + n;
+  card.appendChild(head);
+
+  const title = document.createElement('input');
+  title.type = 'text';
+  title.value = c.title || (pageInfo && (pageInfo.emailSubject || pageInfo.title)) || '';
+  title.addEventListener('input', () => { c.title = title.value; });
+  card.appendChild(cardField('Title', title));
+
+  const date = document.createElement('input');
+  date.type = 'date';
+  date.value = c.dueDate || '';
+  date.addEventListener('input', () => { c.dueDate = date.value || null; });
+  card.appendChild(cardField(mode === 'todo' ? 'Date (optional)' : 'Date', date));
+
+  if (mode !== 'todo') {
+    const row = document.createElement('div');
+    row.className = 'row time-row';
+    const start = document.createElement('input');
+    start.type = 'time';
+    start.value = c.dueTime || '';
+    const end = document.createElement('input');
+    end.type = 'time';
+    end.value = c.endTime || '';
+    start.addEventListener('input', () => { c.dueTime = start.value || null; });
+    start.addEventListener('change', () => {
+      if (start.value && !end.value) {
+        end.value = addMinutesToTimeStr(start.value, preferredDurationMin());
+        c.endTime = end.value;
+      }
+    });
+    end.addEventListener('input', () => { c.endTime = end.value || null; });
+    row.append(cardField('Start time (optional)', start), cardField('End time', end));
+    card.appendChild(row);
+
+    const loc = document.createElement('input');
+    loc.type = 'text';
+    loc.value = c.location || '';
+    loc.addEventListener('input', () => { c.location = loc.value; });
+    card.appendChild(cardField('Location', loc));
+  }
+
+  if (c.notes === undefined) c.notes = defaultNotesFor(c);
+  const notes = document.createElement('textarea');
+  notes.rows = 2;
+  notes.value = c.notes;
+  notes.addEventListener('input', () => {
+    c.notes = notes.value;
+    autoGrow(notes, 180);
+  });
+  card.appendChild(cardField('Notes', notes));
+
+  if (mode !== 'calendar' && taskLists.length > 1) {
+    if (!c.listId) c.listId = resolveListId(c);
+    const sel = document.createElement('select');
+    for (const l of taskLists) {
+      const o = document.createElement('option');
+      o.value = l.id;
+      o.textContent = l.title;
+      sel.appendChild(o);
+    }
+    if (c.listId) sel.value = c.listId;
+    sel.addEventListener('change', () => { c.listId = sel.value; });
+    card.appendChild(cardField('Task list', sel));
+  }
+  return card;
 }
 
 function renderChip(info) {
@@ -586,11 +669,10 @@ async function loadTaskLists() {
     }
     if (lastListId && taskLists.some((l) => l.id === lastListId)) sel.value = lastListId;
     if (mode !== 'calendar') $('listField').classList.remove('hidden');
-    // Lists can arrive after the chooser was drawn (e.g. pasted text was read
-    // first). Redraw so every row gets its own list selector.
+    // Lists can arrive after the cards were drawn (e.g. pasted text was read
+    // first). Redraw so every card gets its Task list selector.
     if (candidates.length > 1 && !$('candBox').classList.contains('hidden')) {
       renderCandidateChooser();
-      applyCandidate(activeIndex);
     }
   }
   return taskLists;
