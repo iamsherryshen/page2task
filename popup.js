@@ -502,19 +502,20 @@ function renderCandidateChooser() {
       updateSubmitLabel();
       renderItemCards();
     });
-    const due = new Date(c.dueDate + 'T00:00:00');
-    const opts = { month: 'short', day: 'numeric' };
-    if (due.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric'; // "Jun 1" alone would hide next-year dates
-    const dateLabel = c.dueDate
-      ? due.toLocaleDateString('en-US', opts) + (c.dueTime ? ' ' + c.dueTime : '')
-      : 'No date';
-    const d = document.createElement('span');
-    d.className = 'cand-date';
-    d.textContent = dateLabel;
+    main.append(cb);
+    if (c.dueDate) { // undated items show just the title, no "No date" label
+      const due = new Date(c.dueDate + 'T00:00:00');
+      const opts = { month: 'short', day: 'numeric' };
+      if (due.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric'; // "Jun 1" alone would hide next-year dates
+      const d = document.createElement('span');
+      d.className = 'cand-date';
+      d.textContent = due.toLocaleDateString('en-US', opts) + (c.dueTime ? ' ' + c.dueTime : '');
+      main.append(d);
+    }
     const s = document.createElement('span');
     s.className = 'cand-snip';
     s.textContent = c.title || c.matchedText || (pageInfo && (pageInfo.emailSubject || pageInfo.title)) || '';
-    main.append(cb, d, s);
+    main.append(s);
     row.append(main);
     // Clicking anywhere on the row toggles inclusion, same as the checkbox
     row.addEventListener('click', () => {
@@ -604,8 +605,16 @@ function buildItemCard(c, n) {
     card.appendChild(cardField('Location', loc));
   }
 
-  // No Notes field on cards (kept compact); the source URL/sentence still
-  // goes into the task's notes automatically via defaultNotesFor at submit
+  if (c.notes === undefined) c.notes = defaultNotesFor(c);
+  const notes = document.createElement('textarea');
+  notes.rows = 2;
+  notes.value = c.notes;
+  notes.addEventListener('input', () => {
+    c.notes = notes.value;
+    autoGrow(notes, 180);
+  });
+  card.appendChild(cardField('Notes', notes));
+
   if (mode !== 'calendar' && taskLists.length > 1) {
     if (!c.listId) c.listId = resolveListId(c);
     const sel = document.createElement('select');
