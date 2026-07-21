@@ -47,6 +47,18 @@ async function init() {
   ['titleInput', 'dateInput', 'timeInput', 'endTimeInput', 'locationInput', 'notesInput'].forEach((id) =>
     $(id).addEventListener('input', syncActiveCandidate)
   );
+  $('listSelect').addEventListener('change', () => {
+    const c = candidates[activeIndex];
+    if (!c) return;
+    c.listId = $('listSelect').value;
+    const rowSel = document.querySelectorAll('.cand-list-sel')[activeIndex];
+    if (rowSel) rowSel.value = c.listId; // mirror into the row's own selector
+  });
+
+  // Textareas grow with their content (up to a cap) so long pasted text or
+  // notes can be read without scrolling inside a tiny box
+  $('pasteText').addEventListener('input', () => autoGrow($('pasteText'), 180));
+  $('notesInput').addEventListener('input', () => autoGrow($('notesInput'), 220));
   chrome.storage.sync.get({ defaultEventMinutes: 30 }).then((c) => {
     defaultEventMinutes = c.defaultEventMinutes || 30;
   });
@@ -108,6 +120,7 @@ async function init() {
       e.preventDefault();
       $('pasteText').value = text.trim();
       updateImportPlaceholder();
+      autoGrow($('pasteText'), 180);
       extractFromText(text.trim());
     }
   });
@@ -217,6 +230,7 @@ function setMode(m, save = true) {
   $('timeRow').classList.toggle('hidden', m === 'todo'); // Google Tasks only stores a date anyway
   $('locationField').classList.toggle('hidden', m === 'todo'); // Tasks has no location field either
   $('listField').classList.toggle('hidden', m === 'calendar' || taskLists.length <= 1);
+  document.querySelectorAll('.cand-list-sel').forEach((el) => el.classList.toggle('hidden', m === 'calendar'));
   $('dateLabel').textContent = m === 'todo' ? 'Date (optional)' : 'Date';
   updateSubmitLabel();
   updateTimeHint();
@@ -408,6 +422,12 @@ function titleFromSentence(s) {
   return t || null;
 }
 
+// Let a textarea grow to fit its content, up to maxPx (then it scrolls)
+function autoGrow(el, maxPx) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight + 2, maxPx) + 'px';
+}
+
 // Copy the form's current values into the candidate being edited
 function syncActiveCandidate() {
   const c = candidates[activeIndex];
@@ -436,12 +456,13 @@ function applyCandidate(i) {
   $('dateInput').value = c.dueDate || '';
   setStartTime(c.dueTime || '', c.endTime || '');
   $('locationInput').value = c.location || ''; // real Location field — editable, sent to Calendar as such
-  if (c.list && taskLists.length > 1) {
-    const hit = taskLists.find((l) => l.title.toLowerCase() === String(c.list).toLowerCase());
-    if (hit) $('listSelect').value = hit.id; // AI's suggestion — user can still change it
+  if (taskLists.length > 1) {
+    if (!c.listId) c.listId = resolveListId(c); // AI's suggestion, else the remembered list
+    if (c.listId) $('listSelect').value = c.listId;
   }
   if (c.notes === undefined) c.notes = defaultNotesFor(c);
   $('notesInput').value = c.notes;
+  autoGrow($('notesInput'), 220);
   if (c.matchedText) {
     $('matchedLine').textContent = 'Detected from: “' + c.matchedText + '”';
     $('matchedLine').classList.remove('hidden');
@@ -453,13 +474,27 @@ function applyCandidate(i) {
   updateTimeHint();
 }
 
+// The AI suggests a list NAME per candidate; resolve it to a real list id,
+// else fall back to the remembered/global selection
+function resolveListId(c) {
+  if (taskLists.length < 2) return null;
+  if (c.list) {
+    const hit = taskLists.find((l) => l.title.toLowerCase() === String(c.list).toLowerCase());
+    if (hit) return hit.id;
+  }
+  return $('listSelect').value || null;
+}
+
 function renderCandidateChooser() {
   const list = $('candList');
   list.textContent = '';
   candidates.forEach((c, i) => {
     if (typeof c.checked !== 'boolean') c.checked = i === 0; // first one preselected
+    if (!c.listId) c.listId = resolveListId(c);
     const row = document.createElement('div');
     row.className = 'cand-item';
+    const main = document.createElement('div');
+    main.className = 'cand-main';
     const cb = document.createElement('input');
     cb.type = 'checkbox';
     cb.className = 'cand-check';
@@ -482,7 +517,29 @@ function renderCandidateChooser() {
     const s = document.createElement('span');
     s.className = 'cand-snip';
     s.textContent = c.title || c.matchedText || (pageInfo && (pageInfo.emailSubject || pageInfo.title)) || '';
-    row.append(cb, d, s);
+    main.append(cb, d, s);
+    row.append(main);
+    // Each row carries its own task-list selector, so with several items
+    // checked the AI's per-item categorization is visible and fixable in place
+    if (taskLists.length > 1) {
+      const sel = document.createElement('select');
+      sel.className = 'cand-list-sel';
+      sel.title = 'Task list for this item';
+      for (const l of taskLists) {
+        const o = document.createElement('option');
+        o.value = l.id;
+        o.textContent = l.title;
+        sel.appendChild(o);
+      }
+      if (c.listId) sel.value = c.listId;
+      if (mode === 'calendar') sel.classList.add('hidden');
+      sel.addEventListener('click', (e) => e.stopPropagation());
+      sel.addEventListener('change', () => {
+        c.listId = sel.value;
+        if (i === activeIndex) $('listSelect').value = sel.value; // keep the form's dropdown in step
+      });
+      row.append(sel);
+    }
     row.addEventListener('click', () => applyCandidate(i));
     list.appendChild(row);
   });
@@ -529,6 +586,12 @@ async function loadTaskLists() {
     }
     if (lastListId && taskLists.some((l) => l.id === lastListId)) sel.value = lastListId;
     if (mode !== 'calendar') $('listField').classList.remove('hidden');
+    // Lists can arrive after the chooser was drawn (e.g. pasted text was read
+    // first). Redraw so every row gets its own list selector.
+    if (candidates.length > 1 && !$('candBox').classList.contains('hidden')) {
+      renderCandidateChooser();
+      applyCandidate(activeIndex);
+    }
   }
   return taskLists;
 }
@@ -650,6 +713,7 @@ function itemFromForm() {
     endTime: $('endTimeInput').value || null,
     location: ($('locationInput').value || '').trim() || null,
     notes: $('notesInput').value,
+    listId: (taskLists.length > 1 && $('listSelect').value) || null,
   };
 }
 
@@ -662,6 +726,7 @@ function resolveItem(c) {
     endTime: c.endTime || null,
     location: (c.location || '').trim() || null,
     notes: c.notes !== undefined ? c.notes : defaultNotesFor(c),
+    listId: c.listId || null, // each item keeps its own task list
   };
 }
 
@@ -685,12 +750,11 @@ async function onSubmit() {
   $('dateInput').classList.remove('error');
 
   await withPending($('submitBtn'), async () => {
-    const listId = mode !== 'calendar' && taskLists.length > 1 ? $('listSelect').value : null;
     let added = 0;
     let lastEvent = null;
     try {
       for (const it of items) {
-        lastEvent = await submitItem(it, listId);
+        lastEvent = await submitItem(it);
         added++;
       }
     } catch (e) {
@@ -701,11 +765,12 @@ async function onSubmit() {
         { code: e && e.code }
       );
     }
-    if (listId) chrome.storage.sync.set({ lastListId: listId });
+    if (mode !== 'calendar' && items[0].listId) chrome.storage.sync.set({ lastListId: items[0].listId });
 
     const links = [];
     if (mode !== 'calendar') {
-      const listName = listId && (taskLists.find((l) => l.id === listId) || {}).title;
+      const listName =
+        items.length === 1 && items[0].listId && (taskLists.find((l) => l.id === items[0].listId) || {}).title;
       links.push({ text: 'Open Google Tasks' + (listName ? ' (' + listName + ')' : ''), href: 'https://tasks.google.com' });
     }
     if (mode !== 'todo') {
@@ -721,10 +786,10 @@ async function onSubmit() {
 }
 
 // Creates the task and/or event for one item, per the current mode
-async function submitItem(it, listId) {
+async function submitItem(it) {
   let taskDone = false;
   if (mode !== 'calendar') {
-    await createTaskItem(it, listId);
+    await createTaskItem(it);
     taskDone = true;
   }
   if (mode !== 'todo') {
@@ -739,11 +804,11 @@ async function submitItem(it, listId) {
   return null;
 }
 
-function createTaskItem(it, listId) {
+function createTaskItem(it) {
   let notes = it.notes || '';
   if (it.dueTime) notes = notes + '\nTime ' + it.dueTime + (it.endTime ? '-' + it.endTime : ''); // Google Tasks only stores the date
   if (it.location) notes = notes + '\nLocation: ' + it.location; // Tasks has no location field — keep it in the notes
-  return callBackground('createTask', { title: it.title, notes, dueDate: it.dueDate, listId });
+  return callBackground('createTask', { title: it.title, notes, dueDate: it.dueDate, listId: it.listId });
 }
 
 function createEventItem(it) {

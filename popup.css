@@ -250,8 +250,8 @@ input.error { outline: 2px solid var(--red-fg); }
 .cand-list { display: flex; flex-direction: column; gap: 4px; }
 .cand-item {
   display: flex;
-  gap: 8px;
-  align-items: baseline;
+  flex-direction: column;
+  gap: 4px;
   text-align: left;
   padding: 6px 8px;
   border-radius: 8px;
@@ -261,7 +261,49 @@ input.error { outline: 2px solid var(--red-fg); }
   font: inherit;
   cursor: pointer;
 }
-.cand-check { accent-color: var(--accent); margin: 0; flex: none; align-self: center; }
+.cand-main { display: flex; gap: 8px; align-items: baseline; }
+
+/* Rounded custom checkbox (the native one has sharp corners) */
+.cand-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex: none;
+  align-self: center;
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  background: #FFFFFF;
+  cursor: pointer;
+  position: relative;
+}
+.cand-check:checked { background: var(--accent); border-color: var(--accent); }
+.cand-check:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #FFFFFF;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Per-row task-list selector, indented under the title */
+.cand-list-sel {
+  align-self: flex-start;
+  margin-left: 24px;
+  max-width: 220px;
+  font: inherit;
+  font-size: 11px;
+  color: var(--fg);
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 6px;
+}
 .cand-item:hover { background: var(--input-bg); }
 .cand-item.selected { border-color: var(--accent); background: var(--chip-bg); }
 .cand-date { font-weight: 600; white-space: nowrap; }
