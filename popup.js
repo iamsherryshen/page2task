@@ -604,16 +604,8 @@ function buildItemCard(c, n) {
     card.appendChild(cardField('Location', loc));
   }
 
-  if (c.notes === undefined) c.notes = defaultNotesFor(c);
-  const notes = document.createElement('textarea');
-  notes.rows = 2;
-  notes.value = c.notes;
-  notes.addEventListener('input', () => {
-    c.notes = notes.value;
-    autoGrow(notes, 180);
-  });
-  card.appendChild(cardField('Notes', notes));
-
+  // No Notes field on cards (kept compact); the source URL/sentence still
+  // goes into the task's notes automatically via defaultNotesFor at submit
   if (mode !== 'calendar' && taskLists.length > 1) {
     if (!c.listId) c.listId = resolveListId(c);
     const sel = document.createElement('select');
