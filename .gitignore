@@ -1,10 +1,13 @@
-# Personal credentials — NEVER commit these
-# manifest.json contains YOUR Google OAuth client_id (copy it from manifest.template.json)
-manifest.json
-# key.pem pins your personal extension ID
+# Private signing key — NEVER commit. This is what proves ownership of the
+# extension ID. (The manifest's "key" field is only the matching PUBLIC key,
+# and the OAuth client_id is a public identifier — both ship with the extension,
+# exactly as they do in any published Chrome extension.)
 key.pem
 key.pem.backup
 *.pem
+
+# Build output
+*.zip
 
 # OS noise
 .DS_Store

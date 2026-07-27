@@ -1,80 +1,95 @@
 # Page2Task
 
-A Chrome extension that turns whatever you're looking at into a **Google Task** or a **Google Calendar event** — in one click.
+A Chrome extension that turns whatever you're looking at into a **Google Task** or a **Google Calendar event**.
+
+Open a page, an email, or paste a screenshot. Page2Task finds the deadline, title, and location, and saves it to your own Google account.
+
+## Install (about 2 minutes)
+
+1. **[Download the latest release](../../releases/latest)** and unzip it (or clone this repo).
+2. Open `chrome://extensions` in Chrome.
+3. Turn on **Developer mode** (toggle, top right).
+4. Click **Load unpacked** and select the unzipped `page2task` folder.
+
+That's it. Click the Page2Task icon in your toolbar to use it.
+
+The first time you save something, Google asks you to authorize the extension.
+Because this extension is distributed outside the Chrome Web Store, Google shows a
+**"Google hasn't verified this app"** screen — click **Advanced → Continue** to proceed.
+Page2Task only ever writes to *your* Google Tasks and Calendar; there is no server behind it.
+
+> **Keep the folder.** Chrome loads an unpacked extension from where it sits, so don't
+> delete or move the folder after installing. To update later, download the new release
+> and replace the folder's contents, then hit the reload icon on `chrome://extensions`.
 
 ## What it does
 
-- **📧 Gmail messages** — reads the open email thread and extracts deadlines and appointments ("please submit by 3pm on July 10", "July 7th at 5pm @GSB Coupa sounds great!"), pre-filling the title, date, time and location;
-- **🗂 Multiple deadlines** — if an email mentions several dates (fee tiers, staged deadlines), a picker appears so you choose the one you mean;
-- **📺 Video pages** — reads the video length ("~23 min long") and sizes the calendar block to match;
-- **📖 Articles** — estimates reading time from word count (English and CJK text counted separately);
-- **🖼 Screenshots** — click the screenshot button (or paste with ⌘V, or drop an image) to feed a screenshot — a WeChat/Slack chat, a poster, an email — and the AI reads the to-do out of the image;
-- **📝 Pasted text** — paste any message or blurb into the popup (or into the text box) and the AI extracts the to-dos and appointments from it;
-- **🔗 Any page** — select some text before clicking the extension and it analyzes the selection first;
-- **📄 PDFs** — Chrome's PDF viewer hides the text from extensions, so Page2Task falls back to the file name as the title;
-- **🗃 Task lists** — if your Google Tasks has several lists (Family, School work…), the AI suggests the best-fitting one and you can always override it;
-- **👤 Account clarity** — the popup always shows which Google account it saves to; switch accounts anytime from Settings.
+- **Gmail** — reads the whole open thread and pulls out deadlines and appointments, even when the date is buried in an earlier message
+- **Any web page** — event pages, forms, syllabi: the visible text is read and the deadlines extracted
+- **Screenshots** — paste one with ⌘V (a chat, a poster, a form) and the AI reads the to-do out of the image
+- **Pasted text** — drop in any message or invite and it gets parsed
+- **Several deadlines at once** — every deadline found gets a checkbox; tick the ones you want and each becomes its own task or event, with its own date, time, location, and task list
+- **To-do / Calendar / Both** — pick at the top; the form shows only the fields that mode needs
+- **Locations** go into the calendar event's real location field, not the notes
+- **Task lists** — the AI suggests which of your Google Tasks lists each item belongs in; you can change it per item
+- **Videos** — reads the video's real length and sizes the calendar block to match
 
-## How recognition works
+## AI recognition (optional)
 
-Two modes, chosen automatically:
+Page2Task works with no setup at all: built-in rules detect dates locally, offline and free.
 
-| Mode | Cost | What it does |
+For better titles and screenshot reading, it uses AI when available, in this order:
+
+| Tier | Cost | Setup |
 |---|---|---|
-| **Local rules** (default) | Free, fully offline | chrono-based date parsing (English + Chinese) with deadline-keyword ranking |
-| **AI** (optional, bring your own key) | Google Gemini has a free tier; Anthropic Claude costs under 1¢/run | Reads the full text or screenshot; writes proper task titles ("Submit Service Now ticket to cancel housing"), understands appointments, picks locations and task lists |
+| **Chrome's built-in AI** (Gemini Nano) | Free | None, if your Chrome already has the model. Otherwise the popup offers a one-time ~2 GB download; the model runs entirely on your computer and nothing leaves the device |
+| **Your own API key** | Google Gemini has a free tier; Claude costs well under 1¢ per run | Paste a key in Settings |
+| **Local rules** | Free | Always available as the fallback |
 
-No key → no AI request is ever made. With a key, only the text/screenshot being analyzed is sent to the provider you chose.
-
-## Install
-
-1. **Clone** this repository (or download it as a ZIP and unzip);
-2. **Create your manifest**: copy `manifest.template.json` to `manifest.json`;
-3. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the project folder;
-4. **Connect Google** (one-time, ~10 minutes): follow **[SETUP.md](SETUP.md)** (中文版: [SETUP.zh-CN.md](SETUP.zh-CN.md)) to register your own Google Cloud OAuth client and paste its client ID into your `manifest.json`;
-5. *(Optional but recommended)* open the extension's **Settings** and add an AI key — Google Gemini keys are free at [aistudio.google.com](https://aistudio.google.com), no credit card needed.
-
-> Why step 4? Each installation authenticates against **your own** (free) Google Cloud project, so nobody else's quota, keys or data are involved. `manifest.json` and `key.pem` are git-ignored on purpose — never commit them.
-
-## Configuration (Settings page)
-
-- **AI provider** — Google Gemini (free tier) or Anthropic Claude, with a key field for each;
-- **Google account** — shows the connected account; **Disconnect** to re-pick on the next save;
-- **Default event duration** — used when a calendar event has a time but no natural length.
+**API keys are stored only on the computer you type them on** (never synced to your
+Google account) and are sent only to the provider they belong to. The developer never
+sees them, and there is no backend to send them to.
 
 ## Privacy
 
-Page content is analyzed locally in your browser. Text or screenshots are sent to an AI provider **only** if you configured a key. Tasks and events are written directly to Google's official APIs using an OAuth token that stays inside Chrome. Nothing is sent anywhere else; there is no backend.
+- No servers, no analytics, no tracking. See the [privacy policy](docs/privacy.html).
+- Page content is read only when you click the extension icon.
+- Tasks and events go directly from your browser to Google's official APIs.
+- Text or screenshots reach an AI provider **only** if you configured a key; with Chrome's built-in AI, nothing leaves your computer at all.
 
-## Project structure
+## Settings
 
-| File | Purpose |
-|---|---|
-| `manifest.template.json` | Copy to `manifest.json`, then add your own OAuth client ID |
-| `popup.html/css/js` | The main popup UI (candidates picker, form, actions) |
-| `background.js` | Service worker — performs Google API writes so they survive the popup closing; job replay on interruption |
-| `pageAnalyzer.js` | Injected page analyzer: email/video/article/PDF detection, duration estimates |
-| `lib/dateparse.js` | Local rule-based date extraction (English + Chinese), multi-candidate |
-| `lib/vendor/chrono.js` | Bundled [chrono-node](https://github.com/wanasit/chrono) date parser (MIT) |
-| `lib/google.js` | Google Tasks / Calendar API wrapper (401/403 retry, task lists) |
-| `lib/ai.js` | AI extraction: Gemini + Claude, text & vision, structured JSON output |
-| `options.html/js` | Settings page |
-| `test/` | Date-parser test suites — run `node test/dateparse.test.mjs` |
+- **AI provider** — Gemini or Claude, with a key field for each, plus a test button
+- **Google account** — shows the connected account; **Disconnect** to switch
+- **Default event duration** — used when an event has a start time but no natural length
+
+## For developers
 
 No build step, no framework, no npm install — vanilla JS throughout.
 
-## Development
-
 ```bash
-node test/dateparse.test.mjs        # 26 cases
-node test/dateparse.extra.test.mjs  # 21 tougher cases
+node --test test/*.test.mjs
 ```
 
 After editing, hit the reload icon on the extension card in `chrome://extensions`.
 
+| File | Purpose |
+|---|---|
+| `popup.html/css/js` | The popup: mode switch, import zone, candidate checkboxes, per-item cards |
+| `background.js` | Service worker: Google API writes survive the popup closing, with job replay |
+| `pageAnalyzer.js` | Injected page analyzer: email / video / article / PDF detection, page text |
+| `lib/dateparse.js` | Local rule-based date extraction (English + Chinese), multi-candidate |
+| `lib/vendor/chrono.js` | Bundled [chrono-node](https://github.com/wanasit/chrono) date parser (MIT) |
+| `lib/google.js` | Google Tasks / Calendar API wrapper |
+| `lib/ai.js` | AI extraction: built-in Gemini Nano, Gemini cloud, Claude; text & vision |
+| `options.html/js` | Settings page |
+
+Forking with your own Google Cloud project? Copy `manifest.template.json` over
+`manifest.json` and follow **[SETUP.md](SETUP.md)** (中文: [SETUP.zh-CN.md](SETUP.zh-CN.md)).
+
 ## Credits
 
-- [chrono-node](https://github.com/wanasit/chrono) (MIT) — natural-language date parsing, bundled in `lib/vendor/`.
+- [chrono-node](https://github.com/wanasit/chrono) (MIT) — natural-language date parsing.
 
 ## License
 
