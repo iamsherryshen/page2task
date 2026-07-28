@@ -24,6 +24,15 @@
     }
     .save-btn:hover { background: var(--accent-hover); }
     .status { color: var(--green-fg); margin-left: 8px; }
+    .welcome {
+      background: var(--chip-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; line-height: 1.7; margin-top: 8px;
+    }
+    .tier {
+      border-radius: 8px; padding: 8px 10px; line-height: 1.6;
+      background: var(--input-bg); border: 1px solid var(--border);
+    }
+    .tier.good { background: var(--green-bg); color: var(--green-fg); border-color: transparent; }
     #testResult { margin-top: 8px; }
     h2 { font-size: 15px; margin: 24px 0 4px; }
   </style>
@@ -34,7 +43,16 @@
     <h1>Page2Task Settings</h1>
   </header>
   <main>
+    <div class="welcome">
+      <b>Welcome. Nothing here is required to start.</b><br>
+      Click the Page2Task icon on any page, fill in the form, and hit Add. The first time
+      you save, Google asks you to authorize the extension: that is the only connection step,
+      and it happens on its own.<br>
+      Everything below is optional and only makes the recognition smarter.
+    </div>
+
     <h2>AI recognition (optional)</h2>
+    <div id="aiTier" class="tier">Checking what AI is available…</div>
     <p class="hint">
       Works without any key: free local rules detect the dates.<br>
       With an AI key, the model reads the text and writes proper task titles like

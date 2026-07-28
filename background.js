@@ -60,6 +60,12 @@ async function doFlush() {
   }
 }
 
+// First install only: open Settings so a new user sees what AI options exist
+// before wondering why recognition is basic. (Not on update or Chrome restart.)
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') chrome.runtime.openOptionsPage();
+});
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || !msg.action) return;
 

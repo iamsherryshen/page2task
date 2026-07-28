@@ -12,6 +12,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('apiKey').value = keys.anthropicApiKey;
   $('eventMinutes').value = cfg.defaultEventMinutes;
 
+  // Say plainly which recognition tier is active right now, so nobody has to
+  // guess why titles are basic or why a screenshot was not read
+  const refreshTier = async () => {
+    const el = $('aiTier');
+    const k = await AiExtract.loadKeys();
+    const chosen = $('provider').value === 'claude' ? 'claude' : 'gemini';
+    const key = chosen === 'gemini' ? k.geminiApiKey : k.anthropicApiKey;
+    const anyKey = k.geminiApiKey || k.anthropicApiKey;
+    el.className = 'tier';
+    if (key || anyKey) {
+      el.classList.add('good');
+      el.textContent = key
+        ? 'Active: your ' + (chosen === 'gemini' ? 'Gemini' : 'Claude') + ' API key. Full AI, including screenshots.'
+        : 'Active: your saved API key for the other provider. Switch the provider above to match.';
+      return;
+    }
+    const avail = await AiExtract.builtinAvailability();
+    if (avail === 'available') {
+      el.classList.add('good');
+      el.textContent = "Active: Chrome's built-in AI. Free, runs on your computer, nothing leaves the device.";
+    } else if (avail === 'downloadable' || avail === 'downloading') {
+      el.textContent = "Available: Chrome's built-in AI, after a one-time ~2 GB download. "
+        + 'Open the extension popup and click "Enable free AI" to start it. Free, and it runs on your computer.';
+    } else {
+      el.textContent = 'Active: basic date rules (no AI). This computer cannot run Chrome\'s built-in AI, '
+        + 'so dates are detected locally and screenshots cannot be read. Add a key below for full AI.';
+    }
+  };
+  refreshTier();
+  $('provider').addEventListener('change', refreshTier);
+
   const refreshAccount = () => {
     chrome.runtime.sendMessage({ action: 'whoami' }, (resp) => {
       void chrome.runtime.lastError;
@@ -51,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       defaultEventMinutes: Math.min(480, Math.max(5, parseInt($('eventMinutes').value, 10) || 30)),
     });
     $('saveStatus').textContent = 'Saved ✓';
+    refreshTier();
     setTimeout(() => { $('saveStatus').textContent = ''; }, 2000);
   });
 
