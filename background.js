@@ -60,12 +60,10 @@ async function doFlush() {
   }
 }
 
-// First install only: open Settings in onboarding mode, which walks the user
-// through connecting Google and choosing an AI model. (Not on update/restart.)
+// First install only: open Settings, where the onboarding wizard runs until
+// setup is completed or explicitly skipped. (Not on update or Chrome restart.)
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'install') {
-    chrome.tabs.create({ url: chrome.runtime.getURL('options.html') + '#onboarding' });
-  }
+  if (details.reason === 'install') chrome.runtime.openOptionsPage();
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
