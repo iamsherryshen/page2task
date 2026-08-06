@@ -74,10 +74,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   );
 
   // User-first AI status: green "you already have a model" when anything works
-  // (a saved key, or Chrome's built-in AI), with the config collapsed behind a
-  // "Change AI settings" link; otherwise say plainly that nothing is set up
-  // yet and show the ways to fix that.
-  let configPinnedOpen = false; // the user opened the config while AI is active
+  // (a saved key, or Chrome's built-in AI); otherwise say plainly that nothing
+  // is set up yet. The on-device/API choice stays visible either way.
   const refreshTier = async () => {
     const el = $('aiTier');
     const k = await AiExtract.loadKeys();
@@ -114,8 +112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dlBtn = $('builtinDownloadBtn');
     dlBtn.classList.toggle('hidden', !dl);
     if (dl && !dlBtn.dataset.busy) dlBtn.textContent = t('Enable free AI (one-time ~2 GB download, runs on your computer)');
-    $('aiConfigToggle').classList.add('hidden');
-    $('aiConfig').classList.remove('hidden');
   };
   const showHasAI = (what, screenshotsOK = true) => {
     const el = $('aiTier');
@@ -125,8 +121,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       : t("✓ You already have a working AI model: {what}. Text recognition is ready (this Chrome version can't read screenshots on-device yet).", { what });
     $('aiMethods').classList.add('hidden');
     $('builtinDownloadBtn').classList.add('hidden');
-    $('aiConfigToggle').classList.remove('hidden');
-    $('aiConfig').classList.toggle('hidden', !configPinnedOpen);
   };
   // The one-time on-device download, right here in Settings (a click is the
   // user gesture Chrome requires to start it)
@@ -147,10 +141,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       btn.disabled = false;
       btn.textContent = t('Download failed. Click to retry.');
     }
-  });
-  $('aiConfigToggle').addEventListener('click', () => {
-    configPinnedOpen = $('aiConfig').classList.contains('hidden');
-    $('aiConfig').classList.toggle('hidden', !configPinnedOpen);
   });
   refreshTier();
   $('provider').addEventListener('change', () => { syncApiVisibility(); refreshTier(); });
@@ -230,7 +220,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderObText = () => {
         $('obText').textContent = t('Step 2 of 2: Choose how recognition runs. Reading pages, screenshots, and text needs an AI model: use the free on-device model (weaker quality) or add your own API key.');
       };
-      configPinnedOpen = true; // the choice must be visible, not collapsed
       refreshTier();
     } else if (n === 3) {
       renderObText = () => {
