@@ -12,15 +12,29 @@ let taskLists = []; // the user's Google Tasks lists, e.g. [{id, title: 'School 
 let defaultEventMinutes = 30; // fallback calendar-event length; loaded from settings
 let mode = 'todo'; // 'todo' | 'calendar' | 'both' — picked at the top, remembered across uses
 let lastAnalyzedText = null; // stops the typing debounce from re-reading what a paste already read
+let aiReadSeq = 0; // stamps every AI read; a read that is no longer the newest must not touch the UI
+
+// Re-render closures for text set imperatively (not via data-i18n), so the
+// language toggle can refresh it. setRelang registers and runs immediately.
+const relangs = {};
+const setRelang = (id, fn) => { relangs[id] = fn; fn(); };
 
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
+  await I18n.init(); // translate the static markup before anything renders
   // Opening the popup starts the background service worker, which replays any
   // Google API write a previously terminated worker left unfinished.
   chrome.runtime.sendMessage({ action: 'flush' }, () => void chrome.runtime.lastError);
 
   $('settingsBtn').addEventListener('click', () => chrome.runtime.openOptionsPage());
+  $('langToggle').addEventListener('click', async () => {
+    await I18n.toggle();
+    Object.values(relangs).forEach((fn) => { try { fn(); } catch (e) { /* ignore */ } });
+    setMode(mode, false); // refreshes the submit button, labels, and item cards
+    if (!$('candBox').classList.contains('hidden')) renderCandidateChooser();
+    loadAccount(); // re-renders the account line in the new language
+  });
   $('submitBtn').addEventListener('click', onSubmit);
   document.querySelectorAll('#modeSeg .seg').forEach((b) =>
     b.addEventListener('click', () => setMode(b.dataset.mode))
@@ -128,7 +142,11 @@ async function init() {
     if (f) handleImage(f);
   });
 
+  // The automatic page read claims its sequence number BEFORE the first await,
+  // so anything the user pastes or drops while it runs supersedes it.
+  const initSeq = ++aiReadSeq;
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (initSeq !== aiReadSeq) return; // the user already started a read — it owns the UI
   const url = (tab && tab.url) || '';
   const restricted =
     !url ||
@@ -139,6 +157,7 @@ async function init() {
   if (restricted) {
     showNotice("This page can't be read automatically. Fill in the fields manually.");
     applyDefaults();
+    getAiConfig(); // the page is unreadable, but the free-AI setup offer must still show
     return;
   }
 
@@ -148,10 +167,12 @@ async function init() {
   } catch (e) {
     pageInfo = null;
   }
+  if (initSeq !== aiReadSeq) return; // superseded by a user paste/drop
 
   if (!pageInfo) {
     showNotice("This page can't be read automatically. Fill in the fields manually.");
     applyDefaults();
+    getAiConfig(); // the page is unreadable, but the free-AI setup offer must still show
     return;
   }
 
@@ -166,8 +187,9 @@ async function init() {
 
   if (sourceText) {
     const { provider, apiKey } = await getAiConfig();
+    if (initSeq !== aiReadSeq) return; // superseded by a user paste/drop
     if (provider) {
-      $('aiStatusText').textContent = 'AI is reading this page…';
+      $('aiStatusText').textContent = I18n.t('AI is reading this page…');
       $('aiStatus').classList.remove('hidden');
       let aiError = null;
       try {
@@ -179,14 +201,18 @@ async function init() {
           provider,
           listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
         });
+        if (initSeq !== aiReadSeq) return; // superseded mid-read — discard this result
         candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
       } catch (e) {
+        if (initSeq !== aiReadSeq) return;
         candidates = []; // fall back to local rules, but say so
         aiError = (e && e.message) || 'unknown error';
       }
       $('aiStatus').classList.add('hidden');
       if (aiError) {
-        $('aiWarn').textContent = 'AI unavailable (' + aiError + '). Using local rules.';
+        setRelang('aiWarn', () => {
+          $('aiWarn').textContent = I18n.t('AI unavailable ({err}). Using local rules.', { err: I18n.t(aiError) });
+        });
         $('aiWarn').classList.remove('hidden');
       }
     }
@@ -198,6 +224,8 @@ async function init() {
         matchedText: c.matchedText,
       }));
     }
+  } else {
+    getAiConfig(); // no readable text on this page — still surface the free-AI setup offer
   }
 
   if (candidates.length) {
@@ -227,7 +255,7 @@ function setMode(m, save = true) {
   $('timeRow').classList.toggle('hidden', m === 'todo'); // Google Tasks only stores a date anyway
   $('locationField').classList.toggle('hidden', m === 'todo'); // Tasks has no location field either
   $('listField').classList.toggle('hidden', m === 'calendar' || taskLists.length <= 1);
-  $('dateLabel').textContent = m === 'todo' ? 'Date (optional)' : 'Date';
+  $('dateLabel').textContent = I18n.t(m === 'todo' ? 'Date (optional)' : 'Date');
   renderItemCards(); // per-item cards show mode-specific fields, so rebuild them
   updateSubmitLabel();
   updateTimeHint();
@@ -240,8 +268,8 @@ function updateSubmitLabel() {
   const n = multi ? candidates.filter((c) => c.checked).length : 1;
   const L = MODE_LABELS[mode];
   $('submitBtn').querySelector('.btn-main').textContent =
-    n > 1 ? L.multi.replace('{n}', String(n)) : L.main;
-  $('submitBtn').querySelector('.btn-sub').textContent = L.sub;
+    n > 1 ? I18n.t(L.multi, { n }) : I18n.t(L.main);
+  $('submitBtn').querySelector('.btn-sub').textContent = I18n.t(L.sub);
 }
 
 // Resolve how to run AI, in order of preference:
@@ -251,19 +279,56 @@ function updateSubmitLabel() {
 async function getAiConfig() {
   const cfg = await chrome.storage.sync.get({ aiProvider: 'gemini' });
   const keys = await AiExtract.loadKeys(); // keys are local-only; loadKeys migrates old synced ones
-  let provider = cfg.aiProvider === 'claude' ? 'claude' : 'gemini';
-  let apiKey = provider === 'gemini' ? keys.geminiApiKey : keys.anthropicApiKey;
+  const keyFor = {
+    gemini: keys.geminiApiKey,
+    claude: keys.anthropicApiKey,
+    openai: keys.openaiApiKey,
+    kimi: keys.kimiApiKey,
+  };
+  // The user explicitly picked the on-device model in Settings — honor that
+  // over any saved key; fall back to keys only when it isn't usable here
+  if (cfg.aiProvider === 'builtin') {
+    const avail = await AiExtract.builtinAvailability();
+    if (avail === 'available') {
+      if (!Object.values(keyFor).some(Boolean)) showBuiltinHintOnce(); // keyless user: one-time tip
+      return { provider: 'builtin', apiKey: null };
+    }
+    offerBuiltinSetup(avail);
+  }
+  let provider = Object.prototype.hasOwnProperty.call(keyFor, cfg.aiProvider) ? cfg.aiProvider : 'gemini';
+  let apiKey = keyFor[provider];
   if (!apiKey) {
-    if (keys.geminiApiKey) { provider = 'gemini'; apiKey = keys.geminiApiKey; }
-    else if (keys.anthropicApiKey) { provider = 'claude'; apiKey = keys.anthropicApiKey; }
+    // The chosen provider has no key — fall back to any provider that does
+    const withKey = Object.keys(keyFor).find((p) => keyFor[p]);
+    if (withKey) { provider = withKey; apiKey = keyFor[withKey]; }
   }
   if (apiKey) return { provider, apiKey };
 
   const avail = await AiExtract.builtinAvailability();
-  if (avail === 'available') return { provider: 'builtin', apiKey: null };
+  if (avail === 'available') {
+    showBuiltinHintOnce(); // reaching here means no key is saved anywhere
+    return { provider: 'builtin', apiKey: null };
+  }
   offerBuiltinSetup(avail);
   showAiOffHint();
   return { provider: null, apiKey: null };
+}
+
+// One-time tip for keyless users running on the on-device model: better
+// recognition is one Settings visit away. Shown once ever, click opens Settings.
+let builtinHintChecked = false;
+async function showBuiltinHintOnce() {
+  if (builtinHintChecked) return;
+  builtinHintChecked = true;
+  const { builtinHintShown } = await chrome.storage.local.get({ builtinHintShown: false });
+  if (builtinHintShown) return;
+  await chrome.storage.local.set({ builtinHintShown: true });
+  const el = $('builtinHint');
+  setRelang('builtinHint', () => {
+    el.textContent = I18n.t('Using the on-device AI model. For better recognition, add your own API key in Settings. Keys stay only on this computer, never visible to the developer or anyone else.');
+  });
+  el.classList.remove('hidden');
+  el.addEventListener('click', () => chrome.runtime.openOptionsPage());
 }
 
 // When no AI tier is active, say so instead of degrading silently — with a
@@ -273,11 +338,10 @@ function showAiOffHint() {
   if (aiHintShown || builtinOfferShown) return; // the download button already offers a setup path
   aiHintShown = true;
   const el = $('aiHint');
-  el.textContent = 'AI is off (using basic date rules). Click to set up free AI.';
-  el.title =
-    'Add your own AI key in Settings. Google Gemini has a free tier (no credit card needed). ' +
-    'Your key is stored only on this computer, sent only to the AI provider, ' +
-    'and never visible to the developer.';
+  setRelang('aiHint', () => {
+    el.textContent = I18n.t('AI is off (using basic date rules). Click to set up free AI.');
+    el.title = I18n.t('Add your own AI key in Settings. Google Gemini has a free tier (no credit card needed). Your key is stored only on this computer, sent only to the AI provider, and never visible to the developer.');
+  });
   el.classList.remove('hidden');
   el.addEventListener('click', () => chrome.runtime.openOptionsPage());
 }
@@ -289,23 +353,29 @@ function offerBuiltinSetup(state) {
   if (builtinOfferShown || (state !== 'downloadable' && state !== 'downloading')) return;
   builtinOfferShown = true;
   const btn = $('builtinOffer');
-  btn.textContent = 'Enable free AI (one-time ~2 GB download, runs on your computer)';
-  btn.title =
-    "Chrome's built-in AI model. It runs entirely on your computer: no account, " +
-    'no API key, and nothing you analyze leaves your device. The model is shared ' +
-    "by all of Chrome's AI features, so it only ever downloads once.";
+  let offerState = 'offer'; // 'offer' | 'downloading' | 'failed'
+  setRelang('builtinOffer', () => {
+    if (offerState === 'offer') {
+      btn.textContent = I18n.t('Enable free AI (one-time ~2 GB download, runs on your computer)');
+      btn.title = I18n.t("Chrome's built-in AI model. It runs entirely on your computer: no account, no API key, and nothing you analyze leaves your device. The model is shared by all of Chrome's AI features, so it only ever downloads once.");
+    } else if (offerState === 'failed') {
+      btn.textContent = I18n.t('Download failed. Click to retry.');
+    } // downloading: the progress callback keeps the label fresh
+  });
   btn.classList.remove('hidden');
   btn.addEventListener('click', async () => {
     btn.disabled = true;
-    btn.textContent = 'Downloading on-device AI…';
+    offerState = 'downloading';
+    btn.textContent = I18n.t('Downloading on-device AI…');
     try {
       await AiExtract.ensureBuiltinReady((p) => {
-        btn.textContent = 'Downloading on-device AI… ' + Math.round(p * 100) + '%';
+        btn.textContent = I18n.t('Downloading on-device AI…') + ' ' + Math.round(p * 100) + '%';
       });
       location.reload(); // re-runs the page analysis, this time with AI
     } catch (e) {
       btn.disabled = false;
-      btn.textContent = 'Download failed. Click to retry.';
+      offerState = 'failed';
+      btn.textContent = I18n.t('Download failed. Click to retry.');
     }
   });
 }
@@ -323,18 +393,22 @@ function handleImage(file) {
 
 // Shared AI flow for pasted screenshots and pasted text — reuses the candidate UI
 async function runAi(opts) {
+  // This user-initiated read supersedes the automatic page read and any older
+  // in-flight read; stale reads see the bumped sequence and stand down.
+  const seq = ++aiReadSeq;
   const { provider, apiKey } = await getAiConfig();
+  if (seq !== aiReadSeq) return; // an even newer read started meanwhile
   if (!provider) {
-    flashError(
+    flashError(I18n.t(
       builtinOfferShown
         ? 'AI is one click away. Use the "Enable free AI" line above.'
         : 'AI recognition needs a newer Chrome (built-in AI) or an API key in Settings (the gear icon)'
-    );
+    ));
     return;
   }
 
   pastedInput = true;
-  $('chip').textContent = opts.chip;
+  setRelang('chip', () => { $('chip').textContent = I18n.t(opts.chip); });
   $('chip').classList.remove('hidden');
   $('notice').classList.add('hidden');
   $('aiWarn').classList.add('hidden');
@@ -342,7 +416,7 @@ async function runAi(opts) {
   $('candBox').classList.add('hidden');
   updateSubmitLabel();
   renderItemCards(); // back to the single form while a new read is in flight
-  $('aiStatusText').textContent = opts.progress || 'AI is reading…';
+  $('aiStatusText').textContent = I18n.t(opts.progress || 'AI is reading…');
   $('aiStatus').classList.remove('hidden');
 
   try {
@@ -354,20 +428,24 @@ async function runAi(opts) {
       provider,
       listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
     });
+    if (seq !== aiReadSeq) return; // superseded — the newer read owns the UI now
     candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
     if (!candidates.length) {
-      flashError(opts.emptyMsg);
+      flashError(I18n.t(opts.emptyMsg));
       return;
     }
     if (candidates.length > 1) renderCandidateChooser(); // checked ones become editable cards
     else applyCandidate(0);
   } catch (e) {
-    flashError((e && e.message) || opts.failMsg);
+    if (seq !== aiReadSeq) return; // a stale error must not cover the newer result
+    flashError(e && e.message ? I18n.t(e.message) : I18n.t(opts.failMsg));
   } finally {
-    $('aiStatus').classList.add('hidden');
+    if (seq === aiReadSeq) $('aiStatus').classList.add('hidden');
   }
 }
 
+// opts carry raw string keys; runAi translates them at render time so a
+// language toggle mid-flow re-renders correctly
 const extractFromImage = (image) =>
   runAi({
     image,
@@ -462,7 +540,9 @@ function applyCandidate(i) {
   $('notesInput').value = c.notes;
   autoGrow($('notesInput'), 220);
   if (c.matchedText) {
-    $('matchedLine').textContent = 'Detected from: “' + c.matchedText + '”';
+    setRelang('matchedLine', () => {
+      $('matchedLine').textContent = I18n.t('Detected from: “{s}”', { s: c.matchedText });
+    });
     $('matchedLine').classList.remove('hidden');
   } else {
     $('matchedLine').classList.add('hidden');
@@ -495,7 +575,7 @@ function renderCandidateChooser() {
     cb.type = 'checkbox';
     cb.className = 'cand-check';
     cb.checked = c.checked;
-    cb.title = 'Include this one when adding';
+    cb.title = I18n.t('Include this one when adding');
     cb.addEventListener('click', (e) => e.stopPropagation()); // avoid double-toggling via the row handler
     cb.addEventListener('change', () => {
       c.checked = cb.checked;
@@ -509,7 +589,7 @@ function renderCandidateChooser() {
       if (due.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric'; // "Jun 1" alone would hide next-year dates
       const d = document.createElement('span');
       d.className = 'cand-date';
-      d.textContent = due.toLocaleDateString('en-US', opts) + (c.dueTime ? ' ' + c.dueTime : '');
+      d.textContent = due.toLocaleDateString(I18n.lang === 'zh' ? 'zh-CN' : 'en-US', opts) + (c.dueTime ? ' ' + c.dueTime : '');
       main.append(d);
     }
     const s = document.createElement('span');
@@ -563,20 +643,20 @@ function buildItemCard(c, n) {
 
   const head = document.createElement('div');
   head.className = 'item-card-head';
-  head.textContent = 'Item ' + n;
+  head.textContent = I18n.t('Item {n}', { n });
   card.appendChild(head);
 
   const title = document.createElement('input');
   title.type = 'text';
   title.value = c.title || (pageInfo && (pageInfo.emailSubject || pageInfo.title)) || '';
   title.addEventListener('input', () => { c.title = title.value; });
-  card.appendChild(cardField('Title', title));
+  card.appendChild(cardField(I18n.t('Title'), title));
 
   const date = document.createElement('input');
   date.type = 'date';
   date.value = c.dueDate || '';
   date.addEventListener('input', () => { c.dueDate = date.value || null; });
-  card.appendChild(cardField(mode === 'todo' ? 'Date (optional)' : 'Date', date));
+  card.appendChild(cardField(I18n.t(mode === 'todo' ? 'Date (optional)' : 'Date'), date));
 
   if (mode !== 'todo') {
     const row = document.createElement('div');
@@ -595,14 +675,14 @@ function buildItemCard(c, n) {
       }
     });
     end.addEventListener('input', () => { c.endTime = end.value || null; });
-    row.append(cardField('Start time (optional)', start), cardField('End time', end));
+    row.append(cardField(I18n.t('Start time (optional)'), start), cardField(I18n.t('End time'), end));
     card.appendChild(row);
 
     const loc = document.createElement('input');
     loc.type = 'text';
     loc.value = c.location || '';
     loc.addEventListener('input', () => { c.location = loc.value; });
-    card.appendChild(cardField('Location', loc));
+    card.appendChild(cardField(I18n.t('Location'), loc));
   }
 
   if (c.notes === undefined) c.notes = defaultNotesFor(c);
@@ -613,7 +693,7 @@ function buildItemCard(c, n) {
     c.notes = notes.value;
     autoGrow(notes, 180);
   });
-  card.appendChild(cardField('Notes', notes));
+  card.appendChild(cardField(I18n.t('Notes'), notes));
 
   if (mode !== 'calendar' && taskLists.length > 1) {
     if (!c.listId) c.listId = resolveListId(c);
@@ -626,21 +706,21 @@ function buildItemCard(c, n) {
     }
     if (c.listId) sel.value = c.listId;
     sel.addEventListener('change', () => { c.listId = sel.value; });
-    card.appendChild(cardField('Task list', sel));
+    card.appendChild(cardField(I18n.t('Task list'), sel));
   }
   return card;
 }
 
 function renderChip(info) {
-  const chip = $('chip');
-  const label =
-    info.kind === 'email' ? 'Email'
-    : info.kind === 'video' ? 'Video · ~' + info.videoMinutes + ' min long'
-    : info.kind === 'article' ? 'Article'
-    : info.kind === 'pdf' ? 'PDF'
-    : 'Page';
-  chip.textContent = label;
-  chip.classList.remove('hidden');
+  setRelang('chip', () => {
+    $('chip').textContent =
+      info.kind === 'email' ? I18n.t('Email')
+      : info.kind === 'video' ? I18n.t('Video · ~{n} min long', { n: info.videoMinutes })
+      : info.kind === 'article' ? I18n.t('Article')
+      : info.kind === 'pdf' ? 'PDF'
+      : I18n.t('Page');
+  });
+  $('chip').classList.remove('hidden');
 }
 
 // When nothing was detected, make no assumptions: leave the date and time blank.
@@ -685,7 +765,7 @@ function loadAccount() {
   callBackground('whoami', {}).then((r) => {
     if (r && r.email) {
       connectedEmail = r.email;
-      $('accountLine').textContent = 'Saving to Google account: ' + r.email;
+      $('accountLine').textContent = I18n.t('Saving to Google account: {email}', { email: r.email });
       $('accountLine').classList.remove('hidden');
     }
   }).catch(() => { /* not authorized yet — leave hidden */ });
@@ -715,10 +795,9 @@ function updateTimeHint() {
   $('timeHint').classList.toggle('hidden', mode !== 'both' || !$('timeInput').value);
 }
 
-function showNotice(msg) {
-  const n = $('notice');
-  n.textContent = msg;
-  n.classList.remove('hidden');
+function showNotice(key) {
+  setRelang('notice', () => { $('notice').textContent = I18n.t(key); });
+  $('notice').classList.remove('hidden');
 }
 
 function showSuccess(text, links) {
@@ -751,11 +830,11 @@ function callBackground(action, args) {
       const le = chrome.runtime.lastError;
       if (le && /Receiving end does not exist/i.test(le.message || '')) {
         // The service worker never started — nothing is in flight, retrying is safe
-        reject(new Error('Something went wrong, please try again'));
+        reject(new Error(I18n.t('Something went wrong, please try again')));
         return;
       }
       if (le || !resp) {
-        reject(new Error('The request is still finishing in the background. Check Google Tasks/Calendar before retrying.'));
+        reject(new Error(I18n.t('The request is still finishing in the background. Check Google Tasks/Calendar before retrying.')));
         return;
       }
       if (resp.ok) {
@@ -771,7 +850,7 @@ async function withPending(btn, fn) {
   const mainSpan = btn.querySelector('.btn-main');
   const orig = mainSpan.textContent;
   btn.disabled = true;
-  mainSpan.textContent = 'Adding…';
+  mainSpan.textContent = I18n.t('Adding…');
   try {
     await fn();
   } catch (e) {
@@ -779,7 +858,7 @@ async function withPending(btn, fn) {
       $('actions').classList.add('hidden');
       $('setupPanel').classList.remove('hidden');
     } else {
-      flashError((e && e.message) || 'Something went wrong, please try again');
+      flashError((e && e.message) || I18n.t('Something went wrong, please try again'));
     }
   } finally {
     mainSpan.textContent = orig;
@@ -821,12 +900,12 @@ async function onSubmit() {
   const items = checked.length ? checked.map(resolveItem) : [itemFromForm()];
 
   for (let i = 0; i < items.length; i++) {
-    if (!items[i].title) { flashError('Please enter a title'); return; }
+    if (!items[i].title) { flashError(I18n.t('Please enter a title')); return; }
     if (mode !== 'todo' && !items[i].dueDate) {
       if (items.length === 1) $('dateInput').classList.add('error');
       flashError(items.length > 1
-        ? 'Item ' + (i + 1) + ' has no date. Calendar events need one.'
-        : 'Please pick a date first. A calendar event needs one.');
+        ? I18n.t('Item {i} has no date. Calendar events need one.', { i: i + 1 })
+        : I18n.t('Please pick a date first. A calendar event needs one.'));
       return;
     }
   }
@@ -841,8 +920,8 @@ async function onSubmit() {
         added++;
       }
     } catch (e) {
-      const prefix = items.length > 1 ? 'Item ' + (added + 1) + ' of ' + items.length + ': ' : '';
-      const suffix = added > 0 ? ' (' + added + ' already added)' : '';
+      const prefix = items.length > 1 ? I18n.t('Item {i} of {total}: ', { i: added + 1, total: items.length }) : '';
+      const suffix = added > 0 ? I18n.t(' ({n} already added)', { n: added }) : '';
       throw Object.assign(
         new Error(prefix + ((e && e.message) || 'Something went wrong') + suffix),
         { code: e && e.code }
@@ -854,16 +933,16 @@ async function onSubmit() {
     if (mode !== 'calendar') {
       const listName =
         items.length === 1 && items[0].listId && (taskLists.find((l) => l.id === items[0].listId) || {}).title;
-      links.push({ text: 'Open Google Tasks' + (listName ? ' (' + listName + ')' : ''), href: 'https://tasks.google.com' });
+      links.push({ text: I18n.t('Open Google Tasks') + (listName ? ' (' + listName + ')' : ''), href: 'https://tasks.google.com' });
     }
     if (mode !== 'todo') {
-      links.push({ text: 'View in Calendar', href: (items.length === 1 && lastEvent && lastEvent.htmlLink) || 'https://calendar.google.com' });
+      links.push({ text: I18n.t('View in Calendar'), href: (items.length === 1 && lastEvent && lastEvent.htmlLink) || 'https://calendar.google.com' });
     }
     const n = items.length;
     const doneMsg =
-      mode === 'todo' ? (n > 1 ? 'Added ' + n + ' to-dos to Google Tasks ✓' : 'Added to Google Tasks ✓')
-      : mode === 'calendar' ? (n > 1 ? 'Added ' + n + ' events to Google Calendar ✓' : 'Added to Google Calendar ✓')
-      : (n > 1 ? 'Added ' + n + ' items to Tasks & Calendar ✓' : 'Added to Google Tasks & Calendar ✓');
+      mode === 'todo' ? (n > 1 ? I18n.t('Added {n} to-dos to Google Tasks ✓', { n }) : I18n.t('Added to Google Tasks ✓'))
+      : mode === 'calendar' ? (n > 1 ? I18n.t('Added {n} events to Google Calendar ✓', { n }) : I18n.t('Added to Google Calendar ✓'))
+      : (n > 1 ? I18n.t('Added {n} items to Tasks & Calendar ✓', { n }) : I18n.t('Added to Google Tasks & Calendar ✓'));
     showSuccess(doneMsg, links);
   });
 }
@@ -881,7 +960,9 @@ async function submitItem(it) {
     } catch (e) {
       if (!taskDone) throw e;
       // Don't hide a half-success: the task exists even though the event failed
-      throw new Error('The to-do was saved, but the calendar event failed: ' + ((e && e.message) || 'please try again'));
+      throw new Error(I18n.t('The to-do was saved, but the calendar event failed: {err}', {
+        err: (e && e.message) || I18n.t('Something went wrong, please try again'),
+      }));
     }
   }
   return null;

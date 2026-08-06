@@ -34,13 +34,13 @@ SMART DETAILS
 • Detects meeting locations and writes them into the Calendar event's location field
 • Suggests the right Google Tasks list based on content
 • Start/end times for events; date-only for to-dos
-• Works in English and Chinese
+• Works in English and Chinese; interface in both languages, one-click switch
 
 PRIVATE BY DESIGN
-• Free AI runs on your own computer (Chrome's built-in AI) — no account, no API key, nothing leaves your device
-• Optionally plug in your own Gemini or Claude API key
+• Free AI runs on your own computer (Chrome's built-in AI): no account, no API key, nothing leaves your device
+• Optionally plug in your own Gemini, Claude, OpenAI, or Kimi API key
 • No developer servers, no analytics, no tracking — your data goes only to your own Google account
-• Open source: https://github.com/USERNAME/page2task
+• Open source: https://github.com/iamsherryshen/page2task
 ```
 
 **Category**: Productivity → Workflow & Planning
@@ -76,9 +76,9 @@ Stores the user's settings: preferred mode, default event length, last-used task
 ```
 Official Google endpoints used to create the user's tasks and calendar events, list their task lists, and complete Google sign-in.
 ```
-- Host `generativelanguage.googleapis.com`, `api.anthropic.com`:
+- Host `generativelanguage.googleapis.com`, `api.anthropic.com`, `api.openai.com`, `api.moonshot.cn`, `api.moonshot.ai`:
 ```
-Optional: only contacted if the user enters their own Gemini or Claude API key in Settings, to extract deadlines from the text/screenshot the user submits. Never contacted otherwise.
+Optional: only contacted if the user enters their own Gemini, Claude, OpenAI, or Kimi (Moonshot) API key in Settings, to extract deadlines from the text/screenshot the user submits. Never contacted otherwise.
 ```
 
 **Remote code**: No, I am not using remote code. (All code ships in the package; the AI endpoints receive data, not code.)
@@ -91,7 +91,7 @@ Optional: only contacted if the user enters their own Gemini or Claude API key i
 
 **Privacy policy URL**
 ```
-https://USERNAME.github.io/page2task/privacy.html
+https://iamsherryshen.github.io/page2task/privacy.html
 ```
 
 ## Assets needed at submission
@@ -100,11 +100,20 @@ https://USERNAME.github.io/page2task/privacy.html
 - ≥1 screenshot, 1280×800 (or 640×400): open the real popup on a Gmail message, Cmd+Shift+4 a clean shot, we'll pad it to size together
 - (Optional, can skip) small promo tile 440×280
 
-## After upload — one thing to verify
+## Extension ID & OAuth — the one tricky step (confirmed against Chrome docs, Aug 2026)
 
-The zip keeps the `key` field in manifest.json so the store item should get our existing
-extension ID `kmcfginenglmmeeoiekoklnhpahcgeea` (which the Google OAuth client is bound to).
-After the first upload, check the item ID in the dashboard:
-- Same ID → nothing to do.
-- Different ID → in Google Cloud Console, edit the OAuth client's "Item ID" to the new store ID
-  (and afterwards adopt the store key into local manifest.json for development).
+The uploaded zip must NOT contain the manifest `key` field: the store rejects brand-new
+items that have one ("key field not allowed in manifest"). So the store WILL assign a new
+extension ID, different from the local dev ID `kmcfginenglmmeeoiekoklnhpahcgeea` that the
+current Google OAuth client is bound to. The packaged zip in dist/ is already built
+without the key.
+
+Do this once, right after the first upload (keep it an unpublished draft):
+1. Dashboard → the item → Package tab → "View public key" → copy the key text.
+2. Paste it into the LOCAL manifest.json `key` field, replacing the old value. Local dev
+   now runs under the same ID as the store item. (The old local install's storage resets
+   and Google auth breaks until step 3 — expected, one-time.)
+3. Google Cloud Console → Credentials → the "Chrome Extension" OAuth client → change its
+   Item ID to the new store ID. If the console forces a new client instead, create one
+   and put the new client_id into manifest.json `oauth2.client_id`.
+4. Rebuild the zip (still without `key`), upload as an update, then publish.

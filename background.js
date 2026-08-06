@@ -99,6 +99,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
+  // Interactive authorization from the Settings page: opens Google's account
+  // picker/consent window, then reports which account is now connected.
+  if (msg.action === 'connect') {
+    (async () => {
+      try {
+        const token = await GoogleApi.getToken(true);
+        const res = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        const j = res.ok ? await res.json() : {};
+        sendResponse({ ok: true, data: { email: j.email || null } });
+      } catch (e) {
+        sendResponse({ ok: false, error: { message: (e && e.message) || 'Authorization failed' } });
+      }
+    })();
+    return true;
+  }
+
   // Drop the cached Google authorization so the next save shows the account
   // picker again — lets the user switch to a different Google account.
   if (msg.action === 'disconnect') {

@@ -12,3 +12,6 @@ key.pem.backup
 # OS noise
 .DS_Store
 Thumbs.db
+
+# Store packaging staging
+dist/
