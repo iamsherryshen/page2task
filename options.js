@@ -217,9 +217,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     obStep = n;
     document.body.classList.remove('ob-1', 'ob-2', 'ob-3');
     if (n >= 1 && n <= 3) document.body.classList.add('ob-' + n);
-    $('secAccount').classList.toggle('glow', n === 1);
-    $('secAI').classList.toggle('glow', n === 2);
     $('obPrimary').classList.toggle('hidden', n !== 2);
+    $('obActions').classList.toggle('hidden', n === 3);
+    $('obDots').classList.toggle('hidden', n === 3);
+    Array.from($('obDots').children).forEach((d, i) => d.classList.toggle('on', i === n - 1));
     if (n === 1) {
       renderObText = () => {
         $('obText').textContent = t('Step 1 of 2: Connect the Google account your tasks and events will be saved to. Click the button below.');
@@ -243,8 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await chrome.storage.local.set({ onboardingDone: true });
     document.body.classList.remove('ob-1', 'ob-2', 'ob-3');
     $('obBanner').classList.add('hidden');
-    $('secAccount').classList.remove('glow');
-    $('secAI').classList.remove('glow');
+    $('obActions').classList.add('hidden');
     renderObText = null;
     obStep = 0;
   };
@@ -267,6 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await chrome.storage.local.set({ onboardingDone: true });
       } else {
         $('obBanner').classList.remove('hidden');
+        $('obActions').classList.remove('hidden');
         obSetStep(1);
       }
     }
