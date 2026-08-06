@@ -142,7 +142,7 @@ Highly recommend this read on AI agents
 - 底部蓝色 CTA：Add to-do / Google Tasks
 
 弹窗左右两侧留出呼吸感，背景天空蓝渐变铺满。顶部英文标题：Or just type it, dates are understood
-右下角一行小字：Free on-device AI. Nothing leaves your computer.
+右下角一行小字：Free on-device AI included. Add your own API key for stronger results.
 ```
 
 ---
@@ -220,3 +220,13 @@ CTA 按钮下方加一行小字：Saved to your Google Tasks，行首留 18px �
 ## 修订 R2 终版（取代上一条 R2：logo 由 Claude Design 直接绘制，不再用占位）
 
 要点：给出两个 logo 的几何结构与官方色值让它精确复刻（Calendar：蓝 #4285F4 上/左边条、黄 #FBBC04 右边条、绿 #34A853 下边条、红 #EA4335 右下折角、白心蓝 31；Tasks：蓝 #4285F4 圆环加对勾，重叠段深蓝 #1A73E8），严禁风格化再创作；其余改动同 R2（统一徽章、五图各自的 logo 位、图 4 拼写修正）。若绘制走形，把官方 logo 原图上传到会话让它照图复刻。完整措辞见聊天记录 2026-08-06。
+
+---
+
+## 修订 R3（图 5 文案事实修正）
+
+```
+小修订，只改一处：图 5 右下角的小字 Free on-device AI. Nothing leaves your computer. 表述不准确（用户可添加自己的 API key，且任务本身会保存到 Google 账号），替换为：
+Free on-device AI included. Add your own API key for stronger results.
+其余一切不动。
+```

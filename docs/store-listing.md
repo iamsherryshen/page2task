@@ -37,7 +37,7 @@ SMART DETAILS
 • Works in English and Chinese; interface in both languages, one-click switch
 
 PRIVATE BY DESIGN
-• Free AI runs on your own computer (Chrome's built-in AI): no account, no API key, nothing leaves your device
+• Free AI runs on your own computer (Chrome's built-in AI): no account, no API key, and nothing you analyze leaves your device
 • Optionally plug in your own Gemini, Claude, OpenAI, or Kimi API key
 • No developer servers, no analytics, no tracking — your data goes only to your own Google account
 • Open source: https://github.com/iamsherryshen/page2task
