@@ -60,10 +60,12 @@ async function doFlush() {
   }
 }
 
-// First install only: open Settings so a new user sees what AI options exist
-// before wondering why recognition is basic. (Not on update or Chrome restart.)
+// First install only: open Settings in onboarding mode, which walks the user
+// through connecting Google and choosing an AI model. (Not on update/restart.)
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'install') chrome.runtime.openOptionsPage();
+  if (details.reason === 'install') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('options.html') + '#onboarding' });
+  }
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {

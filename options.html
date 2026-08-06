@@ -37,6 +37,13 @@
       background: none; border: none; color: var(--accent); cursor: pointer;
       padding: 0; font: inherit; font-size: 13px; text-decoration: underline; margin-top: 8px;
     }
+    .ob-banner {
+      background: #fff; border: 2px solid var(--accent); border-radius: 12px;
+      padding: 12px 14px; line-height: 1.6; box-shadow: var(--shadow-card); margin-top: 8px;
+    }
+    .ob-actions { margin-top: 10px; display: flex; gap: 14px; align-items: center; }
+    .sec { border: 2px solid transparent; border-radius: 12px; padding: 2px 10px 10px; margin: 0 -12px; transition: box-shadow .3s, border-color .3s; }
+    .sec.glow { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(11, 87, 208, 0.12); }
     .radio-row { display: flex; align-items: flex-start; gap: 8px; margin: 6px 0; cursor: pointer; line-height: 1.5; }
     .radio-row input { margin-top: 3px; flex: none; }
     .info-btn {
@@ -56,10 +63,19 @@
     <button id="langToggle" class="lang-btn" type="button">中文</button>
   </header>
   <main>
+    <div id="obBanner" class="ob-banner hidden">
+      <div id="obText"></div>
+      <div class="ob-actions">
+        <button id="obPrimary" class="plain-btn save-btn hidden" type="button" data-i18n="Save and start using">Save and start using</button>
+        <button id="obSkip" class="linklike" type="button" data-i18n="Set up later">Set up later</button>
+      </div>
+    </div>
+
     <div class="welcome" data-i18n="How to use: click the Page2Task icon on any page, check what it detected, and hit Add.">
       How to use: click the Page2Task icon on any page, check what it detected, and hit Add.
     </div>
 
+    <div class="sec" id="secAI">
     <h2 data-i18n="AI recognition (optional)">AI recognition (optional)</h2>
     <div id="aiTier" class="tier" data-i18n="Checking what AI is available…">Checking what AI is available…</div>
     <button id="aiConfigToggle" class="linklike hidden" type="button" data-i18n="Change AI settings">Change AI settings</button>
@@ -138,7 +154,9 @@
       <div id="testResult" class="hint"></div>
     </div>
     </div><!-- /aiConfig -->
+    </div><!-- /secAI -->
 
+    <div class="sec" id="secAccount">
     <h2 data-i18n="Google account">Google account</h2>
     <p class="hint" data-i18n="Tasks and events are saved to the connected Google account.">Tasks and events are saved to the connected Google account.</p>
     <div id="accountStatus" class="tier" data-i18n="checking…">checking…</div>
@@ -147,6 +165,7 @@
       <button id="disconnectBtn" class="plain-btn hidden" type="button" data-i18n="Disconnect">Disconnect</button>
       <span id="accountMsg" class="hint"></span>
     </div>
+    </div><!-- /secAccount -->
 
     <h2 data-i18n="Calendar">Calendar</h2>
     <label class="field" style="max-width: 240px;">
