@@ -153,3 +153,31 @@ Highly recommend this read on AI agents
 2. 无透明通道（PNG 需拍平成背景色）；
 3. 图内文字无破折号、无中文（商店语言为英文）；
 4. 无任何真实品牌 logo。
+
+---
+
+## 修订 R1（在生成初版后发这条）
+
+```
+基于你刚才生成的这版做一次修订，保持画布 1280×800、整体构图、风格和已有文案不变，只改以下三处：
+
+【修订一：必须看得出这是一个 Chrome 插件，不是独立 App】
+所有出现 Page2Task 界面的画面，一律套上简化的浏览器窗口外壳：窗口左上三个圆点，顶部一个浏览器标签页 + 圆角地址栏；地址栏右侧的工具栏里放 Page2Task 的蓝色勾选图标；Page2Task 弹窗从这个图标正下方垂坠展开（顶边与工具栏相接，带柔和投影），弹窗下方透出正在浏览的网页内容。场景内容（邮件、聊天、文章）都画在浏览器窗口内部，而不是独立卡片。图 1 总览图中间的 Page2Task 弹窗也在顶部加一条迷你工具栏 + 图标，弹窗从图标垂下，表达「它住在浏览器里」。
+
+【修订二：替换示例文案】
+所有出现 housing cancellation 的地方全部替换：
+- 邮件里的高亮句改为：The deadline to submit your grant application is Friday, Aug 14 at 3:00 PM
+- 对应的待办标题改为：Submit grant application
+- 发件人名改为：Research Grants Office，主题行改为：Your application timeline
+
+【修订三：图 2 升级为「一次识别多个，用户勾选」的展示】
+邮件正文里有两句高亮（其余仍是灰色横条）：
+1. The deadline to submit your grant application is Friday, Aug 14 at 3:00 PM
+2. Interviews will be held the week of Aug 20
+右侧 Page2Task 弹窗不再直接显示单个表单，而是显示多候选勾选列表（样式严格按参考 HTML 里的 cand 组件）：标题行 Several deadlines found. Check the ones to add; edit each one below: 下面两行候选，各带蓝色勾选框（均为勾选态）：
+- Aug 14 15:00  Submit grant application
+- Aug 20  Prepare for grant interview
+底部蓝色 CTA 主文案改为 Add 2 to-dos，下行小字 Google Tasks。
+这张图的顶部英文标题改为：One email, several deadlines, all caught
+两条高亮句各引一条蓝色细线，分别指向右侧对应的候选行。
+```
