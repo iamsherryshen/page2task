@@ -56,7 +56,7 @@
 
 右侧（约 35% 宽）：两张输出卡片竖排，从弹窗各引一条流线：
 1. Google Calendar 风格的日程块：色条 + 标题 Dinner with Amy + 时间 Thu, Aug 13 · 7:30 PM
-2. Google Tasks 风格的待办行：圆形勾选框 + 标题 Submit housing form + 日期小字 Fri, Aug 14
+2. Google Tasks 风格的待办行：圆形勾选框 + 标题 Submit grant application + 日期小字 Fri, Aug 14
 两张卡下方分别标小字 Google Calendar 和 Google Tasks。
 
 整体气质：轻盈的流程图海报，流线纤细优雅，背景用产品的天空蓝渐变。
@@ -165,10 +165,11 @@ Highly recommend this read on AI agents
 所有出现 Page2Task 界面的画面，一律套上简化的浏览器窗口外壳：窗口左上三个圆点，顶部一个浏览器标签页 + 圆角地址栏；地址栏右侧的工具栏里放 Page2Task 的蓝色勾选图标；Page2Task 弹窗从这个图标正下方垂坠展开（顶边与工具栏相接，带柔和投影），弹窗下方透出正在浏览的网页内容。场景内容（邮件、聊天、文章）都画在浏览器窗口内部，而不是独立卡片。图 1 总览图中间的 Page2Task 弹窗也在顶部加一条迷你工具栏 + 图标，弹窗从图标垂下，表达「它住在浏览器里」。
 
 【修订二：替换示例文案】
-所有出现 housing cancellation 的地方全部替换：
+所有出现 housing 的示例全部替换：
 - 邮件里的高亮句改为：The deadline to submit your grant application is Friday, Aug 14 at 3:00 PM
 - 对应的待办标题改为：Submit grant application
 - 发件人名改为：Research Grants Office，主题行改为：Your application timeline
+- 图 1 总览图右侧待办卡的标题 Submit housing form 也改为 Submit grant application
 
 【修订三：图 2 升级为「一次识别多个，用户勾选」的展示】
 邮件正文里有两句高亮（其余仍是灰色横条）：
