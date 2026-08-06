@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Page2Task design reference</title>
+<style>
+/* Google-Calendar-blue theme (light-only, per design handoff) */
+:root {
+  --bg-grad: linear-gradient(180deg, #FAFCFF 0%, #F2F6FE 45%, #DDE9FD 80%, #C8DDFB 100%);
+  --fg: #1F1F1F;
+  --muted: #5F6368;
+  --label: #1967D2;
+  --border: rgba(11, 87, 208, 0.14);
+  --border-soft: rgba(11, 87, 208, 0.12);
+  --accent: #0B57D0;
+  --accent-hover: #0842A0;
+  --on-accent: #FFFFFF;
+  --seg-active: #C2E7FF;
+  --seg-active-fg: #001D35;
+  --chip-bg: #E8F0FE;
+  --input-bg: #F0F4FC;
+  --dashed: #669DF6;
+  --green-bg: #E6F4EA;
+  --green-fg: #137333;
+  --red-bg: #FCE8E6;
+  --red-fg: #C5221F;
+  --shadow-card: 0 1px 2px rgba(20, 45, 90, 0.05), 0 8px 20px -8px rgba(20, 45, 90, 0.16);
+  --shadow-cta: 0 20px 40px -14px rgba(11, 87, 208, 0.4);
+}
+
+* { box-sizing: border-box; }
+
+/* Pin BOTH html and body: Chrome sizes the popup window from the document's
+   preferred width, and without an explicit width on html it sometimes falls
+   back to the 800px maximum (content then sits in a 360px column on the left) */
+html {
+  width: 360px;
+  min-width: 360px;
+  max-width: 360px;
+}
+
+body {
+  width: 360px;
+  min-width: 360px;
+  max-width: 360px;
+  overflow-x: hidden;
+  margin: 0;
+  background: var(--bg-grad);
+  color: var(--fg);
+  font-family: Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 13px;
+}
+
+header { display: flex; align-items: center; gap: 8px; padding: 14px 16px 10px; }
+header .logo { width: 20px; height: 20px; border-radius: 5px; }
+header h1 { font-size: 15px; margin: 0; flex: 1; font-weight: 700; }
+
+.icon-btn { border: none; background: none; cursor: pointer; padding: 4px 6px; border-radius: 6px; display: flex; align-items: center; }
+.icon-btn:hover { background: var(--chip-bg); }
+
+main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+.hidden { display: none !important; }
+
+.notice { background: rgba(255, 255, 255, 0.75); color: var(--muted); padding: 8px 10px; border-radius: 8px; }
+.chip {
+  display: inline-flex; align-self: flex-start;
+  background: var(--chip-bg); color: var(--label);
+  border-radius: 999px; padding: 4px 12px;
+  font-size: 12px; font-weight: 500;
+}
+/* Prominent in-progress banner: the user should never wonder whether AI is working */
+.ai-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--chip-bg);
+  color: var(--label);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-weight: 500;
+}
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(11, 87, 208, 0.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* One-click enabling of Chrome's free on-device AI */
+.builtin-offer {
+  border: 1px solid var(--border);
+  background: var(--chip-bg);
+  color: var(--label);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.builtin-offer:hover:not(:disabled) { background: #DDE9FD; }
+.builtin-offer:disabled { cursor: default; opacity: 0.8; }
+
+/* Quiet "AI is off" notice — dotted underline hints at the hover tooltip */
+.ai-hint {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  padding: 0 2px;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.ai-hint:hover { color: var(--label); }
+
+/* Segmented "what to create" switch — the first decision, so it sits on top */
+.mode-seg {
+  display: flex; gap: 4px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+}
+.seg {
+  flex: 1;
+  padding: 7px 2px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+}
+.seg:hover:not(.active) { background: rgba(255, 255, 255, 0.9); }
+.seg.active { background: var(--seg-active); color: var(--seg-active-fg); font-weight: 700; }
+
+/* One import zone: the textarea IS the paste target, focused on open.
+   The placeholder is an overlay so "upload a file" can be a real link. */
+.import-zone {
+  position: relative;
+  border: 1.5px dashed var(--dashed);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 9px;
+}
+.import-zone.dragover, .import-zone:focus-within { border-color: var(--accent); background: #FFFFFF; }
+.import-zone textarea {
+  display: block;
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  font: inherit;
+  color: var(--fg);
+  width: 100%;
+  resize: vertical;
+  outline: none;
+  line-height: 1.5;
+}
+.import-placeholder {
+  position: absolute;
+  top: 11px; left: 13px; right: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  pointer-events: none;
+}
+.upload-link {
+  pointer-events: auto;
+  border: none; background: none; padding: 0;
+  font: inherit;
+  color: var(--label);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* White card grouping the form fields */
+.form-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+.field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.field span { color: var(--label); font-size: 12px; font-weight: 500; }
+.field input, .field textarea, .field select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font: inherit;
+  background: var(--input-bg);
+  color: var(--fg);
+  width: 100%;
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--muted); }
+.field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.field textarea { resize: vertical; }
+#titleInput { text-overflow: ellipsis; }
+input.error { outline: 2px solid var(--red-fg); }
+
+.row { display: flex; gap: 10px; }
+
+.hint, .matched { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.ai-warn { color: var(--red-fg); font-size: 12px; line-height: 1.5; }
+.account { color: var(--muted); font-size: 11px; text-align: center; margin-top: 2px; }
+
+.time-row { align-items: flex-end; }
+.time-clear {
+  border: 1px solid var(--border); background: var(--input-bg); color: var(--muted);
+  border-radius: 8px; width: 28px; height: 32px; cursor: pointer; font-size: 12px;
+  flex: none;
+}
+.time-clear:hover { background: var(--chip-bg); color: var(--fg); }
+
+.banner { border-radius: 8px; padding: 9px 11px; line-height: 1.5; }
+.banner.success { background: var(--green-bg); color: var(--green-fg); }
+.banner.error { background: var(--red-bg); color: var(--red-fg); }
+.banner a { color: inherit; font-weight: 600; }
+
+.actions { display: flex; margin-top: 2px; }
+/* A single pill CTA — the mode switch above already made the choice */
+.btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 10px 6px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: var(--shadow-cta);
+}
+.btn .btn-main { font-size: 14px; font-weight: 700; }
+.btn .btn-sub { font-size: 10px; font-weight: 500; color: rgba(255, 255, 255, 0.85); }
+.btn:hover:not(:disabled) { background: var(--accent-hover); }
+.btn:disabled { opacity: 0.6; cursor: default; }
+
+.setup { background: var(--chip-bg); border-radius: 8px; padding: 10px 12px; line-height: 1.7; }
+
+.cand {
+  background: #FFFFFF;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 6px;
+  box-shadow: var(--shadow-card);
+}
+.cand-head { font-size: 12px; color: var(--muted); }
+.cand-list { display: flex; flex-direction: column; gap: 4px; }
+.cand-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+.cand-main { display: flex; gap: 8px; align-items: baseline; }
+
+/* Rounded custom checkbox (the native one has sharp corners) */
+.cand-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex: none;
+  align-self: center;
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  background: #FFFFFF;
+  cursor: pointer;
+  position: relative;
+}
+.cand-check:checked { background: var(--accent); border-color: var(--accent); }
+.cand-check:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #FFFFFF;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* One editable card per checked deadline */
+#itemCards { display: flex; flex-direction: column; gap: 10px; }
+.item-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+}
+.item-card-head { color: var(--label); font-size: 12px; font-weight: 700; }
+.cand-item:hover { background: var(--input-bg); }
+.cand-date { font-weight: 600; white-space: nowrap; }
+.cand-snip {
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Language toggle (EN / 中文) in the header */
+.lang-btn {
+  border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+  border-radius: 999px; padding: 3px 10px; font: inherit; font-size: 12px;
+  cursor: pointer; white-space: nowrap;
+}
+.lang-btn:hover { background: var(--chip-bg); }
+
+</style>
+<style>
+/* Reference-sheet overrides: undo the popup body pinning, lay out two popups */
+html, body {
+  width: auto !important; min-width: 0 !important; max-width: none !important;
+  background: #EDF1F7; overflow-x: auto !important;
+}
+body { padding: 28px; font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; }
+.sheet-title { font-size: 18px; font-weight: 700; color: #1F1F1F; margin: 0 0 4px; }
+.sheet-sub { font-size: 13px; color: #5F6368; margin: 0 0 20px; }
+.popups { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+.popup {
+  width: 360px; flex: none; background: var(--bg-grad); border-radius: 16px;
+  overflow: hidden; box-shadow: 0 12px 32px -12px rgba(20,45,90,0.28);
+}
+.tokens { margin-top: 28px; }
+.tokens h2 { font-size: 14px; color: #1F1F1F; margin: 0 0 10px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px 18px; max-width: 780px; }
+.swatch { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #5F6368; }
+.swatch .dot { width: 18px; height: 18px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); }
+.grad-bar { width: 240px; height: 18px; border-radius: 6px; background: var(--bg-grad); border: 1px solid rgba(0,0,0,0.06); }
+</style>
+</head>
+<body>
+<p class="sheet-title">Page2Task design reference</p>
+<p class="sheet-sub">Real product CSS, inlined. Left: To-do mode with the multi-candidate chooser. Right: Calendar mode with time range, location, and the success banner. Google Calendar blue family, light mode only, Roboto.</p>
+<div class="popups">
+<div class="popup">
+  <header>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACuUlEQVR42mOQKn7BgAObAnEXEJ8E4g9A/A+I/9MJ/4PaeRLqBlNc7sQmqAHE6+joWGLxOqjb8HogAoh/DELHw/APqBuxeiBiEDscHUege0BjkIc8tpjQQPbAuiHkeOQ8wQArbf4PUWzKAC2mhqoHuhigZe1Q9cBJBmiFMVQ98IGBzjUs1WtshsHiGL36V/99Jr79b9DwiiR9g8ID8458/Y8MFh//OnQ8MPPAl//YwOxDXwe/B4pXfvyPC/z6/e+/dMkg9oDvpLf/CQFi8sOAeECj+uX/2y9/43X80/d/Bm8S2nrpO8HQr1jzcXB6YMLuzwQdDyqVBmUplLXkA0HHH7n9c3DWAy49b/7/+PUPr+Nfffrz36yFhhWZcdOr/907Pv9ffvLb/+bNn/6rVb0kSp9c6Yv/lx7/Ihj6MbPfkRwwRHsgaOrb/5++/0Wx8OGbP//tOl8T1LvmzDeCjm/a9ImsmCXaAxceYQ/Ba89+/deuxR0TbVs/EXT8ilPfyE6aDMQmHXzg8C3sGS9h3nuCjj/38BdFeYsoDxg2viLokA3nvqPosWp//f/d17949Xz58fe/Q9dr2nsAhE/c/UnQE3MPfyVJfdrC9xSXbkR7wK3vzf+P3/4SdFTX9s//Fx/7SlAdqDSjRvFMUjEaOfPdf2qAjee/U61+Ibkiy1n6gSLHX3/2+79y5YuB8wAI12/8RJbj//77999zwhuq1vBkNyUm7flCsgfyl3+gehOForbQ0hPfiHb81H1faNLGorgxt+MK4bb97qs/aNZIpNgDCuUv/p++j7vMf/jm93/dupeD1wOwpsa919i7iMHARiAtm+lU6w84dr/+fxyp9n0ADPnUBe9p3s+g+tCiRetroprY1BxaHPKDu0N+eH3IT3AM+SmmIT/JNyymWYf8RPewWGowLBZ7DLnlNgB5mms3+TAxZgAAAABJRU5ErkJggg==" alt="" class="logo">
+    <h1>Page2Task</h1>
+    <button class="lang-btn" type="button">EN</button>
+    <button class="icon-btn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="#5F6368" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+  </header>
+  <main>
+    <div class="mode-seg" role="tablist">
+      <button type="button" class="seg active">To-do</button>
+      <button type="button" class="seg">Calendar</button>
+      <button type="button" class="seg">Both</button>
+    </div>
+    <div class="chip">Email</div>
+    <div class="import-zone">
+      <div class="import-placeholder">Paste a screenshot or text here, or <button type="button" class="upload-link">upload a file</button></div>
+      <textarea rows="2"></textarea>
+    </div>
+    <div class="cand">
+      <div class="cand-head">Several deadlines found. Check the ones to add; edit each one below:</div>
+      <div class="cand-list">
+        <div class="cand-item">
+          <div class="cand-main">
+            <input type="checkbox" class="cand-check" checked>
+            <span class="cand-date">Aug 14 15:00</span>
+            <span class="cand-snip">Submit housing cancellation</span>
+          </div>
+        </div>
+        <div class="cand-item">
+          <div class="cand-main">
+            <input type="checkbox" class="cand-check">
+            <span class="cand-date">Aug 20</span>
+            <span class="cand-snip">Pick up access card at the front desk</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-card">
+      <label class="field"><span>Title</span><input type="text" value="Submit housing cancellation"></label>
+      <label class="field"><span>Date (optional)</span><input type="date" value="2026-08-14"></label>
+      <label class="field"><span>Notes</span><textarea rows="3">Time 15:00</textarea></label>
+    </div>
+    <div class="actions">
+      <button class="btn"><span class="btn-main">Add to-do</span><span class="btn-sub">Google Tasks</span></button>
+    </div>
+  </main>
+</div>
+<div class="popup">
+  <header>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACuUlEQVR42mOQKn7BgAObAnEXEJ8E4g9A/A+I/9MJ/4PaeRLqBlNc7sQmqAHE6+joWGLxOqjb8HogAoh/DELHw/APqBuxeiBiEDscHUege0BjkIc8tpjQQPbAuiHkeOQ8wQArbf4PUWzKAC2mhqoHuhigZe1Q9cBJBmiFMVQ98IGBzjUs1WtshsHiGL36V/99Jr79b9DwiiR9g8ID8458/Y8MFh//OnQ8MPPAl//YwOxDXwe/B4pXfvyPC/z6/e+/dMkg9oDvpLf/CQFi8sOAeECj+uX/2y9/43X80/d/Bm8S2nrpO8HQr1jzcXB6YMLuzwQdDyqVBmUplLXkA0HHH7n9c3DWAy49b/7/+PUPr+Nfffrz36yFhhWZcdOr/907Pv9ffvLb/+bNn/6rVb0kSp9c6Yv/lx7/Ihj6MbPfkRwwRHsgaOrb/5++/0Wx8OGbP//tOl8T1LvmzDeCjm/a9ImsmCXaAxceYQ/Ba89+/deuxR0TbVs/EXT8ilPfyE6aDMQmHXzg8C3sGS9h3nuCjj/38BdFeYsoDxg2viLokA3nvqPosWp//f/d17949Xz58fe/Q9dr2nsAhE/c/UnQE3MPfyVJfdrC9xSXbkR7wK3vzf+P3/4SdFTX9s//Fx/7SlAdqDSjRvFMUjEaOfPdf2qAjee/U61+Ibkiy1n6gSLHX3/2+79y5YuB8wAI12/8RJbj//77999zwhuq1vBkNyUm7flCsgfyl3+gehOForbQ0hPfiHb81H1faNLGorgxt+MK4bb97qs/aNZIpNgDCuUv/p++j7vMf/jm93/dupeD1wOwpsa919i7iMHARiAtm+lU6w84dr/+fxyp9n0ADPnUBe9p3s+g+tCiRetroprY1BxaHPKDu0N+eH3IT3AM+SmmIT/JNyymWYf8RPewWGowLBZ7DLnlNgB5mms3+TAxZgAAAABJRU5ErkJggg==" alt="" class="logo">
+    <h1>Page2Task</h1>
+    <button class="lang-btn" type="button">EN</button>
+    <button class="icon-btn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="#5F6368" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+  </header>
+  <main>
+    <div class="mode-seg" role="tablist">
+      <button type="button" class="seg">To-do</button>
+      <button type="button" class="seg active">Calendar</button>
+      <button type="button" class="seg">Both</button>
+    </div>
+    <div class="chip">Pasted text</div>
+    <div class="import-zone">
+      <div class="import-placeholder">Paste a screenshot or text here, or <button type="button" class="upload-link">upload a file</button></div>
+      <textarea rows="2"></textarea>
+    </div>
+    <div class="form-card">
+      <label class="field"><span>Title</span><input type="text" value="Dinner with Amy at Madera"></label>
+      <label class="field"><span>Date</span><input type="date" value="2026-08-13"></label>
+      <div class="row time-row">
+        <label class="field"><span>Start time (optional)</span><input type="time" value="19:30"></label>
+        <label class="field"><span>End time</span><input type="time" value="20:00"></label>
+        <button class="time-clear" type="button">&#10005;</button>
+      </div>
+      <label class="field"><span>Location</span><input type="text" value="Madera"></label>
+      <label class="field"><span>Notes</span><textarea rows="2"></textarea></label>
+    </div>
+    <div class="banner success">Added to Google Calendar &#10003; <a href="#">View in Calendar</a></div>
+    <div class="actions">
+      <button class="btn"><span class="btn-main">Add event</span><span class="btn-sub">Google Calendar</span></button>
+    </div>
+  </main>
+</div>
+</div>
+<div class="tokens">
+  <h2>Tokens</h2>
+  <div class="swatches">
+    <div class="swatch"><div class="grad-bar"></div><span>background gradient #FAFCFF to #C8DDFB</span></div>
+    <div class="swatch"><div class="dot" style="background:#0B57D0"></div><span>accent #0B57D0</span></div>
+<div class="swatch"><div class="dot" style="background:#0842A0"></div><span>accent hover #0842A0</span></div>
+<div class="swatch"><div class="dot" style="background:#1967D2"></div><span>label #1967D2</span></div>
+<div class="swatch"><div class="dot" style="background:#C2E7FF"></div><span>segment active #C2E7FF</span></div>
+<div class="swatch"><div class="dot" style="background:#E8F0FE"></div><span>chip #E8F0FE</span></div>
+<div class="swatch"><div class="dot" style="background:#F0F4FC"></div><span>input #F0F4FC</span></div>
+<div class="swatch"><div class="dot" style="background:#669DF6"></div><span>dashed #669DF6</span></div>
+<div class="swatch"><div class="dot" style="background:#E6F4EA"></div><span>green bg #E6F4EA</span></div>
+<div class="swatch"><div class="dot" style="background:#137333"></div><span>green fg #137333</span></div>
+<div class="swatch"><div class="dot" style="background:#FCE8E6"></div><span>red bg #FCE8E6</span></div>
+<div class="swatch"><div class="dot" style="background:#1F1F1F"></div><span>text #1F1F1F</span></div>
+<div class="swatch"><div class="dot" style="background:#5F6368"></div><span>muted #5F6368</span></div>
+  </div>
+</div>
+</body>
+</html>

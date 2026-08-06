@@ -1,0 +1,155 @@
+# Claude Design 出图包：Web Store 五张截图
+
+用法：在 claude.ai/design 新建一个项目，**先上传 design-reference-popup.html**（同目录下的单文件参考页，内嵌真实产品 CSS 与两种弹窗形态），再发「第 0 条」让它对照代码学风格，之后逐条发图 1 到图 5。生成后把成品发回给 Claude Code 做尺寸规格化（精确 1280×800、无透明通道）。
+
+---
+
+## 第 0 条：风格学习（开场先发这条）
+
+```
+你接下来要为一个 Chrome 插件「Page2Task」生成 5 张 Chrome Web Store 宣传图。我附上了 design-reference-popup.html：这是产品的真实界面代码（CSS 原样内嵌）和两种弹窗形态的静态还原，**以这份代码为最高准绳**学习它的视觉风格；下面的文字描述是对代码的概括，两者冲突时以代码为准。
+
+【产品是什么】
+把网页、邮件、聊天截图或任何文字变成 Google Tasks 待办 / Google Calendar 日程的 Chrome 插件。气质：轻、快、可信赖，像 Google Calendar 的近亲。
+
+【设计系统：Google Calendar 蓝系，仅浅色模式】
+- 页面背景：垂直渐变，从 #FAFCFF 经 #F2F6FE、#DDE9FD 到 #C8DDFB（上浅下深的天空蓝）
+- 主色（按钮、链接、标签）：#0B57D0；hover 深化为 #0842A0；按钮文字白色
+- 字段标签蓝：#1967D2；正文字 #1F1F1F；次要文字 #5F6368
+- 选中态浅蓝：#C2E7FF（文字 #001D35）；芯片底 #E8F0FE；输入框底 #F0F4FC
+- 成功绿：文字 #137333 底 #E6F4EA；错误红：文字 #C5221F 底 #FCE8E6
+- 虚线强调（粘贴区）：#669DF6 的蓝色虚线圆角框
+- 边框：rgba(11,87,208,0.14) 的极浅蓝
+- 卡片：纯白、圆角 12 到 14px、柔和投影（0 8px 20px -8px rgba(20,45,90,0.16)）
+- 主按钮 CTA：大圆角（接近药丸）、#0B57D0 实底、下方大范围柔和蓝色投影
+- 模式切换：白色药丸分段控件，选中段填 #C2E7FF
+- 字体：Roboto（无衬线，标签 12 到 13px，标题加粗 15px）
+- 无 emoji 装饰、无深色模式、留白充足、整体通透
+
+【Page2Task 弹窗的标准形态（图里画它时照这个）】
+宽窄竖版卡片：顶部小 logo + 「Page2Task」粗体标题；下方药丸三段切换 To-do / Calendar / Both；一个蓝色虚线圆角的粘贴区；一张白色表单卡（Title、Date、Time、Location、Notes 字段，标签为蓝色小字）；底部一颗大号蓝色 CTA（主文案 + 下行小字 Google Tasks 或 Google Calendar）。
+
+【硬性规范，每张图都要遵守】
+- 画布：1280×800，全出血，直角，不留白边，背景铺满（用产品的天空蓝渐变或纯浅色）
+- 图内文案一律英文，任何文字都不使用破折号（用冒号、逗号、句号）
+- 不出现任何真实品牌 logo（Gmail、WhatsApp、Twitter 都画成风格化的通用界面，不用它们的标志）
+- 界面模拟图中的次要文字用浅灰圆角横条表示（placeholder bars），只有关键内容用真实文字
+- 导出为不带透明通道的位图
+
+先确认你理解了这套风格，然后等我逐张发需求。
+```
+
+---
+
+## 图 1：总览概念图（输入 → Page2Task → 输出）
+
+```
+第 1 张：总览概念图。画布 1280×800，三段式横向构图，讲「任何内容都能变成待办或日程」。
+
+左侧（约 30% 宽）：四张小场景卡片竖排，代表四种输入，每张是一个极简风格化界面缩略图 + 一行英文小标：
+1. 网页文章（几条灰色文字横条 + 一张小图）标 Articles
+2. 视频页（一个带播放键的缩略图）标 Videos
+3. 打开的邮件（信封头像 + 文字横条）标 Emails
+4. 聊天截图（两三个对话气泡）标 Chats and pasted text
+
+中间（约 35% 宽）：Page2Task 弹窗的标准形态（按风格档案画），四条柔和的蓝色流线从左侧四张卡汇入弹窗。弹窗上方一行主标题，英文：Anything you see becomes a task or an event
+
+右侧（约 35% 宽）：两张输出卡片竖排，从弹窗各引一条流线：
+1. Google Calendar 风格的日程块：色条 + 标题 Dinner with Amy + 时间 Thu, Aug 13 · 7:30 PM
+2. Google Tasks 风格的待办行：圆形勾选框 + 标题 Submit housing form + 日期小字 Fri, Aug 14
+两张卡下方分别标小字 Google Calendar 和 Google Tasks。
+
+整体气质：轻盈的流程图海报，流线纤细优雅，背景用产品的天空蓝渐变。
+```
+
+---
+
+## 图 2：邮件 → 待办
+
+```
+第 2 张：邮件场景。画布 1280×800，左右两栏。
+
+左栏（约 55%）：风格化的邮件阅读界面（不是 Gmail，不用任何品牌标志）：顶部一个圆形头像 + 发件人名 Housing Office + 加粗主题行 Action required before you move out。正文全部用浅灰圆角横条表示，只有中间一句是真实文字并带浅黄色高亮底：
+The deadline to submit your housing cancellation is Friday, Aug 14 at 3:00 PM
+高亮句下方再接两条灰色横条收尾。
+
+右栏（约 45%）：Page2Task 弹窗，To-do 模式选中，表单已自动填好：
+- Title 字段：Submit housing cancellation
+- Date 字段：2026/08/14
+- 备注区显示一行小字：Time 15:00
+- 底部蓝色 CTA：主文案 Add to-do，下行小字 Google Tasks
+
+从左侧高亮句引一条柔和的蓝色曲线箭头指向右侧 Title 字段，表达「这句话被自动识别成了待办」。顶部一行英文标题：It reads the deadline for you
+```
+
+---
+
+## 图 3：聊天对话 → 日历日程
+
+```
+第 3 张：聊天场景。画布 1280×800，左右两栏。
+
+左栏（约 50%）：风格化的手机聊天界面（通用绿色气泡风，不用 WhatsApp 标志）：对话内容真实可读：
+对方: Dinner Thursday to celebrate? 7pm?
+我方: Yes!! Can we do 7:30 though
+对方: 7:30 at Madera works, see you there
+三条气泡，时间戳小字可加。重点：这段对话里时间改过一次，最终是 7:30。
+
+右栏（约 50%）：Page2Task 弹窗，Calendar 模式选中，表单自动填好：
+- Title：Dinner with Amy at Madera
+- Date：2026/08/13
+- Start time 19:30，End time 20:00
+- Location：Madera
+- 底部蓝色 CTA：主文案 Add event，下行小字 Google Calendar
+弹窗下方再放一个小的 Google Calendar 风格日程块预览：Thu Aug 13, 7:30 PM Dinner with Amy。
+
+从聊天最后一条气泡引蓝色曲线箭头到弹窗。顶部英文标题：Screenshot a chat, it catches the final plan
+（这句话在强调产品能识别「改过时间后的最终约定」，构图上让 7:30 在聊天和表单里都醒目。）
+```
+
+---
+
+## 图 4：被推荐的文章 → 阅读待办
+
+```
+第 4 张：稍后阅读场景。画布 1280×800，左中右三步式构图。
+
+左侧：一张风格化的社交帖子卡片（通用样式，不用 Twitter 或 X 标志）：圆头像 + 用户名 + 帖子文字：
+Highly recommend this read on AI agents
+帖子下方附一张链接预览小卡：文章标题 Building Effective Agents + 两条灰色摘要横条。
+
+中间：Page2Task 弹窗的紧凑版，To-do 模式，表单填好：
+- Title：Read: Building Effective Agents
+- Date 字段留空（显示 placeholder yyyy/mm/dd，表达无日期待办）
+- 底部蓝色 CTA：Add to-do / Google Tasks
+
+右侧：一张 Google Tasks 风格清单卡，标题 Reading，里面三行待办：第一行就是 Read: Building Effective Agents（圆形勾选框），下面两行用灰色横条表示。
+
+左到中、中到右各一条蓝色流线。顶部英文标题：Save it now, read it on your list
+```
+
+---
+
+## 图 5：直接手写待办
+
+```
+第 5 张：手写场景。画布 1280×800，居中单主体构图，Page2Task 弹窗放大居中（这张是五张里最接近真实产品截图的一张，按风格档案里的标准形态精确还原）。
+
+弹窗状态：
+- To-do 模式选中
+- 蓝色虚线粘贴区里是用户正在输入的一句话（带光标）：Pick up the poster prints before Friday
+- 下方表单已自动解析出：Title 字段 Pick up the poster prints，Date 字段 2026/08/14
+- 底部蓝色 CTA：Add to-do / Google Tasks
+
+弹窗左右两侧留出呼吸感，背景天空蓝渐变铺满。顶部英文标题：Or just type it, dates are understood
+右下角一行小字：Free on-device AI. Nothing leaves your computer.
+```
+
+---
+
+## 生成后交回 Claude Code 的检查项
+
+1. 尺寸精确 1280×800（不足或超出我来缩放裁剪）；
+2. 无透明通道（PNG 需拍平成背景色）；
+3. 图内文字无破折号、无中文（商店语言为英文）；
+4. 无任何真实品牌 logo。
