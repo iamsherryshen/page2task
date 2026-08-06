@@ -218,6 +218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.body.classList.remove('ob-1', 'ob-2', 'ob-3');
     if (n >= 1 && n <= 3) document.body.classList.add('ob-' + n);
     $('obPrimary').classList.toggle('hidden', n !== 2);
+    $('obSkip').classList.toggle('hidden', n !== 1); // step 2's default choice IS the skip
     $('obActions').classList.toggle('hidden', n === 3);
     $('obDots').classList.toggle('hidden', n === 3);
     Array.from($('obDots').children).forEach((d, i) => d.classList.toggle('on', i === n - 1));
@@ -252,7 +253,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('saveBtn').click();
     obSetStep(3);
   });
-  $('obSkip').addEventListener('click', obExit);
+  // Skipping step 1 only skips Google: everyone still passes the AI choice
+  $('obSkip').addEventListener('click', () => {
+    if (obStep === 1) obSetStep(2);
+    else obExit();
+  });
   {
     const { onboardingDone } = await chrome.storage.local.get({ onboardingDone: false });
     if (!onboardingDone) {
