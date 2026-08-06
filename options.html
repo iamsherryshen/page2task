@@ -33,6 +33,18 @@
       background: var(--input-bg); border: 1px solid var(--border);
     }
     .tier.good { background: var(--green-bg); color: var(--green-fg); border-color: transparent; }
+    .linklike {
+      background: none; border: none; color: var(--accent); cursor: pointer;
+      padding: 0; font: inherit; font-size: 13px; text-decoration: underline; margin-top: 8px;
+    }
+    .radio-row { display: flex; align-items: flex-start; gap: 8px; margin: 6px 0; cursor: pointer; line-height: 1.5; }
+    .radio-row input { margin-top: 3px; flex: none; }
+    .info-btn {
+      border: 1px solid var(--border); background: var(--bg); color: var(--accent);
+      border-radius: 50%; width: 22px; height: 22px; line-height: 1; font-size: 12px;
+      cursor: pointer; padding: 0; flex: none; align-self: center; font-weight: 700;
+    }
+    .info-btn:hover { background: var(--chip-bg); }
     #testResult { margin-top: 8px; }
     h2 { font-size: 15px; margin: 24px 0 4px; }
   </style>
@@ -40,83 +52,115 @@
 <body>
   <header>
     <img src="icons/icon48.png" alt="" class="logo">
-    <h1>Page2Task Settings</h1>
+    <h1 data-i18n="Page2Task Settings">Page2Task Settings</h1>
+    <button id="langToggle" class="lang-btn" type="button">中文</button>
   </header>
   <main>
-    <div class="welcome">
-      <b>Welcome. Nothing here is required to start.</b><br>
-      Click the Page2Task icon on any page, fill in the form, and hit Add. The first time
-      you save, Google asks you to authorize the extension: that is the only connection step,
-      and it happens on its own.<br>
-      Everything below is optional and only makes the recognition smarter.
+    <div class="welcome" data-i18n="How to use: click the Page2Task icon on any page, check what it detected, and hit Add.">
+      How to use: click the Page2Task icon on any page, check what it detected, and hit Add.
     </div>
 
-    <h2>AI recognition (optional)</h2>
-    <div id="aiTier" class="tier">Checking what AI is available…</div>
-    <p class="hint">
-      Works without any key: free local rules detect the dates.<br>
-      With an AI key, the model reads the text and writes proper task titles like
-      “Submit Service Now ticket to cancel housing”.<br>
-      <b>Google Gemini has a free tier</b>: get a key at aistudio.google.com (no credit card needed).
-    </p>
+    <h2 data-i18n="AI recognition (optional)">AI recognition (optional)</h2>
+    <div id="aiTier" class="tier" data-i18n="Checking what AI is available…">Checking what AI is available…</div>
+    <button id="aiConfigToggle" class="linklike hidden" type="button" data-i18n="Change AI settings">Change AI settings</button>
 
+    <div id="aiConfig" class="hidden">
+    <p class="hint" id="aiMethods"></p>
+    <button id="builtinDownloadBtn" class="plain-btn hidden" type="button"></button>
+
+    <div class="field" style="margin-top: 6px;">
+      <span data-i18n="AI source">AI source</span>
+    </div>
+    <label class="radio-row">
+      <input type="radio" name="aiSource" id="srcBuiltin" value="builtin">
+      <span data-i18n="On-device AI model: free, no key, weaker quality; one-time ~2 GB download">On-device AI model: free, no key, weaker quality; one-time ~2 GB download</span>
+    </label>
+    <label class="radio-row">
+      <input type="radio" name="aiSource" id="srcApi" value="api">
+      <span data-i18n="Your own API key: better quality">Your own API key: better quality</span>
+    </label>
+
+    <div id="apiConfig" class="hidden">
     <label class="field" style="max-width: 280px;">
-      <span>AI provider</span>
+      <span data-i18n="AI provider">AI provider</span>
       <select id="provider">
-        <option value="gemini">Google Gemini (free tier)</option>
+        <option value="gemini" data-i18n="Google Gemini (free tier)">Google Gemini (free tier)</option>
         <option value="claude">Anthropic Claude</option>
+        <option value="openai">OpenAI (GPT)</option>
+        <option value="kimi">Kimi (Moonshot 月之暗面)</option>
       </select>
     </label>
 
-    <div class="key-row">
+    <div class="key-row" id="row-gemini">
       <label class="field">
         <span>Gemini API key</span>
         <input type="password" id="geminiKey" placeholder="AIza…" autocomplete="off">
       </label>
+      <button type="button" class="info-btn" data-help="gemini" title="How to get this key" data-i18n-title="How to get this key">?</button>
       <button id="toggleGeminiKey" class="plain-btn" type="button">Show</button>
     </div>
 
-    <div class="key-row">
+    <div class="key-row hidden" id="row-claude">
       <label class="field">
         <span>Anthropic API key</span>
         <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off">
       </label>
+      <button type="button" class="info-btn" data-help="claude" title="How to get this key" data-i18n-title="How to get this key">?</button>
       <button id="toggleKey" class="plain-btn" type="button">Show</button>
     </div>
 
-    <p class="hint">
-      Keys are stored <b>only on this computer</b>: never synced to your Google account,
-      never sent anywhere except Google's / Anthropic's official APIs. The developer cannot see them.
+    <div class="key-row hidden" id="row-openai">
+      <label class="field">
+        <span>OpenAI API key</span>
+        <input type="password" id="openaiKey" placeholder="sk-…" autocomplete="off">
+      </label>
+      <button type="button" class="info-btn" data-help="openai" title="How to get this key" data-i18n-title="How to get this key">?</button>
+      <button id="toggleOpenaiKey" class="plain-btn" type="button">Show</button>
+    </div>
+
+    <div class="key-row hidden" id="row-kimi">
+      <label class="field">
+        <span>Kimi (Moonshot) API key</span>
+        <input type="password" id="kimiKey" placeholder="sk-…" autocomplete="off">
+      </label>
+      <button type="button" class="info-btn" data-help="kimi" title="How to get this key" data-i18n-title="How to get this key">?</button>
+      <button id="toggleKimiKey" class="plain-btn" type="button">Show</button>
+    </div>
+
+    <p class="hint hidden" id="keyHelp"></p>
+    <p class="hint" data-i18n="Keys are stored only on this computer and sent only to the selected provider's official API. The developer cannot see them.">
+      Keys are stored only on this computer and sent only to the selected provider's official API. The developer cannot see them.
     </p>
+    </div><!-- /apiConfig -->
 
     <div>
-      <button id="testBtn" class="plain-btn" type="button">Test AI recognition</button>
+      <button id="testBtn" class="plain-btn" type="button" data-i18n="Test AI recognition">Test AI recognition</button>
       <div id="testResult" class="hint"></div>
     </div>
+    </div><!-- /aiConfig -->
 
-    <h2>Google account</h2>
-    <p class="hint">
-      Tasks and events are saved to the account you picked in the Google authorization window:
-      <b id="accountEmail">checking…</b><br>
-      To switch accounts, disconnect below. The next save will show the account picker again.
-    </p>
-    <div>
-      <button id="disconnectBtn" class="plain-btn" type="button">Disconnect Google account</button>
-      <span id="disconnectStatus" class="hint"></span>
+    <h2 data-i18n="Google account">Google account</h2>
+    <p class="hint" data-i18n="Tasks and events are saved to the connected Google account.">Tasks and events are saved to the connected Google account.</p>
+    <div id="accountStatus" class="tier" data-i18n="checking…">checking…</div>
+    <div style="margin-top: 10px;">
+      <button id="connectBtn" class="plain-btn hidden" type="button" data-i18n="Connect Google account">Connect Google account</button>
+      <button id="disconnectBtn" class="plain-btn hidden" type="button" data-i18n="Disconnect">Disconnect</button>
+      <span id="accountMsg" class="hint"></span>
     </div>
 
-    <h2>Calendar</h2>
+    <h2 data-i18n="Calendar">Calendar</h2>
     <label class="field" style="max-width: 240px;">
-      <span>Default event duration (minutes)</span>
+      <span data-i18n="Default event duration (minutes)">Default event duration (minutes)</span>
       <input type="number" id="eventMinutes" min="5" max="480" step="5">
     </label>
 
     <div style="margin-top: 24px;">
-      <button id="saveBtn" class="plain-btn save-btn" type="button">Save</button>
+      <button id="saveBtn" class="plain-btn save-btn" type="button" data-i18n="Save">Save</button>
       <span id="saveStatus" class="status"></span>
     </div>
   </main>
 
+  <script src="lib/i18n.js"></script>
   <script src="lib/ai.js"></script>
   <script src="options.js"></script>
 </body>

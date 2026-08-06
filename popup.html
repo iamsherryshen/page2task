@@ -8,39 +8,41 @@
   <header>
     <img src="icons/icon48.png" alt="" class="logo">
     <h1>Page2Task</h1>
-    <button id="settingsBtn" class="icon-btn" title="Settings">
+    <button id="langToggle" class="lang-btn" type="button">中文</button>
+    <button id="settingsBtn" class="icon-btn" title="Settings" data-i18n-title="Settings">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="#5F6368" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
     </button>
   </header>
   <main>
     <div class="mode-seg" id="modeSeg" role="tablist" aria-label="What to create">
-      <button type="button" class="seg active" data-mode="todo">To-do</button>
-      <button type="button" class="seg" data-mode="calendar">Calendar</button>
-      <button type="button" class="seg" data-mode="both">Both</button>
+      <button type="button" class="seg active" data-mode="todo" data-i18n="To-do">To-do</button>
+      <button type="button" class="seg" data-mode="calendar" data-i18n="Calendar">Calendar</button>
+      <button type="button" class="seg" data-mode="both" data-i18n="Both">Both</button>
     </div>
 
     <div id="notice" class="notice hidden"></div>
     <div id="chip" class="chip hidden"></div>
-    <div id="aiStatus" class="ai-status hidden"><span class="spinner" aria-hidden="true"></span><span id="aiStatusText">AI is reading…</span></div>
+    <div id="aiStatus" class="ai-status hidden"><span class="spinner" aria-hidden="true"></span><span id="aiStatusText" data-i18n="AI is reading…">AI is reading…</span></div>
     <div id="aiWarn" class="ai-warn hidden"></div>
     <button id="builtinOffer" class="builtin-offer hidden" type="button"></button>
     <button id="aiHint" class="ai-hint hidden" type="button"></button>
+    <button id="builtinHint" class="ai-hint hidden" type="button"></button>
 
     <div id="importZone" class="import-zone">
-      <div id="importPlaceholder" class="import-placeholder">Paste a screenshot or text here, or <button type="button" id="screenshotBtn" class="upload-link">upload a file</button></div>
+      <div id="importPlaceholder" class="import-placeholder"><span data-i18n="Paste a screenshot or text here, or ">Paste a screenshot or text here, or </span><button type="button" id="screenshotBtn" class="upload-link" data-i18n="upload a file">upload a file</button></div>
       <textarea id="pasteText" rows="2"></textarea>
     </div>
     <input type="file" id="fileInput" accept="image/*" class="hidden">
 
     <div id="candBox" class="cand hidden">
-      <div class="cand-head">Several deadlines found. Check the ones to add; edit each one below:</div>
+      <div class="cand-head" data-i18n="Several deadlines found. Check the ones to add; edit each one below:">Several deadlines found. Check the ones to add; edit each one below:</div>
       <div id="candList" class="cand-list"></div>
     </div>
 
     <div class="form-card" id="formCard">
       <label class="field">
-        <span>Title</span>
-        <input type="text" id="titleInput" placeholder="Task name">
+        <span data-i18n="Title">Title</span>
+        <input type="text" id="titleInput" placeholder="Task name" data-i18n-placeholder="Task name">
       </label>
 
       <label class="field">
@@ -49,30 +51,30 @@
       </label>
       <div class="row time-row hidden" id="timeRow">
         <label class="field">
-          <span>Start time (optional)</span>
+          <span data-i18n="Start time (optional)">Start time (optional)</span>
           <input type="time" id="timeInput">
         </label>
         <label class="field">
-          <span>End time</span>
+          <span data-i18n="End time">End time</span>
           <input type="time" id="endTimeInput">
         </label>
-        <button id="clearTime" class="time-clear" type="button" title="Clear time">✕</button>
+        <button id="clearTime" class="time-clear" type="button" title="Clear time" data-i18n-title="Clear time">✕</button>
       </div>
-      <div id="timeHint" class="hint hidden">Google Tasks saves only the date (any time goes into the notes). For a calendar event, start &amp; end set its length.</div>
+      <div id="timeHint" class="hint hidden" data-i18n="Google Tasks saves only the date (any time goes into the notes). For a calendar event, start & end set its length.">Google Tasks saves only the date (any time goes into the notes). For a calendar event, start &amp; end set its length.</div>
       <div id="matchedLine" class="matched hidden"></div>
 
       <label class="field hidden" id="locationField">
-        <span>Location</span>
-        <input type="text" id="locationInput" placeholder="e.g. GSB Coupa Café">
+        <span data-i18n="Location">Location</span>
+        <input type="text" id="locationInput" placeholder="e.g. GSB Coupa Café" data-i18n-placeholder="e.g. GSB Coupa Café">
       </label>
 
       <label class="field">
-        <span>Notes</span>
+        <span data-i18n="Notes">Notes</span>
         <textarea id="notesInput" rows="3"></textarea>
       </label>
 
       <label class="field hidden" id="listField">
-        <span>Task list</span>
+        <span data-i18n="Task list">Task list</span>
         <select id="listSelect"></select>
       </label>
     </div>
@@ -88,7 +90,7 @@
       </button>
     </div>
 
-    <div id="setupPanel" class="setup hidden">
+    <div id="setupPanel" class="setup hidden" data-i18n-html="One more step: a one-time Google authorization setup (~10 minutes) is needed.<br>Open <b>SETUP.md</b> in the project folder and follow the steps, or simply ask Claude to do it with you.">
       One more step: a one-time Google authorization setup (~10 minutes) is needed.<br>
       Open <b>SETUP.md</b> in the project folder and follow the steps, or simply ask Claude to do it with you.
     </div>
@@ -96,6 +98,7 @@
     <div id="accountLine" class="account hidden"></div>
   </main>
 
+  <script src="lib/i18n.js"></script>
   <script src="lib/vendor/chrono.js"></script>
   <script src="lib/dateparse.js"></script>
   <script src="lib/ai.js"></script>
