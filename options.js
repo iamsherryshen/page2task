@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Re-render closures for transient strings, so a language toggle refreshes them
   let renderTestResult = null;
   let renderAccountMsg = null;
+  let renderObText = null;
+  let obStep = 0; // first-run onboarding: 0 off, 1 connect Google, 2 choose AI, 3 done
   const cfg = await chrome.storage.sync.get({
     aiProvider: 'gemini',
     defaultEventMinutes: 30,
@@ -162,6 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderKeyHelp(); // re-translate the open key how-to, if any
     if (renderTestResult) renderTestResult();
     if (renderAccountMsg) renderAccountMsg();
+    if (renderObText) renderObText();
   });
 
   // Google account: a plain connected/not-connected status. Connecting is an
@@ -177,6 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     $('connectBtn').classList.toggle('hidden', !!email);
     $('disconnectBtn').classList.toggle('hidden', !email);
+    if (obStep === 1 && email) obSetStep(2); // onboarding: account connected, move on
   };
   const refreshAccount = () => {
     chrome.runtime.sendMessage({ action: 'whoami' }, (resp) => {
@@ -204,6 +208,55 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   });
+
+  // —— First-run onboarding: walk the user through the two setup steps in
+  // order (connect Google, then choose an AI source), on top of the normal
+  // settings page. Entered only via the #onboarding hash the installer opens.
+  const obSetStep = async (n) => {
+    obStep = n;
+    $('secAccount').classList.toggle('glow', n === 1);
+    $('secAI').classList.toggle('glow', n === 2);
+    $('obPrimary').classList.toggle('hidden', n !== 2);
+    if (n === 1) {
+      renderObText = () => {
+        $('obText').textContent = t('Step 1 of 2: Connect the Google account your tasks and events will be saved to. Click the button below.');
+      };
+      $('secAccount').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (n === 2) {
+      renderObText = () => {
+        $('obText').textContent = t('Step 2 of 2: Choose how recognition runs. Reading pages, screenshots, and text needs an AI model: use the free on-device model (weaker quality) or add your own API key.');
+      };
+      configPinnedOpen = true; // the choice must be visible, not collapsed
+      refreshTier();
+      $('secAI').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (n === 3) {
+      renderObText = () => {
+        $('obText').textContent = t('All set! Close this page and click the Page2Task icon on any page.');
+      };
+      $('obSkip').classList.add('hidden');
+      await chrome.storage.local.set({ onboardingDone: true });
+    }
+    if (renderObText) renderObText();
+  };
+  $('obPrimary').addEventListener('click', () => {
+    $('saveBtn').click();
+    obSetStep(3);
+  });
+  $('obSkip').addEventListener('click', async () => {
+    await chrome.storage.local.set({ onboardingDone: true });
+    $('obBanner').classList.add('hidden');
+    $('secAccount').classList.remove('glow');
+    $('secAI').classList.remove('glow');
+    renderObText = null;
+    obStep = 0;
+  });
+  if (location.hash === '#onboarding') {
+    const { onboardingDone } = await chrome.storage.local.get({ onboardingDone: false });
+    if (!onboardingDone) {
+      $('obBanner').classList.remove('hidden');
+      obSetStep(1);
+    }
+  }
 
   $('disconnectBtn').addEventListener('click', () => {
     renderAccountMsg = () => { $('accountMsg').textContent = t('Disconnecting…'); };
