@@ -209,11 +209,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // —— First-run onboarding: walk the user through the two setup steps in
-  // order (connect Google, then choose an AI source), on top of the normal
-  // settings page. Entered only via the #onboarding hash the installer opens.
+  // —— First-run onboarding: a step-at-a-time wizard on the settings page.
+  // Wizard mode hides everything except the current step's card (body.ob-N).
+  // It appears whenever setup was never completed, so closing the tab midway
+  // just resumes at the unfinished step next time; "Set up later" opts out.
   const obSetStep = async (n) => {
     obStep = n;
+    document.body.classList.remove('ob-1', 'ob-2', 'ob-3');
+    if (n >= 1 && n <= 3) document.body.classList.add('ob-' + n);
     $('secAccount').classList.toggle('glow', n === 1);
     $('secAI').classList.toggle('glow', n === 2);
     $('obPrimary').classList.toggle('hidden', n !== 2);
@@ -221,14 +224,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderObText = () => {
         $('obText').textContent = t('Step 1 of 2: Connect the Google account your tasks and events will be saved to. Click the button below.');
       };
-      $('secAccount').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (n === 2) {
       renderObText = () => {
         $('obText').textContent = t('Step 2 of 2: Choose how recognition runs. Reading pages, screenshots, and text needs an AI model: use the free on-device model (weaker quality) or add your own API key.');
       };
       configPinnedOpen = true; // the choice must be visible, not collapsed
       refreshTier();
-      $('secAI').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (n === 3) {
       renderObText = () => {
         $('obText').textContent = t('All set! Close this page and click the Page2Task icon on any page.');
@@ -238,23 +239,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (renderObText) renderObText();
   };
-  $('obPrimary').addEventListener('click', () => {
-    $('saveBtn').click();
-    obSetStep(3);
-  });
-  $('obSkip').addEventListener('click', async () => {
+  const obExit = async () => {
     await chrome.storage.local.set({ onboardingDone: true });
+    document.body.classList.remove('ob-1', 'ob-2', 'ob-3');
     $('obBanner').classList.add('hidden');
     $('secAccount').classList.remove('glow');
     $('secAI').classList.remove('glow');
     renderObText = null;
     obStep = 0;
+  };
+  $('obPrimary').addEventListener('click', () => {
+    $('saveBtn').click();
+    obSetStep(3);
   });
-  if (location.hash === '#onboarding') {
+  $('obSkip').addEventListener('click', obExit);
+  {
     const { onboardingDone } = await chrome.storage.local.get({ onboardingDone: false });
     if (!onboardingDone) {
-      $('obBanner').classList.remove('hidden');
-      obSetStep(1);
+      const email = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ action: 'whoami' }, (resp) => {
+          void chrome.runtime.lastError;
+          resolve((resp && resp.ok && resp.data && resp.data.email) || null);
+        });
+      });
+      if (email) {
+        // Already connected: an existing, configured install — no wizard
+        await chrome.storage.local.set({ onboardingDone: true });
+      } else {
+        $('obBanner').classList.remove('hidden');
+        obSetStep(1);
+      }
     }
   }
 
