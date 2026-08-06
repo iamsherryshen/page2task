@@ -182,3 +182,35 @@ Highly recommend this read on AI agents
 这张图的顶部英文标题改为：One email, several deadlines, all caught
 两条高亮句各引一条蓝色细线，分别指向右侧对应的候选行。
 ```
+
+---
+
+## 修订 R2（Google 联动强化；logo 用占位，后期由 Claude Code 合成官方原版）
+
+```
+基于当前版本再做一次修订，目标：让「专门联动 Google Tasks 和 Google Calendar」一目了然。保持画布、构图、风格不变，只改以下几处：
+
+【统一的联动徽章，五张图都要】
+每张图右下角加同一个小徽章：白色圆角胶囊，内容从左到右是两个 24px 的正方形空白占位（圆角 6px，极浅灰描边，内部完全留空，后期会贴官方 logo）+ 一行英文小字 Works with Google Tasks and Google Calendar。徽章低调清晰，不与主体抢戏。
+
+【图 1 总览图】
+- 主标题改为：Anything you see becomes a Google Task or a Calendar event
+- 右侧两张输出卡片改为更接近真实产品：
+  日历卡：头部一行 = 24px 空白 logo 占位 + 文字 Google Calendar；下方日程块（左缘蓝色竖色条 + Dinner with Amy + Thu, Aug 13 · 7:30 PM）
+  待办卡：头部一行 = 24px 空白 logo 占位 + 文字 Google Tasks；下方待办行（圆形勾选框 + Submit grant application + Fri, Aug 14）
+- 弹窗到两张卡的流线保留
+
+【图 2 邮件场景】
+CTA 按钮下方加一行小字：Saved to your Google Tasks，行首留 18px 空白 logo 占位
+
+【图 3 聊天场景】
+弹窗下方的日程块预览升级为迷你日历卡：头部一行 = 24px 空白 logo 占位 + 文字 Google Calendar，下方是日程块
+
+【图 4 阅读场景】
+右侧 Reading 清单卡头部加一行 = 24px 空白 logo 占位 + 文字 Google Tasks；标题拼写修正为 Building Effective Agents
+
+【图 5 手写场景】
+右下角放统一徽章，原有的 Free on-device AI 小字上移一行与其并存
+```
+
+注：官方 logo 文件存放于 store-assets/（不入 zip），终检合成时使用。
