@@ -1,4 +1,4 @@
-# Chrome Web Store listing — copy-paste sheet
+# Chrome Web Store listing: copy-paste sheet
 
 Everything below is ready to paste into the Chrome Web Store Developer Dashboard.
 (This file is for our own use; it ships in the repo but not in the extension zip.)
@@ -12,7 +12,7 @@ Page2Task
 
 **Summary** (132 chars max)
 ```
-Turn any page, email, or screenshot into a Google Task or Calendar event — deadlines detected automatically, free on-device AI.
+Turn any page, email, or screenshot into a Google Task or Calendar event, with deadlines and locations detected for you.
 ```
 
 **Description**
@@ -63,7 +63,7 @@ Used for Google sign-in so the extension can create tasks and calendar events in
 ```
 - `activeTab`:
 ```
-Used to read the title, URL, and visible text of the page the user is on — only at the moment the user clicks the extension — so a task title and deadline can be suggested.
+Used to read the title, URL, and visible text of the page the user is on, only at the moment the user clicks the extension, so a task title and deadline can be suggested.
 ```
 - `scripting`:
 ```
@@ -84,7 +84,7 @@ Optional: only contacted if the user enters their own Gemini, Claude, OpenAI, or
 
 **Remote code**: No, I am not using remote code. (All code ships in the package; the AI endpoints receive data, not code.)
 
-**Data usage disclosures** — check exactly these:
+**Data usage disclosures**, check exactly these:
 - ✅ Website content (page title/text, read on user action, processed locally or by the user's chosen AI)
 - ✅ Personal communications (the open Gmail thread, same handling)
 - ✅ Authentication information (Google OAuth token, kept by Chrome, used only for Google APIs)
@@ -97,11 +97,11 @@ https://iamsherryshen.github.io/page2task/privacy.html
 
 ## Assets needed at submission
 
-- Icon 128×128 — already in the package (`icons/icon128.png`)
+- Icon 128×128, already in the package (`icons/icon128.png`)
 - ≥1 screenshot, 1280×800 (or 640×400): open the real popup on a Gmail message, Cmd+Shift+4 a clean shot, we'll pad it to size together
 - (Optional, can skip) small promo tile 440×280
 
-## Extension ID & OAuth — the one tricky step (confirmed against Chrome docs, Aug 2026)
+## Extension ID and OAuth: the one tricky step (confirmed against Chrome docs, Aug 2026)
 
 The uploaded zip must NOT contain the manifest `key` field: the store rejects brand-new
 items that have one ("key field not allowed in manifest"). So the store WILL assign a new
