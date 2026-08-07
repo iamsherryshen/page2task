@@ -22,13 +22,13 @@ Page2Task turns whatever you're looking at into a to-do or calendar event in two
 HOW IT WORKS
 1. Open a page, an email, or paste a screenshot / any text into the popup.
 2. Page2Task finds the deadline, title, and location for you.
-3. Pick To-do, Calendar, or Both — done. It's saved to your own Google account.
+3. Pick To-do, Calendar, or Both. It's saved to your own Google account.
 
 WHAT IT READS
-• Web pages and articles — the title becomes your task
-• Gmail — reads the open email thread and finds the real deadline, even when it's buried in an earlier message
-• Screenshots — paste (Cmd+V) a screenshot of a chat, poster, or form
-• Any pasted text — a message, an invite, an email draft
+• Web pages and articles: the title becomes your task
+• Gmail: reads the open email thread and finds the real deadline, even when it's buried in an earlier message
+• Screenshots: paste (Cmd+V) a screenshot of a chat, poster, or form
+• Any pasted text: a message, an invite, an email draft
 
 SMART DETAILS
 • Detects meeting locations and writes them into the Calendar event's location field
@@ -39,7 +39,7 @@ SMART DETAILS
 PRIVATE BY DESIGN
 • Free AI runs on your own computer (Chrome's built-in AI): no account, no API key, and nothing you analyze leaves your device
 • Optionally plug in your own Gemini, Claude, OpenAI, or Kimi API key
-• No developer servers, no analytics, no tracking — your data goes only to your own Google account
+• No developer servers, no analytics, no tracking: your data goes only to your own Google account
 • Open source: https://github.com/iamsherryshen/page2task
 ```
 
