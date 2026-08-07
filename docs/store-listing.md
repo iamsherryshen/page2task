@@ -17,16 +17,17 @@ Turn any page, email, or screenshot into a Google Task or Calendar event — dea
 
 **Description**
 ```
-Page2Task turns whatever you're looking at into a to-do or calendar event in two clicks.
+Page2Task adds any page, email, screenshot, or video straight to your Google Calendar or Google Tasks.
 
 HOW IT WORKS
-1. Open a page, an email, or paste a screenshot / any text into the popup.
-2. Page2Task finds the deadline, title, and location for you.
-3. Pick To-do, Calendar, or Both. It's saved to your own Google account.
+1. Click the Page2Task icon on whatever you are looking at, or paste a screenshot or text.
+2. It finds the deadline, title, and location for you.
+3. One click saves it as a to-do, an event, or both, in your own Google account.
 
 WHAT IT READS
 • Web pages and articles: the title becomes your task
 • Gmail: reads the open email thread and finds the real deadline, even when it's buried in an earlier message
+• Video pages: the video becomes a calendar block with its real length
 • Screenshots: paste (Cmd+V) a screenshot of a chat, poster, or form
 • Any pasted text: a message, an invite, an email draft
 
