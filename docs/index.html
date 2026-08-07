@@ -70,7 +70,8 @@
     background-image: linear-gradient(180deg,#FAFCFF 0%,#F2F6FE 30%,#E7EFFD 60%,#DCE9FC 100%);
     background-attachment: fixed; -webkit-font-smoothing: antialiased;
   }
-  .wrap{ max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+  .wrap{ max-width: 1460px; margin: 0 auto; padding: 0 32px; }
+  .wide{ max-width: 1760px; margin: 0 auto; padding: 0 32px; }
 
   nav{ display:flex; align-items:center; gap:12px; padding: 22px 0 6px; }
   nav .logo{ width:32px; height:32px; border-radius:8px; box-shadow:0 6px 14px rgba(11,87,208,.25); }
@@ -103,13 +104,13 @@
     border-radius:16px; box-shadow: var(--shadow); background:#F2F6FE; }
   .p2t-frame{ position:absolute; top:0; left:0; width:1280px; height:800px;
     transform: scale(var(--p2t-s, .4)); transform-origin: top left; }
-  .hero-shot{ margin: 44px 0 8px; }
+  .hero-shot{ margin: 52px 0 10px; }
 
-  .row{ display:grid; grid-template-columns: 1.15fr .85fr; gap: 54px; align-items:center; padding: 46px 0; }
-  .row.flip{ grid-template-columns: .85fr 1.15fr; }
+  .row{ display:grid; grid-template-columns: 1.5fr .8fr; gap: 60px; align-items:center; padding: 58px 0; }
+  .row.flip{ grid-template-columns: .8fr 1.5fr; }
   .row.flip .shot{ order: 2; }
   .row h2{ font-size: clamp(22px, 3vw, 31px); line-height:1.25; letter-spacing:-.3px; margin-bottom:14px; }
-  .row p{ font-size: 16px; line-height:1.7; color:var(--muted); }
+  .row p{ font-size: 17px; line-height:1.7; color:var(--muted); max-width: 46ch; }
 
   .privacy{ padding: 40px 0 10px; }
   .privacy h2{ font-size: clamp(22px, 3vw, 31px); text-align:center; margin-bottom: 30px; letter-spacing:-.3px; }
@@ -149,6 +150,9 @@
     <div class="works"><i class="t"></i><i class="c"></i><span>Works with Google Tasks and Google Calendar</span></div>
   </header>
 
+</div>
+
+<div class="wide">
   <div class="shot hero-shot"><div class="p2t-stage"><div id="anim1" class="p2t-frame">
   <div style="position:absolute;left:0;top:0;width:1280px;height:800px;transform:translateY(-26px)">
 
@@ -300,6 +304,9 @@
 
 <!-- ===== Shot 2 / Several deadlines — 1280×800, 7s loop ===== -->
   </div></div>
+</div>
+
+<div class="wrap">
 
   <section class="row">
     <div class="shot"><div class="p2t-stage"><div id="anim2" class="p2t-frame">
