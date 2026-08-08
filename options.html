@@ -64,7 +64,10 @@
     body.ob-2 .welcome, body.ob-2 #secAccount, body.ob-2 #secMisc, body.ob-2 #saveRow { display: none; }
     body.ob-3 .welcome, body.ob-3 #secAI, body.ob-3 #secAccount, body.ob-3 #secMisc, body.ob-3 #saveRow { display: none; }
     body.ob-1, body.ob-2, body.ob-3 { display: flex; flex-direction: column; }
-    body.ob-1 header, body.ob-2 header, body.ob-3 header { visibility: hidden; }
+    /* Onboarding hides the page title but MUST keep the language toggle:
+       a first-run user who cannot read English needs it right here. */
+    body.ob-1 header .logo, body.ob-2 header .logo, body.ob-3 header .logo,
+    body.ob-1 header h1, body.ob-2 header h1, body.ob-3 header h1 { visibility: hidden; }
     body.ob-1 main, body.ob-2 main, body.ob-3 main {
       flex: 1; display: flex; flex-direction: column; justify-content: center; padding-bottom: 10vh;
     }
@@ -208,7 +211,7 @@
 
     <div id="obActions" class="ob-actions hidden">
       <button id="obPrimary" class="plain-btn save-btn hidden" type="button" data-i18n="Save and start using">Save and start using</button>
-      <button id="obSkip" class="linklike" type="button" data-i18n="Skip this step">Skip this step</button>
+      <button id="obSkip" class="linklike" type="button" data-i18n="Continue without connecting">Continue without connecting</button>
     </div>
   </main>
 

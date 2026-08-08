@@ -180,23 +180,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
   refreshAccount();
 
+  // Ask for the token from THIS page, not from the background service worker:
+  // an interactive consent window can outlive the worker, and when Chrome
+  // recycles it the response never arrives and the UI hangs on "Connecting…".
   $('connectBtn').addEventListener('click', () => {
     renderAccountMsg = () => { $('accountMsg').textContent = t('Connecting…'); };
     renderAccountMsg();
     $('connectBtn').disabled = true;
-    chrome.runtime.sendMessage({ action: 'connect' }, (resp) => {
-      void chrome.runtime.lastError;
+    const failed = (raw) => {
       $('connectBtn').disabled = false;
-      if (resp && resp.ok && resp.data && resp.data.email) {
+      renderAccountMsg = () => { $('accountMsg').textContent = '✗ ' + t(raw); };
+      renderAccountMsg();
+      if (obStep === 1) $('obSkip').classList.remove('hidden'); // offer a way out only now
+    };
+    try {
+      chrome.identity.getAuthToken({ interactive: true }, async (token) => {
+        if (chrome.runtime.lastError || !token) {
+          failed((chrome.runtime.lastError && chrome.runtime.lastError.message) || 'Authorization failed');
+          return;
+        }
+        $('connectBtn').disabled = false;
+        let email = null;
+        try {
+          const res = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+            headers: { Authorization: 'Bearer ' + token },
+          });
+          if (res.ok) email = (await res.json()).email || null;
+        } catch (e) { /* connected, but the address could not be read */ }
         renderAccountMsg = null;
         $('accountMsg').textContent = '';
-        renderAccount(resp.data.email);
-      } else {
-        const raw = (resp && resp.error && resp.error.message) || 'Authorization failed';
-        renderAccountMsg = () => { $('accountMsg').textContent = '✗ ' + t(raw); };
-        renderAccountMsg();
-      }
-    });
+        renderAccount(email || t('connected'));
+      });
+    } catch (e) {
+      failed((e && e.message) || 'Authorization failed');
+    }
   });
 
   // —— First-run onboarding: a step-at-a-time wizard on the settings page.
@@ -208,7 +225,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.body.classList.remove('ob-1', 'ob-2', 'ob-3');
     if (n >= 1 && n <= 3) document.body.classList.add('ob-' + n);
     $('obPrimary').classList.toggle('hidden', n !== 2);
-    $('obSkip').classList.toggle('hidden', n !== 1); // step 2's default choice IS the skip
+    // Step 1 has no escape hatch by default: connecting Google is what makes
+    // the product do anything. It only appears if an attempt fails.
+    $('obSkip').classList.add('hidden');
     $('obActions').classList.toggle('hidden', n === 3);
     $('obDots').classList.toggle('hidden', n === 3);
     Array.from($('obDots').children).forEach((d, i) => d.classList.toggle('on', i === n - 1));
