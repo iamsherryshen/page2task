@@ -89,6 +89,8 @@
     .steps li b { color: var(--fg); font-weight: 600; }
     .steps.intro { margin-top: 6px; margin-bottom: 12px; }
     .steps.intro li { color: var(--fg); }
+    .linklike.inline { margin-top: 0; font-size: 12.5px; white-space: nowrap; }
+    .radio-row label { cursor: pointer; }
     #testResult { margin-top: 8px; }
     h2 { font-size: 15px; margin: 24px 0 4px; }
   </style>
@@ -125,10 +127,11 @@
       <input type="radio" name="aiSource" id="srcBuiltin" value="builtin">
       <span data-i18n="On-device AI model: free, no key, weaker quality; one-time ~2 GB download">On-device AI model: free, no key, weaker quality; one-time ~2 GB download</span>
     </label>
-    <label class="radio-row">
+    <div class="radio-row">
       <input type="radio" name="aiSource" id="srcApi" value="api">
-      <span data-i18n="Your own API key: better quality">Your own API key: better quality</span>
-    </label>
+      <label for="srcApi" data-i18n="Your own API key: better quality">Your own API key: better quality</label>
+      <button id="apiHowLink" class="linklike inline" type="button" data-i18n="How to get one?">How to get one?</button>
+    </div>
 
     <div id="apiConfig" class="hidden">
     <ol class="steps intro">

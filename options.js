@@ -85,6 +85,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     keyHelpOpen = !keyHelpOpen;
     renderKeyHelp();
   });
+  // The link sitting on the radio row itself: someone who does not know what an
+  // API key is needs something to click right there, before choosing anything.
+  $('apiHowLink').addEventListener('click', () => {
+    $('srcApi').checked = true;
+    syncApiVisibility();
+    refreshTier();
+    keyHelpOpen = true;
+    renderKeyHelp();
+    $('keyHelpSteps').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
 
   // The API section shows only when "your own key" is picked, and within it
   // only the selected provider's key row — never all four stacked up
