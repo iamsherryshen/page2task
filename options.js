@@ -36,26 +36,55 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 'builtin' when the on-device radio is picked, else the dropdown provider
   const currentChoice = () => ($('srcBuiltin').checked ? 'builtin' : normProvider($('provider').value));
 
-  // Per-provider "how do I get this key" help, shown by the ? icon next to the field
-  const KEY_HELP = {
-    gemini: 'Get a free key at aistudio.google.com/apikey: sign in with Google and click "Create API key". No credit card needed.',
-    claude: 'Get a key on the API Keys page at console.anthropic.com. Needs a paid account (pay per use).',
-    openai: 'Get a key at platform.openai.com/api-keys. Needs a paid account (pay per use).',
-    kimi: 'Get a key at platform.moonshot.cn or platform.moonshot.ai (international); keys from either work here.',
+  // Per-provider walkthrough, opened by the "How to get an API key" link.
+  // Numbered steps beat a wall of prose: the user is mid-task, not reading.
+  const KEY_STEPS = {
+    gemini: [
+      'Open aistudio.google.com/apikey',
+      'Sign in with your Google account',
+      'Click "Create API key", then "Create API key in new project"',
+      'Copy the key that starts with AIza',
+      'Paste it in the field above and click Save',
+    ],
+    claude: [
+      'Open console.anthropic.com and sign in',
+      'Add credit under Billing (Anthropic has no free tier)',
+      'Go to API Keys and click "Create Key"',
+      'Copy the key that starts with sk-ant-',
+      'Paste it in the field above and click Save',
+    ],
+    openai: [
+      'Open platform.openai.com/api-keys and sign in',
+      'Add a payment method under Billing (OpenAI has no free tier)',
+      'Click "Create new secret key"',
+      'Copy the key that starts with sk-, it is shown only once',
+      'Paste it in the field above and click Save',
+    ],
+    kimi: [
+      'Open platform.moonshot.cn, or platform.moonshot.ai outside mainland China',
+      'Sign in and top up your balance',
+      'Go to API Keys and create a new key',
+      'Copy the key',
+      'Paste it in the field above and click Save',
+    ],
   };
-  let helpOpenFor = null;
+  let keyHelpOpen = false;
   const renderKeyHelp = () => {
-    const el = $('keyHelp');
-    if (!helpOpenFor) { el.classList.add('hidden'); return; }
-    el.textContent = t(KEY_HELP[helpOpenFor]);
-    el.classList.remove('hidden');
+    const box = $('keyHelpSteps');
+    box.classList.toggle('hidden', !keyHelpOpen);
+    $('keyHelpToggle').textContent = t(keyHelpOpen ? 'Hide the steps' : 'How to get an API key');
+    if (!keyHelpOpen) return;
+    box.textContent = '';
+    for (const step of KEY_STEPS[normProvider($('provider').value)] || []) {
+      const li = document.createElement('li');
+      li.textContent = t(step);
+      box.appendChild(li);
+    }
   };
-  document.querySelectorAll('.info-btn').forEach((b) =>
-    b.addEventListener('click', () => {
-      helpOpenFor = helpOpenFor === b.dataset.help ? null : b.dataset.help;
-      renderKeyHelp();
-    })
-  );
+  $('keyHelpToggle').addEventListener('click', () => {
+    keyHelpOpen = !keyHelpOpen;
+    renderKeyHelp();
+  });
 
   // The API section shows only when "your own key" is picked, and within it
   // only the selected provider's key row — never all four stacked up
@@ -65,7 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (const name of Object.keys(PROVIDERS)) {
       $('row-' + name).classList.toggle('hidden', name !== chosen);
     }
-    helpOpenFor = null;
     renderKeyHelp();
   };
   syncApiVisibility();

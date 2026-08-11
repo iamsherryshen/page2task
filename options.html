@@ -84,6 +84,9 @@
       cursor: pointer; padding: 0; flex: none; align-self: center; font-weight: 700;
     }
     .info-btn:hover { background: var(--chip-bg); }
+    .steps { margin: 10px 0 6px 20px; padding: 0; }
+    .steps li { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 5px; }
+    .steps li b { color: var(--fg); font-weight: 600; }
     #testResult { margin-top: 8px; }
     h2 { font-size: 15px; margin: 24px 0 4px; }
   </style>
@@ -141,7 +144,6 @@
         <span>Gemini API key</span>
         <input type="password" id="geminiKey" placeholder="AIza…" autocomplete="off">
       </label>
-      <button type="button" class="info-btn" data-help="gemini" title="How to get this key" data-i18n-title="How to get this key">?</button>
       <button id="toggleGeminiKey" class="plain-btn" type="button">Show</button>
     </div>
 
@@ -150,7 +152,6 @@
         <span>Anthropic API key</span>
         <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off">
       </label>
-      <button type="button" class="info-btn" data-help="claude" title="How to get this key" data-i18n-title="How to get this key">?</button>
       <button id="toggleKey" class="plain-btn" type="button">Show</button>
     </div>
 
@@ -159,7 +160,6 @@
         <span>OpenAI API key</span>
         <input type="password" id="openaiKey" placeholder="sk-…" autocomplete="off">
       </label>
-      <button type="button" class="info-btn" data-help="openai" title="How to get this key" data-i18n-title="How to get this key">?</button>
       <button id="toggleOpenaiKey" class="plain-btn" type="button">Show</button>
     </div>
 
@@ -168,11 +168,11 @@
         <span>Kimi (Moonshot) API key</span>
         <input type="password" id="kimiKey" placeholder="sk-…" autocomplete="off">
       </label>
-      <button type="button" class="info-btn" data-help="kimi" title="How to get this key" data-i18n-title="How to get this key">?</button>
       <button id="toggleKimiKey" class="plain-btn" type="button">Show</button>
     </div>
 
-    <p class="hint hidden" id="keyHelp"></p>
+    <button id="keyHelpToggle" class="linklike" type="button" data-i18n="How to get an API key">How to get an API key</button>
+    <ol id="keyHelpSteps" class="steps hidden"></ol>
     <p class="hint" data-i18n="Keys are stored only on this computer and sent only to the selected provider's official API. The developer cannot see them.">
       Keys are stored only on this computer and sent only to the selected provider's official API. The developer cannot see them.
     </p>
