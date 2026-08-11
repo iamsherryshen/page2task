@@ -264,33 +264,52 @@ document.addEventListener('DOMContentLoaded', async () => {
   // just resumes at the unfinished step next time; "Set up later" opts out.
   const obSetStep = async (n) => {
     obStep = n;
-    document.body.classList.remove('ob-1', 'ob-2', 'ob-3');
-    if (n >= 1 && n <= 3) document.body.classList.add('ob-' + n);
-    $('obPrimary').classList.toggle('hidden', n !== 2);
+    document.body.classList.remove('ob-1', 'ob-2', 'ob-3', 'ob-4', 'ob-5');
+    if (n >= 1 && n <= 5) document.body.classList.add('ob-' + n);
+    $('obPrimary').classList.toggle('hidden', n === 1 || n === 5);
     // Step 1 has no escape hatch by default: connecting Google is what makes
     // the product do anything. It only appears if an attempt fails.
     $('obSkip').classList.add('hidden');
-    $('obActions').classList.toggle('hidden', n === 3);
-    $('obDots').classList.toggle('hidden', n === 3);
+    $('obActions').classList.toggle('hidden', n === 5);
+    $('obDots').classList.toggle('hidden', n === 5);
     Array.from($('obDots').children).forEach((d, i) => d.classList.toggle('on', i === n - 1));
     if (n === 1) {
       renderObText = () => {
-        $('obText').textContent = t('Step 1 of 2: Connect the Google account your tasks and events will be saved to. Click the button below.');
+        $('obText').textContent = t('Step 1 of 4: Connect the Google account your tasks and events will be saved to.');
       };
     } else if (n === 2) {
       renderObText = () => {
-        $('obText').textContent = t('Step 2 of 2: Choose how recognition runs. Reading pages, screenshots, and text needs an AI model: use the free on-device model (weaker quality) or add your own API key.');
+        $('obText').textContent = t('Step 2 of 4: Choose how recognition runs. Reading pages, screenshots, and text needs an AI model.');
+        $('obPrimary').textContent = t('Next');
       };
       refreshTier();
     } else if (n === 3) {
       renderObText = () => {
+        $('obText').textContent = t('Step 3 of 4: Pin Page2Task to your toolbar so it is always one click away.');
+        $('obPrimary').textContent = t('Next');
+      };
+      fitStages();
+    } else if (n === 4) {
+      renderObText = () => {
+        $('obText').textContent = t('Step 4 of 4: On any page with a date in it, click the icon and it becomes a to-do or an event.');
+        $('obPrimary').textContent = t('Start using Page2Task');
+      };
+      fitStages();
+    } else if (n === 5) {
+      renderObText = () => {
         $('obText').textContent = t('All set! Close this page and click the Page2Task icon on any page.');
       };
-      $('obSkip').classList.add('hidden');
       await chrome.storage.local.set({ onboardingDone: true });
     }
     if (renderObText) renderObText();
   };
+  // The animations are fixed 960x600 stages; scale each to its card
+  const fitStages = () => {
+    document.querySelectorAll('.ob-stage').forEach((st) => {
+      if (st.clientWidth) st.style.setProperty('--obs', (st.clientWidth / 960).toFixed(4));
+    });
+  };
+  window.addEventListener('resize', fitStages);
   const obExit = async () => {
     await chrome.storage.local.set({ onboardingDone: true });
     document.body.classList.remove('ob-1', 'ob-2', 'ob-3');
@@ -300,8 +319,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     obStep = 0;
   };
   $('obPrimary').addEventListener('click', () => {
-    $('saveBtn').click();
-    obSetStep(3);
+    if (obStep === 2) { $('saveBtn').click(); obSetStep(3); return; }
+    if (obStep === 3) { obSetStep(4); return; }
+    obSetStep(5);
   });
   // Skipping step 1 only skips Google: everyone still passes the AI choice
   $('obSkip').addEventListener('click', () => {

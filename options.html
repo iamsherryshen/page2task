@@ -60,15 +60,16 @@
     .sec { border: 2px solid transparent; border-radius: 12px; padding: 2px 10px 10px; margin: 0 -12px; transition: box-shadow .3s, border-color .3s; }
     .sec.glow { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(11, 87, 208, 0.12); }
     /* Wizard mode: one step on screen at a time, vertically centered */
-    body.ob-1 .welcome, body.ob-1 #secAI, body.ob-1 #secMisc, body.ob-1 #saveRow { display: none; }
-    body.ob-2 .welcome, body.ob-2 #secAccount, body.ob-2 #secMisc, body.ob-2 #saveRow { display: none; }
-    body.ob-3 .welcome, body.ob-3 #secAI, body.ob-3 #secAccount, body.ob-3 #secMisc, body.ob-3 #saveRow { display: none; }
-    body.ob-1, body.ob-2, body.ob-3 { display: flex; flex-direction: column; }
+    body.ob-1 .welcome, body.ob-1 #secAI, body.ob-1 #secMisc, body.ob-1 #saveRow, body.ob-1 #obStage3, body.ob-1 #obStage4 { display: none; }
+    body.ob-2 .welcome, body.ob-2 #secAccount, body.ob-2 #secMisc, body.ob-2 #saveRow, body.ob-2 #obStage3, body.ob-2 #obStage4 { display: none; }
+    body.ob-3 .welcome, body.ob-3 #secAI, body.ob-3 #secAccount, body.ob-3 #secMisc, body.ob-3 #saveRow, body.ob-3 #obStage4 { display: none; }
+    body.ob-4 .welcome, body.ob-4 #secAI, body.ob-4 #secAccount, body.ob-4 #secMisc, body.ob-4 #saveRow, body.ob-4 #obStage3 { display: none; }
+    body.ob-5 .welcome, body.ob-5 #secAI, body.ob-5 #secAccount, body.ob-5 #secMisc, body.ob-5 #saveRow, body.ob-5 #obStage3, body.ob-5 #obStage4 { display: none; }
+    body.ob-1, body.ob-2, body.ob-3, body.ob-4, body.ob-5 { display: flex; flex-direction: column; }
     /* Onboarding hides the page title but MUST keep the language toggle:
        a first-run user who cannot read English needs it right here. */
-    body.ob-1 header .logo, body.ob-2 header .logo, body.ob-3 header .logo,
-    body.ob-1 header h1, body.ob-2 header h1, body.ob-3 header h1 { visibility: hidden; }
-    body.ob-1 main, body.ob-2 main, body.ob-3 main {
+    body[class*="ob-"] header .logo, body[class*="ob-"] header h1 { visibility: hidden; }
+    body[class*="ob-"] main {
       flex: 1; display: flex; flex-direction: column; justify-content: center; padding-bottom: 10vh;
     }
     body.ob-1 #secAccount, body.ob-2 #secAI {
@@ -109,6 +110,100 @@
     .steps.intro { margin-top: 6px; margin-bottom: 12px; }
     .steps.intro li { color: var(--fg); }
     #testResult { margin-top: 8px; }
+    /* Onboarding animations (steps 3 and 4), scaled from their 960x600 stage */
+    .ob-stage { position: relative; width: 100%; aspect-ratio: 960 / 600; overflow: hidden;
+      border-radius: 14px; box-shadow: 0 2px 4px rgba(20,45,90,.06), 0 14px 34px -14px rgba(20,45,90,.24); }
+    .ob-stage > div { position: absolute; top: 0; left: 0; transform: scale(var(--obs, .48)); transform-origin: top left; }
+    .p2t-anim { animation-duration: 6s; animation-iteration-count: infinite; animation-timing-function: cubic-bezier(.4,0,.2,1); }
+    
+      @keyframes p3cursor {
+        0%           { transform: translate(470px, 556px) }
+        20%, 36.67%  { transform: translate(670px, 140px) }
+        56.67%, 70%  { transform: translate(756px, 320px) }
+        86.67%, 100% { transform: translate(470px, 556px) }
+      }
+    
+      @keyframes p3panel {
+        0%, 20%   { opacity: 0; transform: translateY(-14px) scaleY(.9) }
+        33%, 70%  { opacity: 1; transform: translateY(0) scaleY(1) }
+        82%, 100% { opacity: 0; transform: translateY(-8px) scaleY(.94) }
+      }
+      @keyframes p3panelInner { 0%, 22% { opacity: 0 } 34%, 72% { opacity: 1 } 80%, 100% { opacity: 0 } }
+    
+      @keyframes p3haloPuzzle { 0%, 4% { opacity: 0; transform: scale(.7) } 16%, 22% { opacity: 1; transform: scale(1) } 32%, 100% { opacity: 0; transform: scale(1) } }
+      @keyframes p3haloPin    { 0%, 40% { opacity: 0; transform: scale(.7) } 52%, 58% { opacity: 1; transform: scale(1) } 68%, 100% { opacity: 0; transform: scale(1) } }
+      @keyframes p3pressPuzzle { 0%, 19%, 26%, 100% { transform: scale(1) } 21.5% { transform: scale(.9) } }
+      @keyframes p3pressPin    { 0%, 54%, 61%, 100% { transform: scale(1) } 57% { transform: scale(.9) } }
+    
+      @keyframes p3pinOff { 0%, 56% { opacity: 1 } 60%, 100% { opacity: 0 } }
+      @keyframes p3pinOn  { 0%, 56% { opacity: 0 } 60%, 100% { opacity: 1 } }
+    
+      
+      @keyframes p3rowIcon { 0%, 22% { opacity: 0 } 34%, 55.5% { opacity: 1 } 57.5%, 100% { opacity: 0 } }
+    
+      
+      @keyframes p3fly {
+        0%          { opacity: 1; transform: translate(0,0) scale(1) }
+        9%          { opacity: 0; transform: translate(0,0) scale(1) }
+        9.1%, 55%   { opacity: 0; transform: translate(-130px, 170px) scale(1) }
+        55.5%       { opacity: 1; transform: translate(-130px, 170px) scale(1) }
+        56.67%      { opacity: 1; transform: translate(-130px, 170px) scale(1) }
+        67%         { opacity: 1; transform: translate(0,0) scale(1) }
+        70.5%       { opacity: 1; transform: translate(0,0) scale(1.2) }
+        75%, 100%   { opacity: 1; transform: translate(0,0) scale(1) }
+      }
+      @keyframes p3arrow { 0% { opacity: 1; transform: translateY(0) } 9%, 76% { opacity: 0; transform: translateY(8px) } 87%, 100% { opacity: 1; transform: translateY(0) } }
+    
+      @media (prefers-reduced-motion: reduce) { .p2t-anim { animation: none !important } }
+    
+    
+      @keyframes p4cursor {
+        0%           { transform: translate(250px, 526px) }
+        16.67%, 30%  { transform: translate(806px, 56px) }
+        50%          { transform: translate(806px, 56px) }
+        63.33%, 80%  { transform: translate(664px, 330px) }
+        93.33%, 100% { transform: translate(250px, 526px) }
+      }
+    
+      @keyframes p4iconBg   { 0%, 12% { opacity: 1 } 16%, 20% { opacity: 0 } 24%, 100% { opacity: 1 } }
+      @keyframes p4iconPop  { 0%, 15%, 22%, 100% { transform: scale(1) } 18.5% { transform: scale(1.14) } }
+      @keyframes p4iconRing { 0%, 16%, 26%, 100% { opacity: 0 } 17% { opacity: .5; transform: scale(1) } 26%, 100% { transform: scale(2.3) } }
+    
+      @keyframes p4popup {
+        0%, 8%       { opacity: 1; transform: translateY(0) scaleY(1) }
+        13%, 16.67%  { opacity: 0; transform: translateY(-16px) scaleY(.88); animation-timing-function: cubic-bezier(.16,.9,.25,1) }
+        28%, 100%    { opacity: 1; transform: translateY(0) scaleY(1) }
+      }
+    
+      
+      @keyframes p4hl {
+        0%          { opacity: 1; clip-path: inset(0 0 0 0) }
+        12%         { opacity: 0; clip-path: inset(0 0 0 0) }
+        12.5%, 30%  { opacity: 1; clip-path: inset(0 100% 0 0) }
+        40%, 100%   { opacity: 1; clip-path: inset(0 0 0 0) }
+      }
+    
+      @keyframes p4line { 0%, 39% { opacity: 0; stroke-dashoffset: 300 } 41% { opacity: 1 } 47%, 50% { opacity: 1; stroke-dashoffset: 0 } 55%, 100% { opacity: 0; stroke-dashoffset: 0 } }
+      @keyframes p4head { 0%, 45% { opacity: 0 } 47%, 50% { opacity: 1 } 55%, 100% { opacity: 0 } }
+    
+      @keyframes p4txt1 { 0% { opacity: 1 } 12%, 43% { opacity: 0 } 47%, 100% { opacity: 1 } }
+      @keyframes p4txt2 { 0% { opacity: 1 } 12%, 47% { opacity: 0 } 51%, 100% { opacity: 1 } }
+      @keyframes p4skl1 { 0% { opacity: 0 } 12%, 43% { opacity: 1 } 47%, 100% { opacity: 0 } }
+      @keyframes p4skl2 { 0% { opacity: 0 } 12%, 47% { opacity: 1 } 51%, 100% { opacity: 0 } }
+    
+      @keyframes p4cta  { 0%, 63.33%, 76.67%, 100% { transform: scale(1) } 66% { transform: scale(.968) } 70.5% { transform: scale(1.026) } }
+      @keyframes p4ctaR { 0%, 64% { opacity: 0; transform: scale(.12) } 66.5% { opacity: .15 } 75%, 100% { opacity: 0; transform: scale(1) } }
+    
+      @keyframes p4res {
+        0%           { opacity: 1; transform: translateY(0) scale(1) }
+        12%          { opacity: 0; transform: translateY(8px) scale(1) }
+        76.67%       { opacity: 0; transform: translateY(30px) scale(1) }
+        87%          { opacity: 1; transform: translateY(0) scale(1) }
+        89.5%        { opacity: 1; transform: translateY(0) scale(1.04) }
+        92.5%, 100%  { opacity: 1; transform: translateY(0) scale(1) }
+      }
+    
+    
     h2 { font-size: 15px; margin: 24px 0 4px; }
   </style>
 </head>
@@ -121,7 +216,7 @@
   <main>
     <div id="obBanner" class="ob-banner hidden">
       <img src="icons/icon48.png" class="ob-logo" alt="">
-      <div id="obDots" class="ob-dots"><span class="on"></span><span></span></div>
+      <div id="obDots" class="ob-dots"><span class="on"></span><span></span><span></span><span></span></div>
       <div id="obText"></div>
     </div>
 
@@ -220,6 +315,211 @@
     </div><!-- /aiConfig -->
     </div><!-- /secAI -->
 
+    <div id="obStage3" class="ob-stage hidden"><div style="position:relative;width:960px;height:600px;overflow:hidden;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;background:linear-gradient(160deg,#FFFFFF 0%,#F7FAFF 42%,#E7EFFC 100%)">
+
+  <!-- Chrome toolbar strip -->
+  <div style="position:absolute;left:0;top:100px;width:960px;height:96px;background:#F4F7FC;border-bottom:1px solid #E1E8F3"></div>
+
+  <!-- the page below the toolbar, kept wordless so nothing competes with the toolbar -->
+  <div style="position:absolute;left:0;top:196px;width:960px;height:404px;background:linear-gradient(168deg,#FDFEFF 0%,#F6F9FE 55%,#EBF1FD 100%)"></div>
+  <div style="position:absolute;left:300px;top:430px;opacity:.6">
+   <div style="width:360px;height:14px;border-radius:7px;background:#DFE5EF"></div>
+   <div style="width:300px;height:14px;border-radius:7px;background:#E4E9F2;margin-top:26px"></div>
+   <div style="width:342px;height:14px;border-radius:7px;background:#DFE5EF;margin-top:26px"></div>
+   <div style="width:238px;height:14px;border-radius:7px;background:#E4E9F2;margin-top:26px"></div>
+  </div>
+
+  <!-- tail of the address bar -->
+  <div style="position:absolute;left:60px;top:126px;width:440px;height:44px;border-radius:22px;background:#E7EDF7">
+   <div style="position:absolute;left:22px;top:16px;width:250px;height:12px;border-radius:6px;background:#CFD8E6"></div>
+  </div>
+
+  <!-- puzzle (Extensions) button -->
+  <div style="position:absolute;left:650px;top:122px;width:52px;height:52px">
+   <div class="p2t-anim" style="position:absolute;inset:-9px;border-radius:50%;background:#D6E8FF;animation-name:p3haloPuzzle"></div>
+   <div class="p2t-anim" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;animation-name:p3pressPuzzle">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+     <path d="M20.5 11H19V7.5A1.5 1.5 0 0 0 17.5 6H14V4.5a2.5 2.5 0 0 0-5 0V6H5.5A1.5 1.5 0 0 0 4 7.5V11h1.5a2.5 2.5 0 0 1 0 5H4v3.5A1.5 1.5 0 0 0 5.5 21H9v-1.5a2.5 2.5 0 0 1 5 0V21h3.5a1.5 1.5 0 0 0 1.5-1.5V16h1.5a2.5 2.5 0 0 0 0-5z"
+           stroke="#5F6368" stroke-width="1.6" stroke-linejoin="round"></path>
+    </svg>
+   </div>
+  </div>
+
+  <!-- avatar -->
+  <div style="position:absolute;left:730px;top:122px;width:52px;height:52px;border-radius:50%;background:#DCE5F4"></div>
+
+  <!-- arrow pointing up at the pinned slot -->
+  <div class="p2t-anim" style="position:absolute;left:578px;top:206px;width:36px;animation-name:p3arrow">
+   <svg width="36" height="40" viewBox="0 0 36 40" fill="none">
+    <path d="M18 38 L18 12" stroke="#0B57D0" stroke-width="4" stroke-linecap="round"></path>
+    <path d="M18 4 L28 18 L8 18 Z" fill="#0B57D0"></path>
+   </svg>
+  </div>
+
+  <!-- ══ Extensions panel ══ -->
+  <div class="p2t-anim" style="position:absolute;left:400px;top:212px;width:440px;height:190px;background:#fff;border-radius:18px;box-sizing:border-box;transform-origin:300px 0;box-shadow:0 24px 56px rgba(16,54,110,.18),0 2px 6px rgba(16,54,110,.10);animation-name:p3panel">
+   <div class="p2t-anim" style="position:absolute;inset:0;animation-name:p3panelInner">
+
+    <div style="position:absolute;left:32px;top:24px;font-size:26px;line-height:30px;font-weight:500;color:#5F6368">Extensions</div>
+
+    <div style="position:absolute;left:20px;top:68px;width:400px;height:76px;border-radius:14px;background:#F4F8FE"></div>
+
+    <div class="p2t-anim" style="position:absolute;left:40px;top:80px;width:52px;height:52px;animation-name:p3rowIcon">
+     <svg width="52" height="52" viewBox="0 0 36 36" style="display:block">
+      <rect width="36" height="36" rx="9" fill="#0B57D0"></rect>
+      <path d="M10 18.5 L15.5 24 L26 12.5" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+     </svg>
+    </div>
+
+    <div style="position:absolute;left:108px;top:92px;font-size:30px;line-height:34px;font-weight:500;color:#141821;white-space:nowrap">Page2Task</div>
+
+    <!-- pin button -->
+    <div style="position:absolute;left:340px;top:82px;width:48px;height:48px">
+     <div class="p2t-anim" style="position:absolute;inset:-9px;border-radius:50%;background:#D6E8FF;animation-name:p3haloPin"></div>
+     <div class="p2t-anim" style="position:absolute;inset:0;animation-name:p3pressPin">
+      <svg class="p2t-anim" width="48" height="48" viewBox="0 0 24 24" fill="none" style="position:absolute;left:0;top:0;animation-name:p3pinOff">
+       <path d="M16 9V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"
+             stroke="#5F6368" stroke-width="1.5" fill="none"></path>
+      </svg>
+      <svg class="p2t-anim" width="48" height="48" viewBox="0 0 24 24" style="position:absolute;left:0;top:0;animation-name:p3pinOn">
+       <path d="M16 9V4h1a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"
+             fill="#0B57D0"></path>
+      </svg>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <!-- pinned Page2Task icon — AFTER the panel, so the flight is never occluded -->
+  <div class="p2t-anim" style="position:absolute;left:570px;top:122px;width:52px;height:52px;animation-name:p3fly">
+   <svg width="52" height="52" viewBox="0 0 36 36" style="display:block;filter:drop-shadow(0 3px 8px rgba(11,87,208,.32))">
+    <rect width="36" height="36" rx="9" fill="#0B57D0"></rect>
+    <path d="M10 18.5 L15.5 24 L26 12.5" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+   </svg>
+  </div>
+
+  <!-- cursor -->
+  <div class="p2t-anim" style="position:absolute;left:0;top:0;width:32px;height:37px;transform-origin:3px 3px;filter:drop-shadow(0 3px 7px rgba(11,55,110,.32));animation-name:p3cursor">
+   <svg width="32" height="37" viewBox="0 0 26 30">
+    <path d="M3 2.5 L3 23.5 L8.6 18.2 L12.1 26.4 L15.9 24.8 L12.5 16.8 L20.2 16.4 Z" fill="#fff" stroke="#1F1F1F" stroke-width="1.7" stroke-linejoin="round"></path>
+   </svg>
+  </div>
+
+</div></div>
+    <div id="obStage4" class="ob-stage hidden"><div style="position:relative;width:960px;height:600px;overflow:hidden;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;background:linear-gradient(160deg,#F8FBFF 0%,#EFF5FE 55%,#DCE9FC 100%)">
+
+ <!-- browser window -->
+ <div style="position:absolute;left:30px;top:30px;width:900px;height:540px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 26px 60px rgba(16,54,110,.16)">
+
+  <!-- toolbar -->
+  <div style="position:absolute;left:0;top:0;width:900px;height:68px;background:#F4F7FC;border-bottom:1px solid #E1E8F3">
+   <div style="position:absolute;left:24px;top:29px;width:11px;height:11px;border-radius:50%;background:#E7D3D1"></div>
+   <div style="position:absolute;left:46px;top:29px;width:11px;height:11px;border-radius:50%;background:#E6DECB"></div>
+   <div style="position:absolute;left:68px;top:29px;width:11px;height:11px;border-radius:50%;background:#D3E0D2"></div>
+   <div style="position:absolute;left:104px;top:18px;width:560px;height:32px;border-radius:16px;background:#E7EDF7">
+    <div style="position:absolute;left:18px;top:10px;width:236px;height:12px;border-radius:6px;background:#CFD8E6"></div>
+   </div>
+
+   <!-- Page2Task icon -->
+   <div style="position:absolute;left:764px;top:16px;width:36px;height:36px">
+    <div class="p2t-anim" style="position:absolute;inset:-4px;border-radius:11px;background:#C2E7FF;animation-name:p4iconBg"></div>
+    <div class="p2t-anim" style="position:absolute;inset:0;border-radius:50%;border:3px solid #0B57D0;animation-name:p4iconRing"></div>
+    <div class="p2t-anim" style="position:absolute;inset:0;animation-name:p4iconPop">
+     <svg width="36" height="36" viewBox="0 0 36 36" style="display:block">
+      <rect width="36" height="36" rx="9" fill="#0B57D0"></rect>
+      <path d="M10 18.5 L15.5 24 L26 12.5" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+     </svg>
+    </div>
+   </div>
+   <div style="position:absolute;left:824px;top:18px;width:32px;height:32px;border-radius:50%;background:#DCE5F4"></div>
+  </div>
+
+  <!-- page surface -->
+  <div style="position:absolute;left:0;top:68px;width:900px;height:472px;background:linear-gradient(165deg,#FDFEFF 0%,#F7FAFE 60%,#EEF3FD 100%)"></div>
+
+  <!-- ══ the email ══ -->
+  <div style="position:absolute;left:40px;top:112px;width:36px;height:36px;border-radius:50%;background:#9FC0F0"></div>
+  <div style="position:absolute;left:92px;top:120px;font-size:22px;line-height:26px;font-weight:500;color:#6B7382;white-space:nowrap">Grants Office</div>
+
+  <div style="position:absolute;left:40px;top:170px;font-size:30px;line-height:36px;font-weight:700;color:#141821;white-space:nowrap">Seed Grant timeline</div>
+
+  <div style="position:absolute;left:40px;top:226px">
+   <div style="width:380px;height:12px;border-radius:6px;background:#E2E8F1"></div>
+   <div style="width:322px;height:12px;border-radius:6px;background:#E2E8F1;margin-top:20px"></div>
+  </div>
+
+  <!-- the line Page2Task picks up -->
+  <div style="position:absolute;left:34px;top:292px;padding:14px 18px;white-space:nowrap">
+   <div class="p2t-anim" style="position:absolute;inset:0;border-radius:10px;background:#FCE38A;animation-name:p4hl"></div>
+   <div style="position:relative;font-size:26px;line-height:34px;font-weight:500;color:#1B1F27">Due Friday, Aug 14<br />at 5:00 PM</div>
+  </div>
+
+  <div style="position:absolute;left:40px;top:406px">
+   <div style="width:366px;height:12px;border-radius:6px;background:#E2E8F1"></div>
+   <div style="width:300px;height:12px;border-radius:6px;background:#E2E8F1;margin-top:20px"></div>
+  </div>
+ </div>
+
+ <!-- ══ popup — hangs straight under the toolbar icon ══ -->
+ <div class="p2t-anim" style="position:absolute;left:490px;top:96px;width:360px;height:288px;background:#fff;border-radius:18px;box-sizing:border-box;transform-origin:322px 0;box-shadow:0 24px 58px rgba(16,54,110,.20),0 2px 8px rgba(16,54,110,.10);animation-name:p4popup">
+
+  <div style="position:absolute;left:20px;top:18px;width:28px;height:28px">
+   <svg width="28" height="28" viewBox="0 0 36 36" style="display:block">
+    <rect width="36" height="36" rx="9" fill="#0B57D0"></rect>
+    <path d="M10 18.5 L15.5 24 L26 12.5" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+   </svg>
+  </div>
+  <div style="position:absolute;left:60px;top:26px;width:124px;height:12px;border-radius:6px;background:#D7DEEA"></div>
+
+  <!-- Title -->
+  <div style="position:absolute;left:18px;top:62px;width:324px;height:74px;border-radius:10px;background:#F4F8FE;border:1.5px solid #DCE6F7;box-sizing:border-box">
+   <div class="p2t-anim" style="position:absolute;left:18px;top:20px;animation-name:p4skl1">
+    <div style="width:238px;height:13px;border-radius:7px;background:#DDE4EF"></div>
+    <div style="width:124px;height:13px;border-radius:7px;background:#DDE4EF;margin-top:16px"></div>
+   </div>
+   <div class="p2t-anim" style="position:absolute;left:18px;top:11px;font-size:26px;line-height:26px;font-weight:500;color:#1B1F27;white-space:nowrap;animation-name:p4txt1">Submit the grant<br /><span style="line-height:34px">proposal</span></div>
+  </div>
+
+  <!-- Date -->
+  <div style="position:absolute;left:18px;top:150px;width:324px;height:50px;border-radius:10px;background:#F4F8FE;border:1.5px solid #DCE6F7;box-sizing:border-box">
+   <div class="p2t-anim" style="position:absolute;left:18px;top:18px;width:150px;height:13px;border-radius:7px;background:#DDE4EF;animation-name:p4skl2"></div>
+   <div class="p2t-anim" style="position:absolute;left:18px;top:10px;font-size:26px;line-height:30px;font-weight:500;color:#1B1F27;white-space:nowrap;animation-name:p4txt2">Fri, Aug 14</div>
+  </div>
+
+  <!-- CTA -->
+  <div class="p2t-anim" style="position:absolute;left:18px;top:214px;width:324px;height:56px;border-radius:28px;background:#0B57D0;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(11,87,208,.32);animation-name:p4cta">
+   <div class="p2t-anim" style="position:absolute;left:18px;top:-102px;width:260px;height:260px;border-radius:50%;background:#fff;animation-name:p4ctaR"></div>
+   <span style="position:relative;font-size:26px;line-height:30px;font-weight:500;color:#fff;white-space:nowrap">Add to-do</span>
+  </div>
+ </div>
+
+ <!-- ══ line: highlighted date → the Title field ══ -->
+ <svg width="960" height="600" style="position:absolute;left:0;top:0;pointer-events:none;overflow:visible">
+  <path class="p2t-anim" d="M300 356 C 400 356, 420 200, 486 178" fill="none" stroke="#0B57D0" stroke-width="4"
+        stroke-linecap="round" stroke-dasharray="300" stroke-dashoffset="300" style="animation-name:p4line"></path>
+  <path class="p2t-anim" d="M506 174 L487 169 L491 184 Z" fill="#0B57D0" style="animation-name:p4head"></path>
+ </svg>
+
+ <!-- ══ the saved to-do ══ -->
+ <div class="p2t-anim" style="position:absolute;left:430px;top:404px;width:450px;background:#fff;border-radius:14px;padding:18px 20px;box-sizing:border-box;box-shadow:0 14px 32px rgba(16,54,110,.18),0 1px 3px rgba(16,54,110,.10);animation-name:p4res">
+  <div style="display:flex;gap:14px;align-items:flex-start">
+   <div style="width:26px;height:26px;border-radius:50%;border:2.5px solid #9AA4B2;box-sizing:border-box;flex:none;margin-top:4px"></div>
+   <div>
+    <div style="font-size:26px;line-height:31px;font-weight:700;color:#141821;white-space:nowrap">Submit the grant proposal</div>
+    <div style="font-size:26px;line-height:30px;font-weight:400;color:#5F6368;white-space:nowrap">Due Fri, Aug 14</div>
+   </div>
+  </div>
+ </div>
+
+ <!-- cursor -->
+ <div class="p2t-anim" style="position:absolute;left:0;top:0;width:32px;height:37px;transform-origin:3px 3px;filter:drop-shadow(0 3px 7px rgba(11,55,110,.32));animation-name:p4cursor">
+  <svg width="32" height="37" viewBox="0 0 26 30">
+   <path d="M3 2.5 L3 23.5 L8.6 18.2 L12.1 26.4 L15.9 24.8 L12.5 16.8 L20.2 16.4 Z" fill="#fff" stroke="#1F1F1F" stroke-width="1.7" stroke-linejoin="round"></path>
+  </svg>
+ </div>
+
+</div></div>
+
     <div class="sec" id="secAccount">
     <h2 data-i18n="Google account">Google account</h2>
     <p class="hint" data-i18n="Tasks and events are saved to the connected Google account.">Tasks and events are saved to the connected Google account.</p>
@@ -245,7 +545,7 @@
     </div>
 
     <div id="obActions" class="ob-actions hidden">
-      <button id="obPrimary" class="plain-btn save-btn hidden" type="button" data-i18n="Save and start using">Save and start using</button>
+      <button id="obPrimary" class="plain-btn save-btn hidden" type="button" data-i18n="Next">Next</button>
       <button id="obSkip" class="linklike" type="button" data-i18n="Continue without connecting">Continue without connecting</button>
     </div>
   </main>
