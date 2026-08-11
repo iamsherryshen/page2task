@@ -60,11 +60,13 @@
     .sec { border: 2px solid transparent; border-radius: 12px; padding: 2px 10px 10px; margin: 0 -12px; transition: box-shadow .3s, border-color .3s; }
     .sec.glow { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(11, 87, 208, 0.12); }
     /* Wizard mode: one step on screen at a time, vertically centered */
-    body.ob-1 .welcome, body.ob-1 #secAI, body.ob-1 #secMisc, body.ob-1 #saveRow, body.ob-1 #obStage3, body.ob-1 #obStage4 { display: none; }
-    body.ob-2 .welcome, body.ob-2 #secAccount, body.ob-2 #secMisc, body.ob-2 #saveRow, body.ob-2 #obStage3, body.ob-2 #obStage4 { display: none; }
-    body.ob-3 .welcome, body.ob-3 #secAI, body.ob-3 #secAccount, body.ob-3 #secMisc, body.ob-3 #saveRow, body.ob-3 #obStage4 { display: none; }
-    body.ob-4 .welcome, body.ob-4 #secAI, body.ob-4 #secAccount, body.ob-4 #secMisc, body.ob-4 #saveRow, body.ob-4 #obStage3 { display: none; }
-    body.ob-5 .welcome, body.ob-5 #secAI, body.ob-5 #secAccount, body.ob-5 #secMisc, body.ob-5 #saveRow, body.ob-5 #obStage3, body.ob-5 #obStage4 { display: none; }
+    body.ob-1 .welcome, body.ob-1 #secAI, body.ob-1 #secMisc, body.ob-1 #saveRow { display: none; }
+    body.ob-2 .welcome, body.ob-2 #secAccount, body.ob-2 #secMisc, body.ob-2 #saveRow { display: none; }
+    body.ob-3 .welcome, body.ob-3 #secAI, body.ob-3 #secAccount, body.ob-3 #secMisc, body.ob-3 #saveRow { display: none; }
+    body.ob-4 .welcome, body.ob-4 #secAI, body.ob-4 #secAccount, body.ob-4 #secMisc, body.ob-4 #saveRow { display: none; }
+    body.ob-5 .welcome, body.ob-5 #secAI, body.ob-5 #secAccount, body.ob-5 #secMisc, body.ob-5 #saveRow { display: none; }
+    #obStage3, #obStage4 { display: none; }
+    body.ob-3 #obStage3, body.ob-4 #obStage4 { display: block; }
     body.ob-1, body.ob-2, body.ob-3, body.ob-4, body.ob-5 { display: flex; flex-direction: column; }
     /* Onboarding hides the page title but MUST keep the language toggle:
        a first-run user who cannot read English needs it right here. */
@@ -315,7 +317,7 @@
     </div><!-- /aiConfig -->
     </div><!-- /secAI -->
 
-    <div id="obStage3" class="ob-stage hidden"><div style="position:relative;width:960px;height:600px;overflow:hidden;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;background:linear-gradient(160deg,#FFFFFF 0%,#F7FAFF 42%,#E7EFFC 100%)">
+    <div id="obStage3" class="ob-stage"><div style="position:relative;width:960px;height:600px;overflow:hidden;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;background:linear-gradient(160deg,#FFFFFF 0%,#F7FAFF 42%,#E7EFFC 100%)">
 
   <!-- Chrome toolbar strip -->
   <div style="position:absolute;left:0;top:100px;width:960px;height:96px;background:#F4F7FC;border-bottom:1px solid #E1E8F3"></div>
@@ -406,7 +408,7 @@
   </div>
 
 </div></div>
-    <div id="obStage4" class="ob-stage hidden"><div style="position:relative;width:960px;height:600px;overflow:hidden;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;background:linear-gradient(160deg,#F8FBFF 0%,#EFF5FE 55%,#DCE9FC 100%)">
+    <div id="obStage4" class="ob-stage"><div style="position:relative;width:960px;height:600px;overflow:hidden;font-family:Roboto,'Helvetica Neue',Helvetica,Arial,sans-serif;background:linear-gradient(160deg,#F8FBFF 0%,#EFF5FE 55%,#DCE9FC 100%)">
 
  <!-- browser window -->
  <div style="position:absolute;left:30px;top:30px;width:900px;height:540px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 26px 60px rgba(16,54,110,.16)">
@@ -544,9 +546,13 @@
       <span id="saveStatus" class="status"></span>
     </div>
 
-    <div id="obActions" class="ob-actions hidden">
-      <button id="obPrimary" class="plain-btn save-btn hidden" type="button" data-i18n="Next">Next</button>
-      <button id="obSkip" class="linklike" type="button" data-i18n="Continue without connecting">Continue without connecting</button>
+    <div id="obActions" class="hidden">
+      <p id="obWarn" class="hint hidden" style="color: var(--red-fg); text-align: center; margin: 12px 0 0;"></p>
+      <div class="ob-actions">
+        <button id="obBack" class="linklike hidden" type="button" data-i18n="Back">Back</button>
+        <button id="obPrimary" class="plain-btn save-btn hidden" type="button" data-i18n="Next">Next</button>
+        <button id="obSkip" class="linklike" type="button" data-i18n="Continue without connecting">Continue without connecting</button>
+      </div>
     </div>
   </main>
 

@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let renderTestResult = null;
   let renderAccountMsg = null;
   let renderObText = null;
+  let renderObWarn = null;
   let obStep = 0; // first-run onboarding: 0 off, 1 connect Google, 2 choose AI, 3 done
   const cfg = await chrome.storage.sync.get({
     aiProvider: 'gemini',
@@ -264,12 +265,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // just resumes at the unfinished step next time; "Set up later" opts out.
   const obSetStep = async (n) => {
     obStep = n;
+    $('obWarn').classList.add('hidden');
     document.body.classList.remove('ob-1', 'ob-2', 'ob-3', 'ob-4', 'ob-5');
     if (n >= 1 && n <= 5) document.body.classList.add('ob-' + n);
     $('obPrimary').classList.toggle('hidden', n === 1 || n === 5);
     // Step 1 has no escape hatch by default: connecting Google is what makes
     // the product do anything. It only appears if an attempt fails.
     $('obSkip').classList.add('hidden');
+    $('obBack').classList.toggle('hidden', n === 1 || n === 5);
     $('obActions').classList.toggle('hidden', n === 5);
     $('obDots').classList.toggle('hidden', n === 5);
     Array.from($('obDots').children).forEach((d, i) => d.classList.toggle('on', i === n - 1));
@@ -319,9 +322,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     obStep = 0;
   };
   $('obPrimary').addEventListener('click', () => {
-    if (obStep === 2) { $('saveBtn').click(); obSetStep(3); return; }
+    if (obStep === 2) {
+      // Picking "your own API key" without pasting one leaves the product unable
+      // to recognise anything, so the step is not complete yet.
+      if ($('srcApi').checked && !$(PROVIDERS[normProvider($('provider').value)].input).value.trim()) {
+        renderObWarn = () => {
+          $('obWarn').textContent = t('Paste your API key first, or switch to the on-device model.');
+        };
+        renderObWarn();
+        $('obWarn').classList.remove('hidden');
+        return;
+      }
+      $('obWarn').classList.add('hidden');
+      renderObWarn = null;
+      $('saveBtn').click();
+      obSetStep(3);
+      return;
+    }
     if (obStep === 3) { obSetStep(4); return; }
     obSetStep(5);
+  });
+  $('obBack').addEventListener('click', () => {
+    $('obWarn').classList.add('hidden');
+    renderObWarn = null;
+    if (obStep > 1) obSetStep(obStep - 1);
   });
   // Skipping step 1 only skips Google: everyone still passes the AI choice
   $('obSkip').addEventListener('click', () => {
