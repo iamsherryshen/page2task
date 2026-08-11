@@ -87,6 +87,8 @@
     .steps { margin: 10px 0 6px 20px; padding: 0; }
     .steps li { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 5px; }
     .steps li b { color: var(--fg); font-weight: 600; }
+    .steps.intro { margin-top: 6px; margin-bottom: 12px; }
+    .steps.intro li { color: var(--fg); }
     #testResult { margin-top: 8px; }
     h2 { font-size: 15px; margin: 24px 0 4px; }
   </style>
@@ -129,6 +131,11 @@
     </label>
 
     <div id="apiConfig" class="hidden">
+    <ol class="steps intro">
+      <li data-i18n="Choose your AI provider below">Choose your AI provider below</li>
+      <li data-i18n="Click &quot;How to get an API key&quot; for that provider's steps">Click "How to get an API key" for that provider's steps</li>
+      <li data-i18n="Paste the key in the field and click Save">Paste the key in the field and click Save</li>
+    </ol>
     <label class="field" style="max-width: 280px;">
       <span data-i18n="AI provider">AI provider</span>
       <select id="provider">
