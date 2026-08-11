@@ -99,6 +99,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // The API section shows only when "your own key" is picked, and within it
   // only the selected provider's key row — never all four stacked up
   const syncApiVisibility = () => {
+    // Selected-tile styling is applied here rather than with :has(input:checked):
+    // that selector matches but does not repaint on some Chrome builds.
+    $('srcBuiltin').closest('.tile').classList.toggle('on', $('srcBuiltin').checked);
+    $('srcApi').closest('.tile').classList.toggle('on', $('srcApi').checked);
     $('apiConfig').classList.toggle('hidden', $('srcBuiltin').checked);
     const chosen = normProvider($('provider').value);
     for (const name of Object.keys(PROVIDERS)) {

@@ -76,8 +76,27 @@
       margin: 0; box-shadow: 0 2px 4px rgba(20, 45, 90, 0.06), 0 18px 44px -16px rgba(20, 45, 90, 0.28);
     }
     body.ob-1 #secAccount h2, body.ob-2 #secAI h2 { margin-top: 0; }
-    .radio-row { display: flex; align-items: flex-start; gap: 8px; margin: 6px 0; cursor: pointer; line-height: 1.5; }
-    .radio-row input { margin-top: 3px; flex: none; }
+    /* Two tiles side by side; the coloured pill carries the decision at a glance */
+    .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0 4px; }
+    .tile {
+      position: relative; display: flex; flex-direction: column; align-items: flex-start;
+      background: #fff; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 15px 13px; cursor: pointer; transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .tile:hover { border-color: rgba(11,87,208,.35); }
+    .tile.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(11,87,208,.12); background: #F7FAFF; }
+    .tile input { position: absolute; top: 13px; right: 13px; margin: 0; }
+    .tile .ic { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 9px; }
+    .tile .ic.g { background: var(--green-bg); }
+    .tile .ic.b { background: var(--chip-bg); }
+    .tile .t { font-size: 13.5px; font-weight: 600; color: var(--fg); line-height: 1.35; padding-right: 22px; }
+    .tile .pill { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; font-weight: 600;
+      padding: 2px 8px; border-radius: 99px; margin: 6px 0 7px; }
+    .tile .pill.free { background: var(--green-bg); color: var(--green-fg); }
+    .tile .pill.best { background: var(--chip-bg); color: var(--accent); }
+    .tile .d { font-size: 12px; color: var(--muted); line-height: 1.55; }
+    .tile .tilelink { margin-top: 8px; font-size: 12.5px; }
+    @media (max-width: 520px) { .tiles { grid-template-columns: 1fr; } }
     .info-btn {
       border: 1px solid var(--border); background: var(--bg); color: var(--accent);
       border-radius: 50%; width: 22px; height: 22px; line-height: 1; font-size: 12px;
@@ -89,8 +108,6 @@
     .steps li b { color: var(--fg); font-weight: 600; }
     .steps.intro { margin-top: 6px; margin-bottom: 12px; }
     .steps.intro li { color: var(--fg); }
-    .linklike.inline { margin-top: 0; font-size: 12.5px; white-space: nowrap; }
-    .radio-row label { cursor: pointer; }
     #testResult { margin-top: 8px; }
     h2 { font-size: 15px; margin: 24px 0 4px; }
   </style>
@@ -123,14 +140,22 @@
     <div class="field" style="margin-top: 6px;">
       <span data-i18n="AI source">AI source</span>
     </div>
-    <label class="radio-row">
-      <input type="radio" name="aiSource" id="srcBuiltin" value="builtin">
-      <span data-i18n="On-device AI model: free, no key, weaker quality; one-time ~2 GB download">On-device AI model: free, no key, weaker quality; one-time ~2 GB download</span>
-    </label>
-    <div class="radio-row">
-      <input type="radio" name="aiSource" id="srcApi" value="api">
-      <label for="srcApi" data-i18n="Your own API key: better quality">Your own API key: better quality</label>
-      <button id="apiHowLink" class="linklike inline" type="button" data-i18n="How to get one?">How to get one?</button>
+    <div class="tiles">
+      <label class="tile">
+        <input type="radio" name="aiSource" id="srcBuiltin" value="builtin">
+        <span class="ic g" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#137333" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M2 20h20"/><rect x="8.5" y="9" width="7" height="4" rx="1"/></svg></span>
+        <span class="t" data-i18n="On-device model">On-device model</span>
+        <span class="pill free" data-i18n="Free">Free</span>
+        <span class="d" data-i18n="No key needed, runs on your computer. Weaker quality. One-time 2 GB download.">No key needed, runs on your computer. Weaker quality. One-time 2 GB download.</span>
+      </label>
+      <label class="tile">
+        <input type="radio" name="aiSource" id="srcApi" value="api">
+        <span class="ic b" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="4"/><path d="M12 12h9"/><path d="M17.5 12v3.5"/><path d="M20.5 12v2.5"/></svg></span>
+        <span class="t" data-i18n="Your own API key">Your own API key</span>
+        <span class="pill best" data-i18n="Better quality">Better quality</span>
+        <span class="d" data-i18n="Use a key from Gemini, Claude, OpenAI, or Kimi. Gemini has a free tier.">Use a key from Gemini, Claude, OpenAI, or Kimi. Gemini has a free tier.</span>
+        <button id="apiHowLink" class="linklike tilelink" type="button" data-i18n="How to get one?">How to get one?</button>
+      </label>
     </div>
 
     <div id="apiConfig" class="hidden">
