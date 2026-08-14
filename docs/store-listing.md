@@ -92,7 +92,7 @@ Optional: only contacted if the user enters their own Gemini, Claude, OpenAI, Ki
 
 **Privacy policy URL**
 ```
-https://iamsherryshen.github.io/page2task/privacy.html
+https://page2task.sherryshen.world/privacy.html
 ```
 
 ## Assets needed at submission
