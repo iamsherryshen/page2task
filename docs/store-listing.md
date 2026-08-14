@@ -39,7 +39,7 @@ SMART DETAILS
 
 PRIVATE BY DESIGN
 • Free AI runs on your own computer (Chrome's built-in AI): no account, no API key, and nothing you analyze leaves your device
-• Optionally plug in your own Gemini, Claude, OpenAI, or Kimi API key
+• Optionally plug in your own Gemini, Claude, OpenAI, Kimi, or DeepSeek API key
 • No developer servers, no analytics, no tracking: your data goes only to your own Google account
 • Open source: https://github.com/iamsherryshen/page2task
 ```
@@ -77,9 +77,9 @@ Stores the user's settings: preferred mode, default event length, last-used task
 ```
 Official Google endpoints used to create the user's tasks and calendar events, list their task lists, and complete Google sign-in.
 ```
-- Host `generativelanguage.googleapis.com`, `api.anthropic.com`, `api.openai.com`, `api.moonshot.cn`, `api.moonshot.ai`:
+- Host `generativelanguage.googleapis.com`, `api.anthropic.com`, `api.openai.com`, `api.moonshot.cn`, `api.moonshot.ai`, `api.deepseek.com`:
 ```
-Optional: only contacted if the user enters their own Gemini, Claude, OpenAI, or Kimi (Moonshot) API key in Settings, to extract deadlines from the text/screenshot the user submits. Never contacted otherwise.
+Optional: only contacted if the user enters their own Gemini, Claude, OpenAI, Kimi (Moonshot), or DeepSeek API key in Settings, to extract deadlines from the text/screenshot the user submits. Never contacted otherwise.
 ```
 
 **Remote code**: No, I am not using remote code. (All code ships in the package; the AI endpoints receive data, not code.)

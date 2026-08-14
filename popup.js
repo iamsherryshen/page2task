@@ -276,7 +276,7 @@ function updateSubmitLabel() {
 // 1. an API key the user configured (their explicit choice)
 // 2. Chrome's built-in on-device AI — free, keyless, nothing leaves the device
 // 3. none — callers fall back to the local date-parsing rules
-async function getAiConfig() {
+async function getAiConfig(forImage) {
   const cfg = await chrome.storage.sync.get({ aiProvider: 'gemini' });
   const keys = await AiExtract.loadKeys(); // keys are local-only; loadKeys migrates old synced ones
   const keyFor = {
@@ -284,6 +284,7 @@ async function getAiConfig() {
     claude: keys.anthropicApiKey,
     openai: keys.openaiApiKey,
     kimi: keys.kimiApiKey,
+    deepseek: keys.deepseekApiKey,
   };
   // The user explicitly picked the on-device model in Settings — honor that
   // over any saved key; fall back to keys only when it isn't usable here
@@ -298,8 +299,12 @@ async function getAiConfig() {
   let provider = Object.prototype.hasOwnProperty.call(keyFor, cfg.aiProvider) ? cfg.aiProvider : 'gemini';
   let apiKey = keyFor[provider];
   if (!apiKey) {
-    // The chosen provider has no key — fall back to any provider that does
-    const withKey = Object.keys(keyFor).find((p) => keyFor[p]);
+    // The chosen provider has no key — fall back to any provider that does.
+    // For screenshots, skip text-only providers (DeepSeek): auto-picking one
+    // would dead-end a request the built-in model further down could serve.
+    const withKey = Object.keys(keyFor).find(
+      (p) => keyFor[p] && (!forImage || AiExtract.supportsImages(p))
+    );
     if (withKey) { provider = withKey; apiKey = keyFor[withKey]; }
   }
   if (apiKey) return { provider, apiKey };
@@ -396,7 +401,7 @@ async function runAi(opts) {
   // This user-initiated read supersedes the automatic page read and any older
   // in-flight read; stale reads see the bumped sequence and stand down.
   const seq = ++aiReadSeq;
-  const { provider, apiKey } = await getAiConfig();
+  const { provider, apiKey } = await getAiConfig(!!opts.image);
   if (seq !== aiReadSeq) return; // an even newer read started meanwhile
   if (!provider) {
     flashError(I18n.t(
