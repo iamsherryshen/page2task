@@ -43,7 +43,7 @@ For better titles and screenshot reading, it uses AI when available, in this ord
 | Tier | Cost | Setup |
 |---|---|---|
 | **Chrome's built-in AI** (Gemini Nano) | Free | None, if your Chrome already has the model. Otherwise the popup offers a one-time ~2 GB download; the model runs entirely on your computer and nothing leaves the device |
-| **Your own API key** | Google Gemini has a free tier; Claude costs well under 1¢ per run | Paste a key in Settings |
+| **Your own API key** | Google Gemini has a free tier; Claude, OpenAI, and Kimi are pay per use, well under 1¢ per run | Paste a key in Settings |
 | **Local rules** | Free | Always available as the fallback |
 
 **API keys are stored only on the computer you type them on** (never synced to your
@@ -59,7 +59,7 @@ sees them, and there is no backend to send them to.
 
 ## Settings
 
-- **AI provider** — Gemini or Claude, with a key field for each, plus a test button
+- **AI provider** — the free on-device model, or Gemini, Claude, OpenAI, or Kimi with a key field for each, plus a test button
 - **Google account** — shows the connected account; **Disconnect** to switch
 - **Default event duration** — used when an event has a start time but no natural length
 
@@ -81,7 +81,7 @@ After editing, hit the reload icon on the extension card in `chrome://extensions
 | `lib/dateparse.js` | Local rule-based date extraction (English + Chinese), multi-candidate |
 | `lib/vendor/chrono.js` | Bundled [chrono-node](https://github.com/wanasit/chrono) date parser (MIT) |
 | `lib/google.js` | Google Tasks / Calendar API wrapper |
-| `lib/ai.js` | AI extraction: built-in Gemini Nano, Gemini cloud, Claude; text & vision |
+| `lib/ai.js` | AI extraction: built-in Gemini Nano, Gemini, Claude, OpenAI, Kimi; text & vision |
 | `options.html/js` | Settings page |
 
 Forking with your own Google Cloud project? Copy `manifest.template.json` over
