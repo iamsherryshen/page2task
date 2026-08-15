@@ -250,7 +250,7 @@
         <span class="ic b" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="4"/><path d="M12 12h9"/><path d="M17.5 12v3.5"/><path d="M20.5 12v2.5"/></svg></span>
         <span class="t" data-i18n="Your own API key">Your own API key</span>
         <span class="pill best" data-i18n="Better quality">Better quality</span>
-        <span class="d" data-i18n="Use a key from Gemini, Claude, OpenAI, Kimi, or DeepSeek. Gemini has a free tier.">Use a key from Gemini, Claude, OpenAI, Kimi, or DeepSeek. Gemini has a free tier.</span>
+        <span class="d" data-i18n="Use a key from Gemini, Claude, OpenAI, or Kimi. Gemini has a free tier.">Use a key from Gemini, Claude, OpenAI, or Kimi. Gemini has a free tier.</span>
         <button id="apiHowLink" class="linklike tilelink" type="button" data-i18n="How to get one?">How to get one?</button>
       </label>
     </div>
@@ -268,7 +268,6 @@
         <option value="claude">Anthropic Claude</option>
         <option value="openai">OpenAI (GPT)</option>
         <option value="kimi">Kimi (Moonshot 月之暗面)</option>
-        <option value="deepseek">DeepSeek (深度求索)</option>
       </select>
     </label>
 
@@ -302,14 +301,6 @@
         <input type="password" id="kimiKey" placeholder="sk-…" autocomplete="off">
       </label>
       <button id="toggleKimiKey" class="plain-btn" type="button">Show</button>
-    </div>
-
-    <div class="key-row hidden" id="row-deepseek">
-      <label class="field">
-        <span>DeepSeek API key</span>
-        <input type="password" id="deepseekKey" placeholder="sk-…" autocomplete="off">
-      </label>
-      <button id="toggleDeepseekKey" class="plain-btn" type="button">Show</button>
     </div>
 
     <button id="keyHelpToggle" class="linklike" type="button" data-i18n="How to get an API key">How to get an API key</button>

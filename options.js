@@ -8,7 +8,6 @@ const PROVIDERS = {
   claude: { input: 'apiKey', storageKey: 'anthropicApiKey', label: 'Claude' },
   openai: { input: 'openaiKey', storageKey: 'openaiApiKey', label: 'OpenAI' },
   kimi: { input: 'kimiKey', storageKey: 'kimiApiKey', label: 'Kimi' },
-  deepseek: { input: 'deepseekKey', storageKey: 'deepseekApiKey', label: 'DeepSeek' },
 };
 const normProvider = (v) => (v === 'builtin' || PROVIDERS[v] ? v : 'gemini');
 
@@ -67,13 +66,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       'Sign in and top up your balance',
       'Go to API Keys and create a new key',
       'Copy the key',
-      'Paste it in the field above and click Save',
-    ],
-    deepseek: [
-      'Open platform.deepseek.com and sign in',
-      'Top up your balance (DeepSeek has no free tier)',
-      'Go to API Keys and click "Create API key"',
-      'Copy the key that starts with sk-, it is shown only once',
       'Paste it in the field above and click Save',
     ],
   };
@@ -412,7 +404,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   wireToggle('toggleKey', 'apiKey');
   wireToggle('toggleOpenaiKey', 'openaiKey');
   wireToggle('toggleKimiKey', 'kimiKey');
-  wireToggle('toggleDeepseekKey', 'deepseekKey');
 
   $('saveBtn').addEventListener('click', async () => {
     // Keys go to LOCAL storage only (this computer); preferences may sync
