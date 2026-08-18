@@ -69,6 +69,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       'Paste it in the field above and click Save',
     ],
   };
+  // Which model each provider runs, and why. Nobody picks a model here: pulling
+  // a date out of a page is a small task, so every provider uses its fast tier.
+  const MODEL_NOTE = {
+    gemini: 'Uses Gemini Flash: fast, and free within the Gemini free tier.',
+    claude: 'Uses Claude Haiku: the fastest Claude model, well under 1¢ per read.',
+    openai: 'Uses GPT-4o mini: fast and cheap, a fraction of a cent per read.',
+    kimi: 'Uses Kimi K2.6 with thinking off: fast, reads images, a fraction of a cent per read.',
+  };
+  const renderModelNote = () => {
+    $('modelNote').textContent = t(MODEL_NOTE[normProvider($('provider').value)] || '');
+  };
   let keyHelpOpen = false;
   const renderKeyHelp = () => {
     const box = $('keyHelpSteps');
@@ -106,6 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('srcApi').closest('.tile').classList.toggle('on', $('srcApi').checked);
     $('apiConfig').classList.toggle('hidden', $('srcBuiltin').checked);
     const chosen = normProvider($('provider').value);
+    renderModelNote();
     for (const name of Object.keys(PROVIDERS)) {
       $('row-' + name).classList.toggle('hidden', name !== chosen);
     }
@@ -195,6 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     refreshAccount();
     keyToggles.forEach(([b, i]) => syncToggleLabel(b, i)); // keep Show/Hide truthful
     renderKeyHelp(); // re-translate the open key how-to, if any
+    renderModelNote();
     if (renderTestResult) renderTestResult();
     if (renderAccountMsg) renderAccountMsg();
     if (renderObText) renderObText();
