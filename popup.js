@@ -13,6 +13,14 @@ let defaultEventMinutes = 30; // fallback calendar-event length; loaded from set
 let mode = 'todo'; // 'todo' | 'calendar' | 'both' — picked at the top, remembered across uses
 let lastAnalyzedText = null; // stops the typing debounce from re-reading what a paste already read
 let aiReadSeq = 0; // stamps every AI read; a read that is no longer the newest must not touch the UI
+let aiReadAbort = null; // controller of the in-flight read; a newer read cancels it
+// Start a new AI read: bump the sequence and cancel whatever was still running,
+// so a paste right after opening the popup does not queue behind the page read
+function beginAiRead() {
+  if (aiReadAbort) aiReadAbort.abort();
+  aiReadAbort = new AbortController();
+  return { seq: ++aiReadSeq, signal: aiReadAbort.signal };
+}
 
 // Re-render closures for text set imperatively (not via data-i18n), so the
 // language toggle can refresh it. setRelang registers and runs immediately.
@@ -144,7 +152,7 @@ async function init() {
 
   // The automatic page read claims its sequence number BEFORE the first await,
   // so anything the user pastes or drops while it runs supersedes it.
-  const initSeq = ++aiReadSeq;
+  const { seq: initSeq, signal: initSignal } = beginAiRead();
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (initSeq !== aiReadSeq) return; // the user already started a read — it owns the UI
   const url = (tab && tab.url) || '';
@@ -200,6 +208,7 @@ async function init() {
           apiKey,
           provider,
           listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
+          signal: initSignal,
         });
         if (initSeq !== aiReadSeq) return; // superseded mid-read — discard this result
         candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
@@ -395,7 +404,7 @@ function handleImage(file) {
 async function runAi(opts) {
   // This user-initiated read supersedes the automatic page read and any older
   // in-flight read; stale reads see the bumped sequence and stand down.
-  const seq = ++aiReadSeq;
+  const { seq, signal } = beginAiRead();
   const { provider, apiKey } = await getAiConfig();
   if (seq !== aiReadSeq) return; // an even newer read started meanwhile
   if (!provider) {
@@ -427,6 +436,7 @@ async function runAi(opts) {
       apiKey,
       provider,
       listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
+      signal,
     });
     if (seq !== aiReadSeq) return; // superseded — the newer read owns the UI now
     candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
