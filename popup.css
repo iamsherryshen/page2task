@@ -354,7 +354,7 @@ body.reading #banner, body.reading .actions { display: none; }
   0%, 100% { background: var(--input-bg); border-color: var(--border); }
   8%, 65% { background: #E8F0FE; border-color: var(--accent); }
 }
-#dateInput.nudge { animation: p2t-shake .28s ease-in-out 1, p2t-nudge-tint 1.8s ease-in-out 1; }
+#dateInput.nudge { animation: p2t-shake .34s ease-in-out 1, p2t-nudge-tint 1.8s ease-in-out 1; }
 @media (prefers-reduced-motion: reduce) {
   #dateInput.nudge { animation: p2t-nudge-tint 1.8s ease-in-out 1; }
 }
