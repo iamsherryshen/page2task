@@ -339,3 +339,22 @@ input.error { outline: 2px solid var(--red-fg); }
    provisional form and then replacing it reads as "the answer changed" */
 body.reading #candBox, body.reading #formCard, body.reading #itemCards,
 body.reading #banner, body.reading .actions { display: none; }
+
+/* Read finished and the date is still empty: one quick shake and a short blue
+   tint on the date field, so the eye lands where the user's input is needed */
+@keyframes p2t-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-4px); }
+  30% { transform: translateX(4px); }
+  45% { transform: translateX(-3px); }
+  60% { transform: translateX(3px); }
+  75% { transform: translateX(-1px); }
+}
+@keyframes p2t-nudge-tint {
+  0%, 100% { background: var(--input-bg); border-color: var(--border); }
+  8%, 65% { background: #E8F0FE; border-color: var(--accent); }
+}
+#dateInput.nudge { animation: p2t-shake .28s ease-in-out 1, p2t-nudge-tint 1.8s ease-in-out 1; }
+@media (prefers-reduced-motion: reduce) {
+  #dateInput.nudge { animation: p2t-nudge-tint 1.8s ease-in-out 1; }
+}

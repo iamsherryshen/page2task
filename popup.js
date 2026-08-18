@@ -249,10 +249,9 @@ async function init() {
   } else {
     if (pageInfo.kind === 'email' && sourceText) {
       showNotice('No upcoming deadline found. The dates in this email may have already passed.');
-    } else if (aiRan) {
-      showNotice('No date found on this page.');
     }
     applyDefaults();
+    if (sourceText) nudgeDate(); // the read is over and found nothing: point at the date field
   }
   updateTimeHint();
 }
@@ -697,7 +696,7 @@ function buildItemCard(c, n) {
       }
     });
     end.addEventListener('input', () => { c.endTime = end.value || null; });
-    row.append(cardField(I18n.t('Start time (optional)'), start), cardField(I18n.t('End time'), end));
+    row.append(cardField(I18n.t('Start time'), start), cardField(I18n.t('End time'), end));
     card.appendChild(row);
 
     const loc = document.createElement('input');
@@ -748,6 +747,19 @@ function renderChip(info) {
 // (A blank date = an undated to-do; the user picks a date only if they want one.)
 function applyDefaults() {
   /* intentionally empty — no default date or time */
+}
+
+// One quick shake of the date field. Runs after the form has painted, so the
+// user sees the result appear and then the field ask for a date; typing or
+// focusing the field ends it early.
+function nudgeDate() {
+  const el = $('dateInput');
+  const stop = () => el.classList.remove('nudge');
+  el.addEventListener('focus', stop, { once: true });
+  el.addEventListener('animationend', stop, { once: true });
+  requestAnimationFrame(() => setTimeout(() => {
+    if (document.activeElement !== el) el.classList.add('nudge');
+  }, 120));
 }
 
 // The user's task lists → the "Task list" selector (shown only when there are several).
