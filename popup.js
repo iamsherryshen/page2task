@@ -251,7 +251,6 @@ async function init() {
       showNotice('No upcoming deadline found. The dates in this email may have already passed.');
     }
     applyDefaults();
-    if (sourceText) nudgeDate(); // the read is over and found nothing: point at the date field
   }
   updateTimeHint();
 }
@@ -749,17 +748,15 @@ function applyDefaults() {
   /* intentionally empty — no default date or time */
 }
 
-// One quick shake of the date field. Runs after the form has painted, so the
-// user sees the result appear and then the field ask for a date; typing or
-// focusing the field ends it early.
+// One quick shake of the date field: the user pressed Add on a calendar event
+// without a date, and the field itself asks for one instead of a red banner.
 function nudgeDate() {
   const el = $('dateInput');
-  const stop = () => el.classList.remove('nudge');
-  el.addEventListener('focus', stop, { once: true });
-  el.addEventListener('animationend', stop, { once: true });
-  requestAnimationFrame(() => setTimeout(() => {
-    if (document.activeElement !== el) el.classList.add('nudge');
-  }, 120));
+  el.classList.remove('nudge');
+  void el.offsetWidth; // restart the animation if it is already running
+  el.classList.add('nudge');
+  el.addEventListener('animationend', () => el.classList.remove('nudge'), { once: true });
+  el.addEventListener('input', () => el.classList.remove('nudge'), { once: true });
 }
 
 // The user's task lists → the "Task list" selector (shown only when there are several).
@@ -935,14 +932,17 @@ async function onSubmit() {
   for (let i = 0; i < items.length; i++) {
     if (!items[i].title) { flashError(I18n.t('Please enter a title')); return; }
     if (mode !== 'todo' && !items[i].dueDate) {
-      if (items.length === 1) $('dateInput').classList.add('error');
-      flashError(items.length > 1
-        ? I18n.t('Item {i} has no date. Calendar events need one.', { i: i + 1 })
-        : I18n.t('Please pick a date first. A calendar event needs one.'));
+      if (items.length > 1) {
+        flashError(I18n.t('Item {i} has no date. Calendar events need one.', { i: i + 1 }));
+      } else {
+        // A calendar event needs a date: the field itself asks for it
+        $('banner').className = 'banner hidden';
+        nudgeDate();
+        $('dateInput').focus();
+      }
       return;
     }
   }
-  $('dateInput').classList.remove('error');
 
   await withPending($('submitBtn'), async () => {
     let added = 0;

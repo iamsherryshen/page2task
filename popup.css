@@ -205,7 +205,6 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .field textarea { resize: vertical; }
 #titleInput { text-overflow: ellipsis; }
-input.error { outline: 2px solid var(--red-fg); }
 
 .row { display: flex; gap: 10px; }
 
