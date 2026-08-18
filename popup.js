@@ -192,6 +192,7 @@ async function init() {
   }
 
   const sourceText = pageInfo.selectionText || pageInfo.bodyText;
+  let aiRan = false;
 
   if (sourceText) {
     const { provider, apiKey } = await getAiConfig();
@@ -199,6 +200,7 @@ async function init() {
     if (provider) {
       $('aiStatusText').textContent = I18n.t('AI is reading this page…');
       $('aiStatus').classList.remove('hidden');
+      document.body.classList.add('reading'); // the form appears once, with the final result
       let aiError = null;
       try {
         await listsPromise; // list names feed the AI's list suggestion
@@ -212,12 +214,14 @@ async function init() {
         });
         if (initSeq !== aiReadSeq) return; // superseded mid-read — discard this result
         candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
+        aiRan = true; // an empty answer from the AI is an answer, not a failure
       } catch (e) {
         if (initSeq !== aiReadSeq) return;
         candidates = []; // fall back to local rules, but say so
         aiError = (e && e.message) || 'unknown error';
       }
       $('aiStatus').classList.add('hidden');
+      document.body.classList.remove('reading');
       if (aiError) {
         setRelang('aiWarn', () => {
           $('aiWarn').textContent = I18n.t('AI unavailable ({err}). Using local rules.', { err: I18n.t(aiError) });
@@ -225,7 +229,9 @@ async function init() {
         $('aiWarn').classList.remove('hidden');
       }
     }
-    if (!candidates.length) {
+    // Local rules only stand in when no AI answered; overriding an AI that found
+    // nothing would put dates on a page that has none
+    if (!candidates.length && !aiRan) {
       candidates = DateParse.extractAll(sourceText, new Date(), 5).map((c) => ({
         title: titleFromSentence(c.matchedText),
         dueDate: c.dueDate,
@@ -243,6 +249,8 @@ async function init() {
   } else {
     if (pageInfo.kind === 'email' && sourceText) {
       showNotice('No upcoming deadline found. The dates in this email may have already passed.');
+    } else if (aiRan) {
+      showNotice('No date found on this page.');
     }
     applyDefaults();
   }
@@ -427,6 +435,7 @@ async function runAi(opts) {
   renderItemCards(); // back to the single form while a new read is in flight
   $('aiStatusText').textContent = I18n.t(opts.progress || 'AI is reading…');
   $('aiStatus').classList.remove('hidden');
+  document.body.classList.add('reading');
 
   try {
     const r = await AiExtract.extract({
@@ -450,7 +459,10 @@ async function runAi(opts) {
     if (seq !== aiReadSeq) return; // a stale error must not cover the newer result
     flashError(e && e.message ? I18n.t(e.message) : I18n.t(opts.failMsg));
   } finally {
-    if (seq === aiReadSeq) $('aiStatus').classList.add('hidden');
+    if (seq === aiReadSeq) {
+      $('aiStatus').classList.add('hidden');
+      document.body.classList.remove('reading');
+    }
   }
 }
 

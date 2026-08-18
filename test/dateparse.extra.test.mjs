@@ -79,5 +79,21 @@ r = ex('12月31日全天');
 check('zh: 12月31日全天 date', r.dueDate, '2026-12-31');
 check('zh: 12月31日全天 -> time null', r.dueTime, null);
 
+// —— 时长、频率、光秃秃的 today 都不是日期(真实案例:一篇没有任何日期的博客被造出三条)——
+r = ex('we deployed the first agent in under 48 hours');
+check('en: "in under 48 hours" is a duration, not a date', r.dueDate, null);
+r = ex('now handling 100,000 calls a day');
+check('en: "a day" is a frequency, not a date', r.dueDate, null);
+r = ex('Today, it is our fastest-growing team.');
+check('en: bare "Today" in prose is not a deadline', r.dueDate, null);
+r = ex('we will get back to you within two weeks');
+check('en: "within two weeks" is a duration, not a date', r.dueDate, null);
+// …而带截止词或钟点的 today/tomorrow 仍然算
+r = ex('Please submit the waiver by tomorrow');
+check('en: "by tomorrow" still parses', r.dueDate, '2026-07-04');
+r = ex('The deadline is today at 5pm');
+check('en: "today at 5pm" still parses', r.dueDate, '2026-07-03');
+check('en: "today at 5pm" keeps the time', r.dueTime, '17:00');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

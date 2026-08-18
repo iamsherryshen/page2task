@@ -334,3 +334,8 @@ input.error { outline: 2px solid var(--red-fg); }
   cursor: pointer; white-space: nowrap;
 }
 .lang-btn:hover { background: var(--chip-bg); }
+
+/* While an AI read is in flight the result area stays hidden: showing a
+   provisional form and then replacing it reads as "the answer changed" */
+body.reading #candBox, body.reading #formCard, body.reading #itemCards,
+body.reading #banner, body.reading .actions { display: none; }
