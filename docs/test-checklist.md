@@ -21,7 +21,7 @@
 - [ ] 多个候选日期时出现选择列表,点不同候选字段跟着变
 
 ## D. Calendar + Location(新功能)
-- [ ] 粘贴 "Coffee chat with Sarah next Tuesday 3pm at GSB Coupa" → Location 自动填 "GSB Coupa"
+- [ ] 粘贴 "Coffee chat with Sarah next Tuesday 3pm at Blue Bottle" → Location 自动填 "Blue Bottle"
 - [ ] Add event → Google 日历里确认:时间对、时长对、**地点在正式 Location 栏**(不在描述里)
 - [ ] Calendar 模式不填日期就提交 → 日期框红框 + 提示,不崩
 - [ ] 手动改/清空 Location 再保存,以改后的为准
