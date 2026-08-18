@@ -692,7 +692,7 @@ function buildItemCard(c, n) {
     loc.type = 'text';
     loc.value = c.location || '';
     loc.addEventListener('input', () => { c.location = loc.value; });
-    card.appendChild(cardField(I18n.t('Location'), loc));
+    card.appendChild(cardField(I18n.t('Location (optional)'), loc));
   }
 
   if (c.notes === undefined) c.notes = defaultNotesFor(c);
