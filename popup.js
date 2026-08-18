@@ -716,7 +716,6 @@ function renderChip(info) {
     $('chip').textContent =
       info.kind === 'email' ? I18n.t('Email')
       : info.kind === 'video' ? I18n.t('Video · ~{n} min long', { n: info.videoMinutes })
-      : info.kind === 'article' ? I18n.t('Article')
       : info.kind === 'pdf' ? 'PDF'
       : I18n.t('Page');
   });
