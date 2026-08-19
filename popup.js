@@ -84,12 +84,12 @@ async function init() {
   loadAccount();
   const listsPromise = loadTaskLists();
 
-  // Screenshot input, three ways: click the drop zone (file picker), paste (⌘V),
-  // or drop an image anywhere in the popup.
+  // Screenshot or PDF input, three ways: click the drop zone (file picker),
+  // paste (⌘V), or drop a file anywhere in the popup.
   $('screenshotBtn').addEventListener('click', () => $('fileInput').click());
   $('fileInput').addEventListener('change', (e) => {
     const f = e.target.files && e.target.files[0];
-    if (f) handleImage(f);
+    if (f) handleFile(f);
     e.target.value = ''; // allow re-picking the same file
   });
   const dz = $('importZone');
@@ -123,11 +123,11 @@ async function init() {
 
   document.addEventListener('paste', (e) => {
     const img = Array.from((e.clipboardData && e.clipboardData.items) || []).find(
-      (i) => i.type && i.type.startsWith('image/')
+      (i) => i.type && (i.type.startsWith('image/') || i.type === 'application/pdf')
     );
     if (img) {
       e.preventDefault();
-      handleImage(img.getAsFile());
+      handleFile(img.getAsFile());
       return;
     }
     // Plain text pasted while NOT editing a field → read it straight away.
@@ -147,7 +147,7 @@ async function init() {
   document.addEventListener('drop', (e) => {
     e.preventDefault();
     const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-    if (f) handleImage(f);
+    if (f) handleFile(f);
   });
 
   // The automatic page read claims its sequence number BEFORE the first await,
@@ -396,6 +396,12 @@ function offerBuiltinSetup(state) {
 }
 
 // Read a dropped/pasted image file, then hand it to the AI
+function handleFile(file) {
+  if (!file || !file.type) return;
+  if (file.type === 'application/pdf') handlePdf(file);
+  else handleImage(file);
+}
+
 function handleImage(file) {
   if (!file || !file.type || !file.type.startsWith('image/')) return;
   const reader = new FileReader();
@@ -404,6 +410,61 @@ function handleImage(file) {
     if (dataBase64) extractFromImage({ mimeType: file.type, dataBase64 });
   };
   reader.readAsDataURL(file);
+}
+
+// PDFs go through the same vision path as screenshots: pdf.js (bundled, runs
+// entirely on this machine) draws the first pages onto one tall canvas.
+const MAX_PDF_PAGES = 3;
+
+async function pdfToImage(file) {
+  const pdfjs = await import(chrome.runtime.getURL('lib/vendor/pdfjs/pdf.min.mjs'));
+  pdfjs.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('lib/vendor/pdfjs/pdf.worker.min.mjs');
+  const doc = await pdfjs.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise;
+  const pages = Math.min(doc.numPages, MAX_PDF_PAGES);
+  const canvases = [];
+  for (let i = 1; i <= pages; i++) {
+    const page = await doc.getPage(i);
+    const scale = 1100 / page.getViewport({ scale: 1 }).width;
+    const vp = page.getViewport({ scale });
+    const c = document.createElement('canvas');
+    c.width = Math.ceil(vp.width);
+    c.height = Math.ceil(vp.height);
+    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    canvases.push(c);
+  }
+  const gap = 16;
+  const out = document.createElement('canvas');
+  out.width = Math.max(...canvases.map((c) => c.width));
+  out.height = canvases.reduce((h, c) => h + c.height, 0) + gap * (canvases.length - 1);
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, out.width, out.height);
+  let y = 0;
+  for (const c of canvases) { ctx.drawImage(c, 0, y); y += c.height + gap; }
+  return {
+    mimeType: 'image/jpeg',
+    dataBase64: out.toDataURL('image/jpeg', 0.88).split(',')[1],
+    truncated: doc.numPages > pages,
+  };
+}
+
+async function handlePdf(file) {
+  $('aiStatusText').textContent = I18n.t('Reading the PDF…');
+  $('aiStatus').classList.remove('hidden');
+  let image;
+  try {
+    image = await pdfToImage(file);
+  } catch (e) {
+    $('aiStatus').classList.add('hidden');
+    flashError(I18n.t('Could not read this PDF. Try a screenshot of it instead.'));
+    return;
+  }
+  await extractFromImage(image, {
+    chip: 'PDF',
+    emptyMsg: 'Nothing to add was found in this PDF',
+    failMsg: 'PDF recognition failed',
+  });
+  if (image.truncated) showNotice('Long PDF: only the first 3 pages were read.');
 }
 
 // Shared AI flow for pasted screenshots and pasted text — reuses the candidate UI
@@ -466,13 +527,14 @@ async function runAi(opts) {
 
 // opts carry raw string keys; runAi translates them at render time so a
 // language toggle mid-flow re-renders correctly
-const extractFromImage = (image) =>
+const extractFromImage = (image, over) =>
   runAi({
     image,
     chip: 'Screenshot',
     progress: 'AI is reading the screenshot…',
     emptyMsg: 'Nothing to add was found in this screenshot',
     failMsg: 'Screenshot recognition failed',
+    ...(over || {}),
   });
 
 const extractFromText = (text) => {
