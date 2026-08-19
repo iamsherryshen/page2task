@@ -461,6 +461,7 @@ async function handlePdf(file) {
   }
   await extractFromImage(image, {
     chip: 'PDF',
+    progress: 'AI is reading the PDF…',
     emptyMsg: 'Nothing to add was found in this PDF',
     failMsg: 'PDF recognition failed',
   });
