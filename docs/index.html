@@ -79,7 +79,7 @@
   nav a:hover{ color:var(--accent); }
 
   header{ text-align:center; padding: 54px 0 8px; }
-  header h1{ font-size: clamp(30px, 5.2vw, 52px); line-height:1.15; letter-spacing:-.5px; max-width: 15ch; margin: 0 auto 20px; }
+  header h1{ font-size: clamp(28px, 4.6vw, 46px); line-height:1.2; letter-spacing:-.5px; max-width: 34ch; margin: 0 auto 18px; }
   header p.lede{ font-size: clamp(15px, 2vw, 19px); color:var(--muted); line-height:1.6; max-width: 58ch; margin: 0 auto 30px; }
   .cta{ display:flex; gap:14px; justify-content:center; align-items:center; flex-wrap:wrap; }
   .btn{
@@ -132,6 +132,7 @@
   footer .sep{ margin: 0 10px; opacity:.5; }
 
   @media (max-width: 860px){
+    .h1br{ display: none; }
     .facts{ grid-template-columns: 1fr; gap: 24px; text-align: center; }
     .fact svg{ margin: 0 auto 8px; display: block; }
     .row, .row.flip{ grid-template-columns: 1fr; gap: 24px; padding: 34px 0; }
@@ -150,7 +151,7 @@
   </nav>
 
   <header>
-    <h1>Page2Task turns anything you see into a task or a calendar event</h1>
+    <h1>Page2Task turns anything you see<br class="h1br">into a task or a calendar event</h1>
     <p class="lede">Page2Task reads the deadline out of whatever you are viewing and saves it to Google Tasks or Google Calendar in one click.</p>
     <div class="cta">
       <a class="btn" href="https://github.com/iamsherryshen/page2task" target="_blank" rel="noopener">View on GitHub</a>
