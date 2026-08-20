@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Page2Task",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Turn any page, email, or screenshot into a Google Task or Calendar event, with deadlines and locations detected for you.",
   "action": {
     "default_popup": "popup.html",
