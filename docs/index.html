@@ -103,7 +103,11 @@
     border-radius:16px; box-shadow: var(--shadow); background:#F2F6FE; }
   .p2t-frame{ position:absolute; top:0; left:0; width:1280px; height:800px;
     transform: scale(var(--p2t-s, .4)); transform-origin: top left; }
-  .hero-shot{ margin: 52px 0 10px; }
+  .hero-shot{ margin: 30px 0 10px; }
+  .promo-video{ margin: 46px auto 6px; max-width: 1020px; }
+  .promo-video video{ width:100%; display:block; border-radius:18px;
+    box-shadow: 0 3px 8px rgba(20,45,90,.07), 0 30px 70px -22px rgba(20,45,90,.30);
+    background:#000; }
 
   .row{ display:grid; grid-template-columns: 1.5fr .8fr; gap: 60px; align-items:center; padding: 58px 0; }
   .row.flip{ grid-template-columns: .8fr 1.5fr; }
@@ -150,6 +154,10 @@
     <div class="works"><i class="t"></i><i class="c"></i><span>Works with Google Tasks and Google Calendar</span></div>
     <p class="about">Page2Task is a free Chrome extension. It reads the page you are viewing, such as an email, an event page, a chat screenshot, a syllabus PDF, or an article, and finds the deadline or event time in it. When you click Add, Page2Task creates a task in your Google Tasks or an event in your Google Calendar. Nothing is created without your click, and your data is saved only to your own Google account.</p>
   </header>
+
+  <div class="promo-video">
+    <video src="promo.mp4" poster="promo-poster.jpg" controls preload="metadata" playsinline></video>
+  </div>
 
   <div class="shot hero-shot"><div class="p2t-stage"><div id="anim1" class="p2t-frame">
   <div style="position:absolute;left:0;top:0;width:1280px;height:800px;transform:translateY(-26px)">
