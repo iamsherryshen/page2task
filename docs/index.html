@@ -122,13 +122,18 @@
   .card h3{ font-size:16px; margin-bottom:9px; }
   .card p{ font-size:14px; line-height:1.65; color:var(--muted); }
 
-  .about{ max-width: 720px; margin: 26px auto 0; font-size: 16px; line-height: 1.7; color: var(--muted); text-align: center; }
+  .facts{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 34px; max-width: 1000px; margin: 44px auto 0; text-align: left; }
+  .fact svg{ width: 26px; height: 26px; color: var(--accent); margin-bottom: 10px; }
+  .fact h3{ font-size: 16px; font-weight: 700; margin-bottom: 6px; letter-spacing: -.1px; }
+  .fact p{ font-size: 14.5px; line-height: 1.65; color: var(--muted); }
   footer{ text-align:center; padding: 64px 0 54px; color:var(--muted); font-size:14px; }
   footer a{ color:var(--accent); text-decoration:none; }
   footer a:hover{ text-decoration:underline; }
   footer .sep{ margin: 0 10px; opacity:.5; }
 
   @media (max-width: 860px){
+    .facts{ grid-template-columns: 1fr; gap: 24px; text-align: center; }
+    .fact svg{ margin: 0 auto 8px; display: block; }
     .row, .row.flip{ grid-template-columns: 1fr; gap: 24px; padding: 34px 0; }
     .row.flip .shot{ order: 0; }
     .cards{ grid-template-columns: 1fr; }
@@ -152,7 +157,23 @@
     </div>
     <div class="note">Chrome Web Store review in progress.</div>
     <div class="works"><i class="t"></i><i class="c"></i><span>Works with Google Tasks and Google Calendar</span></div>
-    <p class="about">Page2Task is a free Chrome extension. It reads the page you are viewing, such as an email, an event page, a chat screenshot, a syllabus PDF, or an article, and finds the deadline or event time in it. When you click Add, Page2Task creates a task in your Google Tasks or an event in your Google Calendar. Nothing is created without your click, and your data is saved only to your own Google account.</p>
+    <div class="facts">
+      <div class="fact">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 2.5h8l4.5 4.5v14a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5v-17A1.5 1.5 0 0 1 6 2.5z" stroke="currentColor" stroke-width="1.8"/><path d="M8 11h8M8 14.5h8M8 18h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>Reads what you see</h3>
+        <p>Page2Task is a free Chrome extension. It reads the page you are viewing: an email, an event page, a chat screenshot, a syllabus PDF, or an article.</p>
+      </div>
+      <div class="fact">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5v5l3.2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <h3>Finds the deadline</h3>
+        <p>It spots the deadline or event time hiding in the text, and fills in the title, date, and time for you.</p>
+      </div>
+      <div class="fact">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 14.5 L11 17 L15.8 12.2" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h3>One click to Google</h3>
+        <p>Click Add and it becomes a task in your Google Tasks or an event in your Google Calendar. Nothing is created without your click, and your data is saved only to your own Google account.</p>
+      </div>
+    </div>
   </header>
 
   <div class="promo-video">
