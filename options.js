@@ -364,19 +364,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     else obExit();
   });
   {
-    // The wizard is driven by real state, not a one-time flag: as long as the
-    // product cannot do anything yet (no Google account AND no AI source ever
-    // chosen), every visit to this page starts with the guided setup. Someone
-    // who connected, or saved a key, or explicitly picked the on-device model
-    // gets the normal settings page.
-    const aiConfigured = storedProv === 'builtin' || anyKeySaved;
+    // The wizard is driven by real state, not a one-time flag: without a
+    // connected Google account the product cannot save anything, so every
+    // visit to this page starts with the guided setup until one is connected.
     const email = await new Promise((resolve) => {
       chrome.runtime.sendMessage({ action: 'whoami' }, (resp) => {
         void chrome.runtime.lastError;
         resolve((resp && resp.ok && resp.data && resp.data.email) || null);
       });
     });
-    if (!email && !aiConfigured) {
+    if (!email) {
       $('obBanner').classList.remove('hidden');
       $('obActions').classList.remove('hidden');
       obSetStep(1);
