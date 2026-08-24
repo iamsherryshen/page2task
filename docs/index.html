@@ -126,6 +126,10 @@
   .fact svg{ width: 26px; height: 26px; color: var(--accent); margin-bottom: 10px; }
   .fact h3{ font-size: 16px; font-weight: 700; margin-bottom: 6px; letter-spacing: -.1px; }
   .fact p{ font-size: 14.5px; line-height: 1.65; color: var(--muted); }
+  #langToggle{ font: inherit; font-size: 14px; font-weight: 600; color: var(--accent);
+    background: rgba(255,255,255,.72); border: 1px solid rgba(11,87,208,.18); border-radius: 16px;
+    padding: 5px 14px; cursor: pointer; margin-right: 16px; }
+  #langToggle:hover{ background: #fff; }
   footer{ text-align:center; padding: 64px 0 54px; color:var(--muted); font-size:14px; }
   footer a{ color:var(--accent); text-decoration:none; }
   footer a:hover{ text-decoration:underline; }
@@ -147,32 +151,33 @@
   <nav>
     <img class="logo" src="icon128.png" alt="">
     <span class="name">Page2Task</span>
+    <button id="langToggle" type="button">中文</button>
     <a href="https://github.com/iamsherryshen/page2task" target="_blank" rel="noopener">GitHub</a>
   </nav>
 
   <header>
     <h1>Page2Task turns anything you see<br class="h1br">into a task or a calendar event</h1>
-    <p class="lede">One click in your browser. The deadline is found for you, the title written, and it is saved to Google Tasks or Google Calendar.</p>
+    <p class="lede" data-i18n="One click in your browser. The deadline is found for you, the title written, and it is saved to Google Tasks or Google Calendar.">One click in your browser. The deadline is found for you, the title written, and it is saved to Google Tasks or Google Calendar.</p>
     <div class="cta">
-      <a class="btn" href="https://github.com/iamsherryshen/page2task" target="_blank" rel="noopener">View on GitHub</a>
+      <a class="btn" href="https://github.com/iamsherryshen/page2task" target="_blank" rel="noopener" data-i18n="View on GitHub">View on GitHub</a>
     </div>
-    <div class="note">Chrome Web Store review in progress.</div>
-    <div class="works"><i class="t"></i><i class="c"></i><span>Works with Google Tasks and Google Calendar</span></div>
+    <div class="note" data-i18n="Chrome Web Store review in progress.">Chrome Web Store review in progress.</div>
+    <div class="works"><i class="t"></i><i class="c"></i><span data-i18n="Works with Google Tasks and Google Calendar">Works with Google Tasks and Google Calendar</span></div>
     <div class="facts">
       <div class="fact">
         <svg viewBox="0 0 24 24" fill="none"><path d="M6 2.5h8l4.5 4.5v14a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5v-17A1.5 1.5 0 0 1 6 2.5z" stroke="currentColor" stroke-width="1.8"/><path d="M8 11h8M8 14.5h8M8 18h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <h3>Reads what you see</h3>
-        <p>Page2Task is a free Chrome extension. It reads emails, event pages, PDFs, and screenshots.</p>
+        <h3 data-i18n="Reads what you see">Reads what you see</h3>
+        <p data-i18n="Page2Task is a free Chrome extension. It reads emails, event pages, PDFs, and screenshots.">Page2Task is a free Chrome extension. It reads emails, event pages, PDFs, and screenshots.</p>
       </div>
       <div class="fact">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5v5l3.2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <h3>Finds the deadline</h3>
-        <p>It finds the deadline or event time and fills in the title, date, and time.</p>
+        <h3 data-i18n="Finds the deadline">Finds the deadline</h3>
+        <p data-i18n="It finds the deadline or event time and fills in the title, date, and time.">It finds the deadline or event time and fills in the title, date, and time.</p>
       </div>
       <div class="fact">
         <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 14.5 L11 17 L15.8 12.2" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <h3>One click to Google</h3>
-        <p>Click Add and it lands in your Google Tasks or Google Calendar, in your own account.</p>
+        <h3 data-i18n="One click to Google">One click to Google</h3>
+        <p data-i18n="Click Add and it lands in your Google Tasks or Google Calendar, in your own account.">Click Add and it lands in your Google Tasks or Google Calendar, in your own account.</p>
       </div>
     </div>
   </header>
@@ -194,7 +199,7 @@
           </div>
           <div style="width:54px;height:46px;flex:none;border-radius:8px;background:repeating-linear-gradient(135deg,#E1E8F3 0 7px,#EFF3F9 7px 14px)"></div>
         </div>
-        <div style="font-size:14px;font-weight:500;color:#1F1F1F">Articles</div>
+        <div style="font-size:14px;font-weight:500;color:#1F1F1F" data-i18n="Articles">Articles</div>
       </div>
       <div style="height:120px;padding:14px;background:#FFFFFF;border:1px solid rgba(11,87,208,0.12);border-radius:14px;box-shadow:0 1px 2px rgba(20,45,90,0.05),0 8px 20px -8px rgba(20,45,90,0.16);display:flex;flex-direction:column;justify-content:space-between;animation:p2tLift 7s ease-in-out 1.15s infinite">
         <div style="height:60px;border-radius:8px;background:repeating-linear-gradient(135deg,#E1E8F3 0 7px,#EFF3F9 7px 14px);display:flex;align-items:center;justify-content:center">
@@ -202,7 +207,7 @@
             <div style="width:0;height:0;border-left:10px solid #5F6368;border-top:6.5px solid transparent;border-bottom:6.5px solid transparent;margin-left:4px"></div>
           </div>
         </div>
-        <div style="font-size:14px;font-weight:500;color:#1F1F1F">Videos</div>
+        <div style="font-size:14px;font-weight:500;color:#1F1F1F" data-i18n="Videos">Videos</div>
       </div>
       <div style="height:120px;padding:14px;background:#FFFFFF;border:1px solid rgba(11,87,208,0.12);border-radius:14px;box-shadow:0 1px 2px rgba(20,45,90,0.05),0 8px 20px -8px rgba(20,45,90,0.16);display:flex;flex-direction:column;justify-content:space-between;animation:p2tLift 7s ease-in-out 1.8s infinite">
         <div style="display:flex;flex-direction:column;gap:9px">
@@ -216,7 +221,7 @@
           <div style="height:8px;border-radius:4px;background:#E6EAF1"></div>
           <div style="height:8px;width:80%;border-radius:4px;background:#E6EAF1"></div>
         </div>
-        <div style="font-size:14px;font-weight:500;color:#1F1F1F">Emails</div>
+        <div style="font-size:14px;font-weight:500;color:#1F1F1F" data-i18n="Emails">Emails</div>
       </div>
       <div style="height:120px;padding:14px;background:#FFFFFF;border:1px solid rgba(11,87,208,0.12);border-radius:14px;box-shadow:0 1px 2px rgba(20,45,90,0.05),0 8px 20px -8px rgba(20,45,90,0.16);display:flex;flex-direction:column;justify-content:space-between;animation:p2tLift 7s ease-in-out 2.45s infinite">
         <div style="display:flex;flex-direction:column;gap:6px">
@@ -224,7 +229,7 @@
           <div style="align-self:flex-end;width:102px;height:20px;border-radius:10px 10px 3px 10px;background:#D9E7FB"></div>
           <div style="align-self:flex-start;width:82px;height:20px;border-radius:10px 10px 10px 3px;background:#EDF0F5"></div>
         </div>
-        <div style="font-size:14px;font-weight:500;color:#1F1F1F">Chats and pasted text</div>
+        <div style="font-size:14px;font-weight:500;color:#1F1F1F" data-i18n="Chats and pasted text">Chats and pasted text</div>
       </div>
     </div>
 
@@ -249,29 +254,29 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:13px;padding:0 18px 20px">
           <div style="display:flex;gap:5px;background:rgba(255,255,255,0.7);border:1px solid rgba(11,87,208,0.14);border-radius:999px;padding:5px">
-            <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:500;color:#5F6368">To-do</div>
-            <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:500;color:#5F6368">Calendar</div>
-            <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:700;background:#C2E7FF;color:#001D35">Both</div>
+            <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:500;color:#5F6368" data-i18n="To-do">To-do</div>
+            <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:500;color:#5F6368" data-i18n="Calendar">Calendar</div>
+            <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:700;background:#C2E7FF;color:#001D35" data-i18n="Both">Both</div>
           </div>
-          <div style="align-self:flex-start;background:#E8F0FE;color:#1967D2;border-radius:999px;padding:5px 15px;font-size:14px;font-weight:500">Web page</div>
-          <div style="border:2px dashed #669DF6;border-radius:15px;background:rgba(255,255,255,0.8);padding:13px 16px;font-size:16px;line-height:1.5;color:#5F6368">Paste a screenshot or text here, or <span style="color:#1967D2;font-weight:500;text-decoration:underline;text-underline-offset:2px">upload a file</span></div>
+          <div style="align-self:flex-start;background:#E8F0FE;color:#1967D2;border-radius:999px;padding:5px 15px;font-size:14px;font-weight:500" data-i18n="Web page">Web page</div>
+          <div style="border:2px dashed #669DF6;border-radius:15px;background:rgba(255,255,255,0.8);padding:13px 16px;font-size:16px;line-height:1.5;color:#5F6368">Paste a screenshot or text here, or <span style="color:#1967D2;font-weight:500;text-decoration:underline;text-underline-offset:2px" data-i18n="upload a file">upload a file</span></div>
           <div style="background:#FFFFFF;border:1px solid rgba(11,87,208,0.12);border-radius:20px;padding:15px;display:flex;flex-direction:column;gap:13px;box-shadow:0 1px 2px rgba(20,45,90,0.05),0 8px 20px -8px rgba(20,45,90,0.16)">
             <div style="display:flex;flex-direction:column;gap:4px">
-              <div style="color:#1967D2;font-size:14px;font-weight:500">Title</div>
-              <div style="border:1px solid rgba(11,87,208,0.14);border-radius:10px;background:#F0F4FC;padding:9px 11px;font-size:16px;color:#1F1F1F">Dinner with Amy</div>
+              <div style="color:#1967D2;font-size:14px;font-weight:500" data-i18n="Title">Title</div>
+              <div style="border:1px solid rgba(11,87,208,0.14);border-radius:10px;background:#F0F4FC;padding:9px 11px;font-size:16px;color:#1F1F1F" data-i18n="Dinner with Amy">Dinner with Amy</div>
             </div>
             <div style="display:flex;flex-direction:column;gap:4px">
-              <div style="color:#1967D2;font-size:14px;font-weight:500">Date</div>
+              <div style="color:#1967D2;font-size:14px;font-weight:500" data-i18n="Date">Date</div>
               <div style="border:1px solid rgba(11,87,208,0.14);border-radius:10px;background:#F0F4FC;padding:9px 11px;font-size:16px;color:#1F1F1F">2026/08/13</div>
             </div>
             <div style="display:flex;flex-direction:column;gap:4px">
-              <div style="color:#1967D2;font-size:14px;font-weight:500">Start time</div>
+              <div style="color:#1967D2;font-size:14px;font-weight:500" data-i18n="Start time">Start time</div>
               <div style="border:1px solid rgba(11,87,208,0.14);border-radius:10px;background:#F0F4FC;padding:9px 11px;font-size:16px;color:#1F1F1F">19:30</div>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 8px;border-radius:999px;background:#0B57D0;box-shadow:0 20px 40px -14px rgba(11,87,208,0.45)">
-            <div style="font-size:17px;font-weight:700;color:#FFFFFF;white-space:nowrap">Add to both</div>
-            <div style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);white-space:nowrap">Google Tasks and Calendar</div>
+            <div style="font-size:17px;font-weight:700;color:#FFFFFF;white-space:nowrap" data-i18n="Add to both">Add to both</div>
+            <div style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);white-space:nowrap" data-i18n="Google Tasks and Calendar">Google Tasks and Calendar</div>
           </div>
         </div>
       </div>
@@ -285,8 +290,8 @@
       <div style="display:flex;gap:12px;align-items:center">
         <div style="width:5px;align-self:stretch;min-height:42px;flex:none;border-radius:3px;background:#0B57D0"></div>
         <div style="display:flex;flex-direction:column;gap:5px">
-          <div style="font-size:17px;font-weight:700;color:#1F1F1F;white-space:nowrap">Dinner with Amy</div>
-          <div style="font-size:13px;color:#5F6368;white-space:nowrap">Thu, Aug 13 &nbsp;·&nbsp; 7:30 PM</div>
+          <div style="font-size:17px;font-weight:700;color:#1F1F1F;white-space:nowrap" data-i18n="Dinner with Amy">Dinner with Amy</div>
+          <div style="font-size:13px;color:#5F6368;white-space:nowrap" data-i18n="Thu, Aug 13 &nbsp;·&nbsp; 7:30 PM">Thu, Aug 13 &nbsp;·&nbsp; 7:30 PM</div>
         </div>
       </div>
     </div>
@@ -299,8 +304,8 @@
       <div style="display:flex;gap:12px;align-items:center">
         <div style="width:21px;height:21px;flex:none;border-radius:50%;border:2px solid rgba(11,87,208,0.42)"></div>
         <div style="display:flex;flex-direction:column;gap:5px">
-          <div style="font-size:17px;font-weight:700;color:#1F1F1F;white-space:nowrap">Submit grant application</div>
-          <div style="font-size:13px;color:#5F6368;white-space:nowrap">Fri, Aug 14</div>
+          <div style="font-size:17px;font-weight:700;color:#1F1F1F;white-space:nowrap" data-i18n="Submit grant application">Submit grant application</div>
+          <div style="font-size:13px;color:#5F6368;white-space:nowrap" data-i18n="Fri, Aug 14">Fri, Aug 14</div>
         </div>
       </div>
     </div>
@@ -324,7 +329,7 @@
     <div style="position:absolute;right:56px;bottom:22px;display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid rgba(20,45,90,0.10);border-radius:999px;padding:8px 18px 8px 14px;box-shadow:0 10px 24px -12px rgba(20,45,90,0.26)">
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-tasks) center/contain no-repeat"></div>
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-cal) center/contain no-repeat"></div>
-      <div style="font-size:14px;color:#5F6368;white-space:nowrap">Works with Google Tasks and Google Calendar</div>
+      <div style="font-size:14px;color:#5F6368;white-space:nowrap" data-i18n="Works with Google Tasks and Google Calendar">Works with Google Tasks and Google Calendar</div>
     </div>
   
 </div>
@@ -371,25 +376,25 @@
           <div style="display:flex;gap:14px;align-items:center">
             <div style="width:46px;height:46px;flex:none;border-radius:50%;background:#E8F0FE;color:#1967D2;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center">RG</div>
             <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-              <div style="font-size:17px;font-weight:700;color:#1F1F1F">Research Grants Office</div>
+              <div style="font-size:17px;font-weight:700;color:#1F1F1F" data-i18n="Research Grants Office">Research Grants Office</div>
               <div style="height:9px;width:132px;border-radius:5px;background:#E3E7EE"></div>
             </div>
           </div>
-          <div style="font-size:25px;font-weight:700;color:#1F1F1F;line-height:1.3">Your application timeline</div>
+          <div style="font-size:25px;font-weight:700;color:#1F1F1F;line-height:1.3" data-i18n="Your application timeline">Your application timeline</div>
           <div style="height:1px;background:#EDF0F5"></div>
           <div style="display:flex;flex-direction:column;gap:14px">
             <div style="height:11px;border-radius:6px;background:#E3E7EE"></div>
             <div style="height:11px;width:93%;border-radius:6px;background:#E7EBF1"></div>
           </div>
           <div style="font-size:19px;line-height:2;color:#1F1F1F">
-            <span style="background-image:linear-gradient(#FDF2BC,#FDF2BC);background-repeat:no-repeat;background-position:left center;background-size:100% 100%;padding:5px 8px;border-radius:5px;box-decoration-break:clone;-webkit-box-decoration-break:clone;animation:s2hlA 7s ease-in-out infinite">The deadline to submit your grant application is Friday, Aug&nbsp;14 at&nbsp;3:00&nbsp;PM</span>
+            <span style="background-image:linear-gradient(#FDF2BC,#FDF2BC);background-repeat:no-repeat;background-position:left center;background-size:100% 100%;padding:5px 8px;border-radius:5px;box-decoration-break:clone;-webkit-box-decoration-break:clone;animation:s2hlA 7s ease-in-out infinite" data-i18n="The deadline to submit your grant application is Friday, Aug&nbsp;14 at&nbsp;3:00&nbsp;PM">The deadline to submit your grant application is Friday, Aug&nbsp;14 at&nbsp;3:00&nbsp;PM</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:14px">
             <div style="height:11px;width:96%;border-radius:6px;background:#E7EBF1"></div>
             <div style="height:11px;width:70%;border-radius:6px;background:#E7EBF1"></div>
           </div>
           <div style="font-size:19px;line-height:2;color:#1F1F1F">
-            <span style="background-image:linear-gradient(#FDF2BC,#FDF2BC);background-repeat:no-repeat;background-position:left center;background-size:100% 100%;padding:5px 8px;border-radius:5px;box-decoration-break:clone;-webkit-box-decoration-break:clone;animation:s2hlB 7s ease-in-out infinite">Interviews will be held the week of Aug&nbsp;20</span>
+            <span style="background-image:linear-gradient(#FDF2BC,#FDF2BC);background-repeat:no-repeat;background-position:left center;background-size:100% 100%;padding:5px 8px;border-radius:5px;box-decoration-break:clone;-webkit-box-decoration-break:clone;animation:s2hlB 7s ease-in-out infinite" data-i18n="Interviews will be held the week of Aug&nbsp;20">Interviews will be held the week of Aug&nbsp;20</span>
           </div>
           <div style="display:flex;gap:12px;margin-top:6px">
             <div style="border:1px solid #DADCE0;border-radius:999px;padding:11px 26px"><div style="height:9px;width:46px;border-radius:5px;background:#DFE3EA"></div></div>
@@ -408,38 +413,38 @@
       </div>
       <div style="display:flex;flex-direction:column;gap:12px;padding:0 16px 18px">
         <div style="display:flex;gap:4px;background:rgba(255,255,255,0.7);border:1px solid rgba(11,87,208,0.14);border-radius:999px;padding:4px">
-          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:700;background:#C2E7FF;color:#001D35">To-do</div>
-          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368">Calendar</div>
-          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368">Both</div>
+          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:700;background:#C2E7FF;color:#001D35" data-i18n="To-do">To-do</div>
+          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368" data-i18n="Calendar">Calendar</div>
+          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368" data-i18n="Both">Both</div>
         </div>
-        <div style="align-self:flex-start;background:#E8F0FE;color:#1967D2;border-radius:999px;padding:4px 14px;font-size:13px;font-weight:500">Email</div>
-        <div style="border:2px dashed #669DF6;border-radius:14px;background:rgba(255,255,255,0.8);padding:11px 13px;font-size:15px;line-height:1.5;color:#5F6368">Paste a screenshot or text here, or <span style="color:#1967D2;font-weight:500;text-decoration:underline;text-underline-offset:2px">upload a file</span></div>
+        <div style="align-self:flex-start;background:#E8F0FE;color:#1967D2;border-radius:999px;padding:4px 14px;font-size:13px;font-weight:500" data-i18n="Email">Email</div>
+        <div style="border:2px dashed #669DF6;border-radius:14px;background:rgba(255,255,255,0.8);padding:11px 13px;font-size:15px;line-height:1.5;color:#5F6368">Paste a screenshot or text here, or <span style="color:#1967D2;font-weight:500;text-decoration:underline;text-underline-offset:2px" data-i18n="upload a file">upload a file</span></div>
         <div style="background:#FFFFFF;border:1px solid rgba(11,87,208,0.12);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 2px rgba(20,45,90,0.05),0 8px 20px -8px rgba(20,45,90,0.16)">
-          <div style="font-size:14px;line-height:1.45;color:#5F6368">Several deadlines found. Check the ones to add; edit each one below:</div>
+          <div style="font-size:14px;line-height:1.45;color:#5F6368" data-i18n="Several deadlines found. Check the ones to add; edit each one below:">Several deadlines found. Check the ones to add; edit each one below:</div>
           <div style="display:flex;flex-direction:column;gap:5px">
             <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;background:#F0F4FC">
               <div style="width:18px;height:18px;flex:none;border-radius:5px;background:#0B57D0;display:flex;align-items:center;justify-content:center;animation:s2boxA 7s ease-in-out infinite">
                 <svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke:#FFFFFF;stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round"><path d="M5 13 L9.5 17.5 L19 7" pathLength="100" style="stroke-dasharray:100;stroke-dashoffset:0;animation:s2ckA 7s ease-out infinite"></path></svg>
               </div>
               <div style="font-size:14px;font-weight:700;color:#1F1F1F;white-space:nowrap">Aug 14 15:00</div>
-              <div style="font-size:14px;color:#5F6368">Submit grant application</div>
+              <div style="font-size:14px;color:#5F6368" data-i18n="Submit grant application">Submit grant application</div>
             </div>
             <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;background:#F0F4FC">
               <div style="width:18px;height:18px;flex:none;border-radius:5px;background:#0B57D0;display:flex;align-items:center;justify-content:center;animation:s2boxB 7s ease-in-out infinite">
                 <svg width="12" height="12" viewBox="0 0 24 24" style="fill:none;stroke:#FFFFFF;stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round"><path d="M5 13 L9.5 17.5 L19 7" pathLength="100" style="stroke-dasharray:100;stroke-dashoffset:0;animation:s2ckB 7s ease-out infinite"></path></svg>
               </div>
               <div style="font-size:14px;font-weight:700;color:#1F1F1F;white-space:nowrap">Aug 20</div>
-              <div style="font-size:14px;color:#5F6368">Prepare for grant interview</div>
+              <div style="font-size:14px;color:#5F6368" data-i18n="Prepare for grant interview">Prepare for grant interview</div>
             </div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:13px 8px;border-radius:999px;background:#0B57D0;box-shadow:0 20px 40px -14px rgba(11,87,208,0.45);animation:p2tBtn 7s ease-out 5.55s infinite">
-          <div style="font-size:16px;font-weight:700;color:#FFFFFF;white-space:nowrap">Add 2 to-dos</div>
+          <div style="font-size:16px;font-weight:700;color:#FFFFFF;white-space:nowrap" data-i18n="Add 2 to-dos">Add 2 to-dos</div>
           <div style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);white-space:nowrap">Google Tasks</div>
         </div>
         <div style="display:flex;align-items:center;justify-content:center;gap:7px">
           <div style="width:18px;height:18px;flex:none;background:var(--p2t-tasks) center/contain no-repeat"></div>
-          <div style="font-size:13px;color:#5F6368;white-space:nowrap">Saved to your Google Tasks</div>
+          <div style="font-size:13px;color:#5F6368;white-space:nowrap" data-i18n="Saved to your Google Tasks">Saved to your Google Tasks</div>
         </div>
       </div>
     </div>
@@ -459,7 +464,7 @@
     <div style="position:absolute;right:56px;bottom:22px;display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid rgba(20,45,90,0.10);border-radius:999px;padding:8px 18px 8px 14px;box-shadow:0 10px 24px -12px rgba(20,45,90,0.26)">
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-tasks) center/contain no-repeat"></div>
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-cal) center/contain no-repeat"></div>
-      <div style="font-size:14px;color:#5F6368;white-space:nowrap">Works with Google Tasks and Google Calendar</div>
+      <div style="font-size:14px;color:#5F6368;white-space:nowrap" data-i18n="Works with Google Tasks and Google Calendar">Works with Google Tasks and Google Calendar</div>
     </div>
   
 </div>
@@ -468,8 +473,8 @@
 <!-- ===== Shot 3 / Chat to calendar — 1280×800, 7s loop ===== -->
     </div></div>
     <div class="say">
-      <h2>Every deadline, not just the first</h2>
-      <p>It lists every date it finds, with checkboxes, so you add what matters and skip the rest.</p>
+      <h2 data-i18n="Every deadline, not just the first">Every deadline, not just the first</h2>
+      <p data-i18n="It lists every date it finds, with checkboxes, so you add what matters and skip the rest.">It lists every date it finds, with checkboxes, so you add what matters and skip the rest.</p>
     </div>
   </section>
   <section class="row flip">
@@ -547,41 +552,41 @@
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;padding:0 16px 16px">
         <div style="display:flex;gap:4px;background:rgba(255,255,255,0.7);border:1px solid rgba(11,87,208,0.14);border-radius:999px;padding:4px">
-          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368">To-do</div>
-          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:700;background:#C2E7FF;color:#001D35">Calendar</div>
-          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368">Both</div>
+          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368" data-i18n="To-do">To-do</div>
+          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:700;background:#C2E7FF;color:#001D35" data-i18n="Calendar">Calendar</div>
+          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368" data-i18n="Both">Both</div>
         </div>
         <div style="border:2px dashed #669DF6;border-radius:14px;background:rgba(255,255,255,0.85);padding:10px 12px;display:flex;align-items:center;gap:11px">
           <div style="width:32px;height:32px;flex:none;border-radius:7px;background:repeating-linear-gradient(135deg,#E1E8F3 0 6px,#EFF3F9 6px 12px)"></div>
           <div style="flex:1;font-size:15px;color:#1F1F1F">chat-screenshot.png</div>
-          <div style="font-size:14px;color:#1967D2;font-weight:500">Replace</div>
+          <div style="font-size:14px;color:#1967D2;font-weight:500" data-i18n="Replace">Replace</div>
         </div>
         <div style="background:#FFFFFF;border:1px solid rgba(11,87,208,0.12);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 2px rgba(20,45,90,0.05),0 8px 20px -8px rgba(20,45,90,0.16);animation:s3form 7s ease-out infinite">
           <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="color:#1967D2;font-size:13px;font-weight:500">Title</div>
-            <div style="border:1px solid rgba(11,87,208,0.14);border-radius:9px;background:#F0F4FC;padding:7px 10px;font-size:15px;color:#1F1F1F">Dinner with Amy at Madera</div>
+            <div style="color:#1967D2;font-size:13px;font-weight:500" data-i18n="Title">Title</div>
+            <div style="border:1px solid rgba(11,87,208,0.14);border-radius:9px;background:#F0F4FC;padding:7px 10px;font-size:15px;color:#1F1F1F" data-i18n="Dinner with Amy at Madera">Dinner with Amy at Madera</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="color:#1967D2;font-size:13px;font-weight:500">Date</div>
+            <div style="color:#1967D2;font-size:13px;font-weight:500" data-i18n="Date">Date</div>
             <div style="border:1px solid rgba(11,87,208,0.14);border-radius:9px;background:#F0F4FC;padding:7px 10px;font-size:15px;color:#1F1F1F">2026/08/13</div>
           </div>
           <div style="display:flex;gap:10px">
             <div style="flex:1;display:flex;flex-direction:column;gap:3px;min-width:0">
-              <div style="color:#1967D2;font-size:13px;font-weight:500">Start time</div>
+              <div style="color:#1967D2;font-size:13px;font-weight:500" data-i18n="Start time">Start time</div>
               <div style="border:1px solid rgba(11,87,208,0.14);border-radius:9px;background:#F0F4FC;padding:7px 10px;font-size:15px;font-weight:700;color:#1F1F1F">19:30</div>
             </div>
             <div style="flex:1;display:flex;flex-direction:column;gap:3px;min-width:0">
-              <div style="color:#1967D2;font-size:13px;font-weight:500">End time</div>
+              <div style="color:#1967D2;font-size:13px;font-weight:500" data-i18n="End time">End time</div>
               <div style="border:1px solid rgba(11,87,208,0.14);border-radius:9px;background:#F0F4FC;padding:7px 10px;font-size:15px;color:#1F1F1F">20:00</div>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="color:#1967D2;font-size:13px;font-weight:500">Location</div>
+            <div style="color:#1967D2;font-size:13px;font-weight:500" data-i18n="Location">Location</div>
             <div style="border:1px solid rgba(11,87,208,0.14);border-radius:9px;background:#F0F4FC;padding:7px 10px;font-size:15px;color:#1F1F1F">Madera</div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 8px;border-radius:999px;background:#0B57D0;box-shadow:0 20px 40px -14px rgba(11,87,208,0.45)">
-          <div style="font-size:16px;font-weight:700;color:#FFFFFF;white-space:nowrap">Add event</div>
+          <div style="font-size:16px;font-weight:700;color:#FFFFFF;white-space:nowrap" data-i18n="Add event">Add event</div>
           <div style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);white-space:nowrap">Google Calendar</div>
         </div>
       </div>
@@ -595,8 +600,8 @@
       <div style="display:flex;gap:12px;align-items:center">
         <div style="width:5px;align-self:stretch;min-height:42px;flex:none;border-radius:3px;background:#0B57D0"></div>
         <div style="display:flex;flex-direction:column;gap:5px">
-          <div style="font-size:13px;color:#5F6368;white-space:nowrap">Thu, Aug 13 &nbsp;·&nbsp; 7:30 PM</div>
-          <div style="font-size:17px;font-weight:700;color:#1F1F1F;white-space:nowrap">Dinner with Amy</div>
+          <div style="font-size:13px;color:#5F6368;white-space:nowrap" data-i18n="Thu, Aug 13 &nbsp;·&nbsp; 7:30 PM">Thu, Aug 13 &nbsp;·&nbsp; 7:30 PM</div>
+          <div style="font-size:17px;font-weight:700;color:#1F1F1F;white-space:nowrap" data-i18n="Dinner with Amy">Dinner with Amy</div>
         </div>
       </div>
     </div>
@@ -613,7 +618,7 @@
     <div style="position:absolute;right:56px;bottom:22px;display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid rgba(20,45,90,0.10);border-radius:999px;padding:8px 18px 8px 14px;box-shadow:0 10px 24px -12px rgba(20,45,90,0.26)">
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-tasks) center/contain no-repeat"></div>
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-cal) center/contain no-repeat"></div>
-      <div style="font-size:14px;color:#5F6368;white-space:nowrap">Works with Google Tasks and Google Calendar</div>
+      <div style="font-size:14px;color:#5F6368;white-space:nowrap" data-i18n="Works with Google Tasks and Google Calendar">Works with Google Tasks and Google Calendar</div>
     </div>
   
 </div>
@@ -622,8 +627,8 @@
 <!-- ===== Shot 4 / Read it later — 1280×800, 7s loop ===== -->
     </div></div>
     <div class="say">
-      <h2>It catches what you actually agreed on</h2>
-      <p>It reads the whole thread and takes the final agreement, not the first proposal.</p>
+      <h2 data-i18n="It catches what you actually agreed on">It catches what you actually agreed on</h2>
+      <p data-i18n="It reads the whole thread and takes the final agreement, not the first proposal.">It reads the whole thread and takes the final agreement, not the first proposal.</p>
     </div>
   </section>
   <section class="row">
@@ -667,11 +672,11 @@
               <div style="height:8px;width:74px;border-radius:4px;background:#E7EBF1"></div>
             </div>
           </div>
-          <div style="font-size:16px;line-height:1.5;color:#1F1F1F">Highly recommend this read on AI agents</div>
+          <div style="font-size:16px;line-height:1.5;color:#1F1F1F" data-i18n="Highly recommend this read on AI agents">Highly recommend this read on AI agents</div>
           <div style="border:1px solid rgba(11,87,208,0.12);border-radius:12px;overflow:hidden">
             <div style="height:88px;background:repeating-linear-gradient(135deg,#E1E8F3 0 8px,#EFF3F9 8px 16px)"></div>
             <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
-              <div style="font-size:15px;font-weight:700;color:#1F1F1F">Building Effective Agents</div>
+              <div style="font-size:15px;font-weight:700;color:#1F1F1F" data-i18n="Building Effective Agents">Building Effective Agents</div>
               <div style="height:9px;border-radius:5px;background:#E7EBF1"></div>
               <div style="height:9px;width:66%;border-radius:5px;background:#E7EBF1"></div>
             </div>
@@ -703,24 +708,24 @@
       </div>
       <div style="display:flex;flex-direction:column;gap:12px;padding:0 16px 18px">
         <div style="display:flex;gap:4px;background:rgba(255,255,255,0.7);border:1px solid rgba(11,87,208,0.14);border-radius:999px;padding:4px">
-          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:700;background:#C2E7FF;color:#001D35">To-do</div>
-          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368">Calendar</div>
-          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368">Both</div>
+          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:700;background:#C2E7FF;color:#001D35" data-i18n="To-do">To-do</div>
+          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368" data-i18n="Calendar">Calendar</div>
+          <div style="flex:1;text-align:center;padding:8px 2px;border-radius:999px;font-size:15px;font-weight:500;color:#5F6368" data-i18n="Both">Both</div>
         </div>
-        <div style="align-self:flex-start;background:#E8F0FE;color:#1967D2;border-radius:999px;padding:4px 14px;font-size:13px;font-weight:500">Screenshot</div>
-        <div style="border:2px dashed #669DF6;border-radius:14px;background:rgba(255,255,255,0.8);padding:11px 13px;font-size:15px;line-height:1.5;color:#5F6368">Paste a screenshot or text here, or <span style="color:#1967D2;font-weight:500;text-decoration:underline;text-underline-offset:2px">upload a file</span></div>
+        <div style="align-self:flex-start;background:#E8F0FE;color:#1967D2;border-radius:999px;padding:4px 14px;font-size:13px;font-weight:500" data-i18n="Screenshot">Screenshot</div>
+        <div style="border:2px dashed #669DF6;border-radius:14px;background:rgba(255,255,255,0.8);padding:11px 13px;font-size:15px;line-height:1.5;color:#5F6368">Paste a screenshot or text here, or <span style="color:#1967D2;font-weight:500;text-decoration:underline;text-underline-offset:2px" data-i18n="upload a file">upload a file</span></div>
         <div style="background:#FFFFFF;border:1px solid rgba(11,87,208,0.12);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(20,45,90,0.05),0 8px 20px -8px rgba(20,45,90,0.16)">
           <div style="display:flex;flex-direction:column;gap:4px">
-            <div style="color:#1967D2;font-size:13px;font-weight:500">Title</div>
-            <div style="border:1px solid rgba(11,87,208,0.14);border-radius:9px;background:#F0F4FC;padding:8px 10px;font-size:15px;color:#1F1F1F;white-space:nowrap;overflow:hidden"><span style="display:inline-block;clip-path:inset(0 0 0 0);animation:s4type 7s steps(31) infinite,s4typeFade 7s ease infinite">Read: Building Effective Agents</span></div>
+            <div style="color:#1967D2;font-size:13px;font-weight:500" data-i18n="Title">Title</div>
+            <div style="border:1px solid rgba(11,87,208,0.14);border-radius:9px;background:#F0F4FC;padding:8px 10px;font-size:15px;color:#1F1F1F;white-space:nowrap;overflow:hidden"><span style="display:inline-block;clip-path:inset(0 0 0 0);animation:s4type 7s steps(31) infinite,s4typeFade 7s ease infinite" data-i18n="Read: Building Effective Agents">Read: Building Effective Agents</span></div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px">
-            <div style="color:#1967D2;font-size:13px;font-weight:500">Date (optional)</div>
+            <div style="color:#1967D2;font-size:13px;font-weight:500" data-i18n="Date (optional)">Date (optional)</div>
             <div style="border:1px solid rgba(11,87,208,0.14);border-radius:9px;background:#F0F4FC;padding:8px 10px;font-size:15px;color:#5F6368">yyyy/mm/dd</div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:13px 8px;border-radius:999px;background:#0B57D0;box-shadow:0 20px 40px -14px rgba(11,87,208,0.45)">
-          <div style="font-size:16px;font-weight:700;color:#FFFFFF;white-space:nowrap">Add to-do</div>
+          <div style="font-size:16px;font-weight:700;color:#FFFFFF;white-space:nowrap" data-i18n="Add to-do">Add to-do</div>
           <div style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);white-space:nowrap">Google Tasks</div>
         </div>
       </div>
@@ -733,12 +738,12 @@
       </div>
       <div style="height:1px;background:#EDF0F5"></div>
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="flex:1;font-size:18px;font-weight:700;color:#1F1F1F">Reading</div>
+        <div style="flex:1;font-size:18px;font-weight:700;color:#1F1F1F" data-i18n="Reading">Reading</div>
         <div style="height:8px;width:34px;border-radius:4px;background:#E7EBF1"></div>
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start;border-radius:9px;animation:s4row 7s ease-in-out infinite">
         <div style="width:20px;height:20px;flex:none;margin-top:2px;border-radius:50%;border:2px solid rgba(11,87,208,0.42)"></div>
-        <div style="flex:1;font-size:15px;line-height:1.45;color:#1F1F1F;font-weight:500">Read: Building Effective Agents</div>
+        <div style="flex:1;font-size:15px;line-height:1.45;color:#1F1F1F;font-weight:500" data-i18n="Read: Building Effective Agents">Read: Building Effective Agents</div>
       </div>
       <div style="height:1px;background:#EDF0F5"></div>
       <div style="display:flex;gap:12px;align-items:center">
@@ -763,7 +768,7 @@
     <div style="position:absolute;right:56px;bottom:22px;display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid rgba(20,45,90,0.10);border-radius:999px;padding:8px 18px 8px 14px;box-shadow:0 10px 24px -12px rgba(20,45,90,0.26)">
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-tasks) center/contain no-repeat"></div>
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-cal) center/contain no-repeat"></div>
-      <div style="font-size:14px;color:#5F6368;white-space:nowrap">Works with Google Tasks and Google Calendar</div>
+      <div style="font-size:14px;color:#5F6368;white-space:nowrap" data-i18n="Works with Google Tasks and Google Calendar">Works with Google Tasks and Google Calendar</div>
     </div>
   
 </div>
@@ -772,8 +777,8 @@
 <!-- ===== Shot 5 / Just type it — 1280×800, 7s loop ===== -->
     </div></div>
     <div class="say">
-      <h2>Save it now, read it later</h2>
-      <p>A recommended article becomes a to-do with the title already written.</p>
+      <h2 data-i18n="Save it now, read it later">Save it now, read it later</h2>
+      <p data-i18n="A recommended article becomes a to-do with the title already written.">A recommended article becomes a to-do with the title already written.</p>
     </div>
   </section>
   <section class="row flip">
@@ -835,67 +840,67 @@
       </div>
       <div style="display:flex;flex-direction:column;gap:13px;padding:0 18px 20px">
         <div style="display:flex;gap:5px;background:rgba(255,255,255,0.7);border:1px solid rgba(11,87,208,0.14);border-radius:999px;padding:5px">
-          <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:700;background:#C2E7FF;color:#001D35">To-do</div>
-          <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:500;color:#5F6368">Calendar</div>
-          <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:500;color:#5F6368">Both</div>
+          <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:700;background:#C2E7FF;color:#001D35" data-i18n="To-do">To-do</div>
+          <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:500;color:#5F6368" data-i18n="Calendar">Calendar</div>
+          <div style="flex:1;text-align:center;padding:9px 2px;border-radius:999px;font-size:16px;font-weight:500;color:#5F6368" data-i18n="Both">Both</div>
         </div>
-        <div style="align-self:flex-start;background:#E8F0FE;color:#1967D2;border-radius:999px;padding:5px 15px;font-size:14px;font-weight:500">Typed text</div>
-        <div style="border:2px dashed #0B57D0;border-radius:15px;background:#FFFFFF;padding:13px 16px;font-size:16px;line-height:1.5;color:#1F1F1F"><span style="position:relative;display:inline-block;white-space:nowrap;animation:s5fade 7s ease infinite"><span style="display:inline-block;clip-path:inset(0 0 0 0);animation:s5type 7s steps(39) infinite">Pick up the poster prints before Friday</span><span style="position:absolute;left:100%;top:2px;width:2px;height:19px;background:#0B57D0;margin-left:3px;animation:s5caret 7s steps(39) infinite,s5blink 1s step-end infinite"></span></span></div>
+        <div style="align-self:flex-start;background:#E8F0FE;color:#1967D2;border-radius:999px;padding:5px 15px;font-size:14px;font-weight:500" data-i18n="Typed text">Typed text</div>
+        <div style="border:2px dashed #0B57D0;border-radius:15px;background:#FFFFFF;padding:13px 16px;font-size:16px;line-height:1.5;color:#1F1F1F"><span style="position:relative;display:inline-block;white-space:nowrap;animation:s5fade 7s ease infinite"><span style="display:inline-block;clip-path:inset(0 0 0 0);animation:s5type 7s steps(39) infinite" data-i18n="Pick up the poster prints before Friday">Pick up the poster prints before Friday</span><span style="position:absolute;left:100%;top:2px;width:2px;height:19px;background:#0B57D0;margin-left:3px;animation:s5caret 7s steps(39) infinite,s5blink 1s step-end infinite"></span></span></div>
         <div style="background:#FFFFFF;border:1px solid rgba(11,87,208,0.12);border-radius:20px;padding:15px;display:flex;flex-direction:column;gap:13px;box-shadow:0 1px 2px rgba(20,45,90,0.05),0 8px 20px -8px rgba(20,45,90,0.16)">
           <div style="display:flex;flex-direction:column;gap:4px">
-            <div style="color:#1967D2;font-size:14px;font-weight:500">Title</div>
-            <div style="border:1px solid rgba(11,87,208,0.14);border-radius:10px;background:#F0F4FC;padding:9px 11px;font-size:16px;color:#1F1F1F"><span style="display:inline-block;animation:s5f1 7s ease-out infinite">Pick up the poster prints</span></div>
+            <div style="color:#1967D2;font-size:14px;font-weight:500" data-i18n="Title">Title</div>
+            <div style="border:1px solid rgba(11,87,208,0.14);border-radius:10px;background:#F0F4FC;padding:9px 11px;font-size:16px;color:#1F1F1F"><span style="display:inline-block;animation:s5f1 7s ease-out infinite" data-i18n="Pick up the poster prints">Pick up the poster prints</span></div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px">
-            <div style="color:#1967D2;font-size:14px;font-weight:500">Date (optional)</div>
+            <div style="color:#1967D2;font-size:14px;font-weight:500" data-i18n="Date (optional)">Date (optional)</div>
             <div style="border:1px solid rgba(11,87,208,0.14);border-radius:10px;background:#F0F4FC;padding:9px 11px;font-size:16px;color:#1F1F1F"><span style="display:inline-block;animation:s5f2 7s ease-out infinite">2026/08/14</span></div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 8px;border-radius:999px;background:#0B57D0;box-shadow:0 20px 40px -14px rgba(11,87,208,0.45);animation:p2tBtn 7s ease-out 4.55s infinite">
-          <div style="font-size:17px;font-weight:700;color:#FFFFFF;white-space:nowrap">Add to-do</div>
+          <div style="font-size:17px;font-weight:700;color:#FFFFFF;white-space:nowrap" data-i18n="Add to-do">Add to-do</div>
           <div style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);white-space:nowrap">Google Tasks</div>
         </div>
       </div>
     </div>
   </div>
-  <div style="position:absolute;left:120px;bottom:32px;font-size:15px;color:#5F6368">Free on-device AI included. Add your own API key for stronger results.</div>
+  <div style="position:absolute;left:120px;bottom:32px;font-size:15px;color:#5F6368" data-i18n="Free on-device AI included. Add your own API key for stronger results.">Free on-device AI included. Add your own API key for stronger results.</div>
   
     <div style="position:absolute;right:56px;bottom:22px;display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid rgba(20,45,90,0.10);border-radius:999px;padding:8px 18px 8px 14px;box-shadow:0 10px 24px -12px rgba(20,45,90,0.26)">
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-tasks) center/contain no-repeat"></div>
       <div style="width:24px;height:24px;flex:none;background:var(--p2t-cal) center/contain no-repeat"></div>
-      <div style="font-size:14px;color:#5F6368;white-space:nowrap">Works with Google Tasks and Google Calendar</div>
+      <div style="font-size:14px;color:#5F6368;white-space:nowrap" data-i18n="Works with Google Tasks and Google Calendar">Works with Google Tasks and Google Calendar</div>
     </div>
   
 </div>
     </div></div>
     <div class="say">
-      <h2>Or just type it</h2>
-      <p>Write it the way you would say it. Dates like “before Friday” are understood.</p>
+      <h2 data-i18n="Or just type it">Or just type it</h2>
+      <p data-i18n="Write it the way you would say it. Dates like “before Friday” are understood.">Write it the way you would say it. Dates like “before Friday” are understood.</p>
     </div>
   </section>
 
   <section class="privacy">
-    <h2>Private by design</h2>
+    <h2 data-i18n="Private by design">Private by design</h2>
     <div class="cards">
       <div class="card">
-        <h3>Free AI on your computer</h3>
-        <p>Chrome's built-in model reads locally. Nothing you analyse leaves your device.</p>
+        <h3 data-i18n="Free AI on your computer">Free AI on your computer</h3>
+        <p data-i18n="Chrome's built-in model reads locally. Nothing you analyse leaves your device.">Chrome's built-in model reads locally. Nothing you analyse leaves your device.</p>
       </div>
       <div class="card">
-        <h3>Your own key, optional</h3>
-        <p>Add a Gemini, Claude, OpenAI, or Kimi key for sharper results. Keys stay on your computer.</p>
+        <h3 data-i18n="Your own key, optional">Your own key, optional</h3>
+        <p data-i18n="Add a Gemini, Claude, OpenAI, or Kimi key for sharper results. Keys stay on your computer.">Add a Gemini, Claude, OpenAI, or Kimi key for sharper results. Keys stay on your computer.</p>
       </div>
       <div class="card">
-        <h3>No servers, no tracking</h3>
-        <p>There is no backend. Saves go straight from your browser to your Google account.</p>
+        <h3 data-i18n="No servers, no tracking">No servers, no tracking</h3>
+        <p data-i18n="There is no backend. Saves go straight from your browser to your Google account.">There is no backend. Saves go straight from your browser to your Google account.</p>
       </div>
     </div>
   </section>
 
   <footer>
     Built by <a href="https://sherryshen.world">Sherry Shen</a>
-    <span class="sep">·</span><a href="privacy.html">Privacy</a>
-    <span class="sep">·</span><a href="https://github.com/iamsherryshen/page2task" target="_blank" rel="noopener">Source</a>
+    <span class="sep">·</span><a href="privacy.html" data-i18n="Privacy">Privacy</a>
+    <span class="sep">·</span><a href="https://github.com/iamsherryshen/page2task" target="_blank" rel="noopener" data-i18n="Source">Source</a>
   </footer>
 </div>
 
@@ -915,6 +920,37 @@
   } else {
     window.addEventListener('resize', fit);
   }
+})();
+</script>
+
+<script>
+/* One click switches the whole page. The choice is remembered, and a Chinese
+   browser gets Chinese on the first visit without touching anything. */
+const ZH = {"Page2Task turns anything you see": "Page2Task 把你看到的一切", "into a task or a calendar event": "变成待办或日程", "One click in your browser. The deadline is found for you, the title written, and it is saved to Google Tasks or Google Calendar.": "在浏览器里点一下。它替你找出截止时间、写好标题，存进 Google Tasks 或 Google Calendar。", "View on GitHub": "在 GitHub 上查看", "Chrome Web Store review in progress.": "Chrome 应用商店审核中。", "Works with Google Tasks and Google Calendar": "支持 Google Tasks 和 Google Calendar", "Reads what you see": "读懂你在看的东西", "Page2Task is a free Chrome extension. It reads emails, event pages, PDFs, and screenshots.": "Page2Task 是一个免费的 Chrome 插件，能读邮件、活动页、PDF 和截图。", "Finds the deadline": "找出截止时间", "It finds the deadline or event time and fills in the title, date, and time.": "它会找出截止时间或活动时间，并填好标题、日期和时刻。", "One click to Google": "一键存进 Google", "Click Add and it lands in your Google Tasks or Google Calendar, in your own account.": "点添加，它就进了你自己账号里的 Google Tasks 或 Google Calendar。", "Articles": "文章", "Videos": "视频", "Emails": "邮件", "Chats and pasted text": "聊天与粘贴的文字", "To-do": "待办", "Calendar": "日历", "Both": "待办及日历", "Web page": "网页", "Paste a screenshot or text here, or": "在这里粘贴截图或文字，或", "upload a file": "上传文件", "Title": "标题", "Date": "日期", "Start time": "开始时间", "End time": "结束时间", "Location": "地点", "Date (optional)": "日期（可选）", "Add to both": "同时添加", "Google Tasks and Calendar": "Google Tasks 与 Calendar", "Dinner with Amy": "和 Amy 吃晚饭", "Dinner with Amy at Madera": "和 Amy 在 Madera 吃晚饭", "Submit grant application": "提交经费申请", "Research Grants Office": "科研经费办公室", "Your application timeline": "你的申请时间安排", "Email": "邮件", "Several deadlines found. Check the ones to add; edit each one below:": "发现多个时间点。勾选要添加的，可在下方逐条修改：", "Prepare for grant interview": "准备经费面试", "Add 2 to-dos": "添加 2 条待办", "Saved to your Google Tasks": "已存入你的 Google Tasks", "Every deadline, not just the first": "每一个时间点，不只是第一个", "It lists every date it finds, with checkboxes, so you add what matters and skip the rest.": "它会列出找到的每个日期并附上勾选框，你只添加要紧的，其余跳过。", "Dinner Thursday to celebrate?": "周四吃个饭庆祝一下？", "Yes!! Can we do": "好呀！！能不能改成", "though": "呢", "at Madera works, see you there": "在 Madera 可以，到时候见", "Replace": "替换", "Add event": "添加日程", "It catches what you actually agreed on": "它抓的是你们最后定下的时间", "It reads the whole thread and takes the final agreement, not the first proposal.": "它会读完整段对话，取最终敲定的安排，而不是最初的提议。", "Highly recommend this read on AI agents": "强烈推荐这篇讲 AI agent 的文章", "Building Effective Agents": "Building Effective Agents", "Screenshot": "截图", "Read: Building Effective Agents": "阅读：Building Effective Agents", "Add to-do": "添加待办", "Reading": "阅读", "Save it now, read it later": "现在存下，回头再读", "A recommended article becomes a to-do with the title already written.": "别人推荐的文章会变成一条待办，标题已经写好。", "Typed text": "输入的文字", "Pick up the poster prints before Friday": "周五前去取海报", "Pick up the poster prints": "去取海报", "Free on-device AI included. Add your own API key for stronger results.": "自带免费的本地 AI。想要更好的效果，可以填自己的 API key。", "Or just type it": "也可以直接打字", "Write it the way you would say it. Dates like “before Friday” are understood.": "怎么说就怎么写。「周五前」这样的说法它能听懂。", "Private by design": "隐私是设计的一部分", "Free AI on your computer": "免费的本地 AI", "Chrome's built-in model reads locally. Nothing you analyse leaves your device.": "Chrome 内置模型在本地运行。你分析的内容不会离开这台电脑。", "Your own key, optional": "也可以用自己的 key", "Add a Gemini, Claude, OpenAI, or Kimi key for sharper results. Keys stay on your computer.": "填入 Gemini、Claude、OpenAI 或 Kimi 的 key 效果更好。key 只存在你的电脑上。", "No servers, no tracking": "没有服务器，不做追踪", "There is no backend. Saves go straight from your browser to your Google account.": "没有后端。保存的内容从浏览器直接进你的 Google 账号。", "Built by": "作者", "Privacy": "隐私政策", "Source": "源代码", "Thu, Aug 13 &nbsp;·&nbsp; 7:30 PM": "8月13日 周四 &nbsp;·&nbsp; 19:30", "Fri, Aug 14": "8月14日 周五", "The deadline to submit your grant application is Friday, Aug&nbsp;14 at&nbsp;3:00&nbsp;PM": "经费申请的截止时间是 8月14日周五 下午3:00", "Interviews will be held the week of Aug&nbsp;20": "面试将在 8月20日 那一周进行"};
+(function () {
+  const btn = document.getElementById('langToggle');
+  const nodes = Array.from(document.querySelectorAll('[data-i18n]'));
+  nodes.forEach((n) => { n.dataset.en = n.innerHTML; });
+
+  function apply(lang) {
+    const zh = lang === 'zh';
+    nodes.forEach((n) => {
+      const key = n.getAttribute('data-i18n');
+      n.innerHTML = zh && ZH[key] ? ZH[key] : n.dataset.en;
+    });
+    document.documentElement.lang = zh ? 'zh-CN' : 'en';
+    btn.textContent = zh ? 'EN' : '中文';
+    try { localStorage.setItem('p2t-lang', lang); } catch (e) {}
+  }
+
+  let saved = null;
+  try { saved = localStorage.getItem('p2t-lang'); } catch (e) {}
+  const guess = (navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  apply(saved || guess);
+
+  btn.addEventListener('click', () => {
+    apply(document.documentElement.lang === 'zh-CN' ? 'en' : 'zh');
+  });
 })();
 </script>
 </body>
