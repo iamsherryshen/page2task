@@ -458,9 +458,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('testBtn').addEventListener('click', async () => {
     const provider = currentChoice();
     const isBuiltin = provider === 'builtin';
-    const key = isBuiltin ? null : $(PROVIDERS[provider].input).value.trim();
+    const isHosted = provider === 'hosted';
     const out = $('testResult');
-    if (!isBuiltin && !key) {
+    let key = null;
+    if (isHosted) {
+      key = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ action: 'getToken' }, (resp) => {
+          void chrome.runtime.lastError;
+          resolve((resp && resp.ok && resp.data && resp.data.token) || null);
+        });
+      });
+      if (!key) {
+        renderTestResult = () => { out.textContent = t('Connect your Google account first (step above)'); };
+        renderTestResult();
+        return;
+      }
+    } else if (!isBuiltin) {
+      key = $(PROVIDERS[provider].input).value.trim();
+    }
+    if (!isBuiltin && !isHosted && !key) {
       renderTestResult = () => { out.textContent = t('Enter the API key for the selected provider first'); };
       renderTestResult();
       return;

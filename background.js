@@ -63,7 +63,28 @@ async function doFlush() {
 // First install only: open Settings, where the onboarding wizard runs until
 // setup is completed or explicitly skipped. (Not on update or Chrome restart.)
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'install') chrome.runtime.openOptionsPage();
+  if (details.reason === 'install') {
+    // New installs start on the hosted free trial, stamped explicitly
+    chrome.storage.sync.set({ aiProvider: 'hosted' });
+    chrome.runtime.openOptionsPage();
+    return;
+  }
+  if (details.reason === 'update') {
+    // The storage DEFAULT changed from gemini to hosted. Existing installs
+    // that never wrote a choice must keep their old effective behavior (a
+    // saved key, else the on-device model) instead of being switched onto
+    // the relay without a consent moment.
+    chrome.storage.sync.get('aiProvider', (cfg) => {
+      if (cfg && cfg.aiProvider) return; // an explicit choice stands
+      chrome.storage.local.get(
+        { geminiApiKey: '', anthropicApiKey: '', openaiApiKey: '', kimiApiKey: '' },
+        (k) => {
+          const keyed = k.geminiApiKey ? 'gemini' : k.anthropicApiKey ? 'claude' : k.openaiApiKey ? 'openai' : k.kimiApiKey ? 'kimi' : null;
+          chrome.storage.sync.set({ aiProvider: keyed || 'builtin' });
+        }
+      );
+    });
+  }
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {

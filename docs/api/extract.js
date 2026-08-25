@@ -50,7 +50,7 @@ function allow(sub) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', 'chrome-extension://ceidkihpjbnbekklighmhcpabpbcjlff');
   res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -66,6 +66,7 @@ module.exports = async (req, res) => {
     if (!info.ok) return res.status(401).json({ error: 'invalid token' });
     const data = await info.json();
     if (data.aud !== CLIENT_ID) return res.status(401).json({ error: 'wrong app' });
+    if (!data.sub) return res.status(401).json({ error: 'no subject' });
     sub = data.sub;
   } catch (e) {
     return res.status(502).json({ error: 'token check unavailable' });
@@ -74,9 +75,21 @@ module.exports = async (req, res) => {
 
   const body = req.body || {};
   const text = body.text ? String(body.text).slice(0, 6000) : null;
-  const image = body.image && body.image.dataBase64 && body.image.mimeType ? body.image : null;
+  const rawImage = body.image;
+  const image =
+    rawImage &&
+    typeof rawImage.dataBase64 === 'string' &&
+    /^[A-Za-z0-9+/=]+$/.test(rawImage.dataBase64.slice(0, 100)) &&
+    typeof rawImage.mimeType === 'string' &&
+    /^image\/(png|jpe?g|webp|gif)$/.test(rawImage.mimeType)
+      ? { mimeType: rawImage.mimeType, dataBase64: rawImage.dataBase64 }
+      : null;
   const refDateISO = /^\d{4}-\d{2}-\d{2}$/.test(body.refDateISO || '') ? body.refDateISO : null;
-  const listNames = Array.isArray(body.listNames) ? body.listNames.slice(0, 30).map(String) : null;
+  // List names reach the system prompt, so they are clamped hard: an
+  // authenticated caller must not get to write paragraphs of system-role text
+  const listNames = Array.isArray(body.listNames)
+    ? body.listNames.slice(0, 30).map((n) => String(n).replace(/\s+/g, ' ').slice(0, 60))
+    : null;
   if (!text && !image) return res.status(400).json({ error: 'nothing to read' });
   if (!refDateISO) return res.status(400).json({ error: 'refDateISO required' });
   if (image && image.dataBase64.length > 4000000) return res.status(400).json({ error: 'image too large' });
@@ -110,7 +123,11 @@ module.exports = async (req, res) => {
   }
   if (upstream.status === 429) return res.status(429).json({ error: 'rate limit' });
   if (!upstream.ok) return res.status(502).json({ error: 'AI service error ' + upstream.status });
-  const data = await upstream.json();
-  const msg = ((data.choices || [])[0] || {}).message || {};
-  return res.status(200).json({ content: msg.content || '', remaining: null });
+  try {
+    const data = await upstream.json();
+    const msg = ((data.choices || [])[0] || {}).message || {};
+    return res.status(200).json({ content: msg.content || '', remaining: null });
+  } catch (e) {
+    return res.status(502).json({ error: 'AI service returned an unreadable reply' });
+  }
 };

@@ -160,7 +160,11 @@ async function init() {
   });
   $('tpLocal').addEventListener('click', async () => {
     await chrome.storage.sync.set({ aiProvider: 'builtin' });
-    location.reload();
+    const avail = await AiExtract.builtinAvailability();
+    if (avail === 'available') location.reload();
+    // The model needs a download (or this Chrome cannot run it): Settings
+    // shows the on-device tile with its status and the download offer
+    else chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
   });
 
   // Focus the box on open so ⌘V lands in the obvious place
@@ -473,12 +477,35 @@ function handleFile(file) {
 
 function handleImage(file) {
   if (!file || !file.type || !file.type.startsWith('image/')) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const dataBase64 = String(reader.result).split(',')[1];
-    if (dataBase64) extractFromImage({ mimeType: file.type, dataBase64 });
+  // Retina screenshots easily exceed provider payload limits; anything wide
+  // gets redrawn to a bounded JPEG first (the models don't need more pixels)
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    const MAX_W = 1600;
+    if (img.naturalWidth > MAX_W || file.size > 2500000) {
+      const scale = Math.min(1, MAX_W / img.naturalWidth);
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * scale);
+      c.height = Math.round(img.naturalHeight * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const dataBase64 = c.toDataURL('image/jpeg', 0.88).split(',')[1];
+      extractFromImage({ mimeType: 'image/jpeg', dataBase64 });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataBase64 = String(reader.result).split(',')[1];
+      if (dataBase64) extractFromImage({ mimeType: file.type, dataBase64 });
+    };
+    reader.readAsDataURL(file);
   };
-  reader.readAsDataURL(file);
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
+    flashError(I18n.t('Screenshot recognition failed'));
+  };
+  img.src = url;
 }
 
 // PDFs go through the same vision path as screenshots: pdf.js (bundled, runs
@@ -545,9 +572,18 @@ async function runAi(opts) {
   const { provider, apiKey } = await getAiConfig();
   if (seq !== aiReadSeq) return; // an even newer read started meanwhile
   if (!provider) {
+    $('aiStatus').classList.add('hidden'); // a PDF read may have shown it already
+    document.body.classList.remove('reading');
     if (trialPanelShown) {
-      if (opts.text) applyLocalRules(opts.text);
-      else flashError(I18n.t('Screenshots need AI. Add a key in Settings or switch to the on-device model.'));
+      if (opts.text) {
+        pastedInput = true; // notes must not borrow the current page's URL
+        lastAnalyzedText = opts.text;
+        $('candBox').classList.add('hidden');
+        $('banner').className = 'banner hidden';
+        applyLocalRules(opts.text);
+      } else {
+        flashError(I18n.t('Screenshots need AI. Add a key in Settings or switch to the on-device model.'));
+      }
       return;
     }
     flashError(I18n.t(
