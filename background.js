@@ -101,6 +101,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   // Interactive authorization from the Settings page: opens Google's account
   // picker/consent window, then reports which account is now connected.
+  // The hosted free-trial endpoint authenticates with the user's own token
+  if (msg.action === 'getToken') {
+    GoogleApi.getToken(false)
+      .then((token) => sendResponse({ ok: true, data: { token } }))
+      .catch((e) => sendResponse({ ok: false, error: (e && e.message) || 'no token' }));
+    return true;
+  }
+
   if (msg.action === 'connect') {
     (async () => {
       try {

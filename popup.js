@@ -22,6 +22,41 @@ function beginAiRead() {
   return { seq: ++aiReadSeq, signal: aiReadAbort.signal };
 }
 
+// ── Hosted free trial: 30 reads on our key, counted here, then the panel ──
+const HOSTED_TRIAL_LIMIT = 30;
+let trialPanelShown = false;
+async function hostedTrialUsed() {
+  const { hostedUsed } = await chrome.storage.sync.get({ hostedUsed: 0 });
+  return hostedUsed;
+}
+function showTrialPanel() {
+  trialPanelShown = true;
+  $('trialPanel').classList.remove('hidden');
+}
+async function noteHostedSuccess() {
+  const used = (await hostedTrialUsed()) + 1;
+  await chrome.storage.sync.set({ hostedUsed: used });
+  const left = HOSTED_TRIAL_LIMIT - used;
+  if (left >= 0 && left <= 5) {
+    setRelang('trialHint', () => {
+      $('trialHint').textContent = I18n.t('Free trial: {n} reads left', { n: left });
+    });
+    $('trialHint').classList.remove('hidden');
+  }
+}
+
+// Offline fallback for user-initiated reads once no AI is available
+function applyLocalRules(sourceText) {
+  candidates = DateParse.extractAll(sourceText, new Date(), 5).map((c) => ({
+    title: titleFromSentence(c.matchedText),
+    dueDate: c.dueDate,
+    dueTime: c.dueTime,
+    matchedText: c.matchedText,
+  }));
+  if (candidates.length > 1) renderCandidateChooser();
+  else if (candidates.length) applyCandidate(0);
+}
+
 // Re-render closures for text set imperatively (not via data-i18n), so the
 // language toggle can refresh it. setRelang registers and runs immediately.
 const relangs = {};
@@ -118,6 +153,16 @@ async function init() {
       if (v && v !== lastAnalyzedText) extractFromText(v);
     }, 0);
   });
+  // Free-trial panel actions: the key path goes to Settings with the guide
+  // open; the local path switches and reruns this read in one click.
+  $('tpKey').addEventListener('click', () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL('options.html#get-key') });
+  });
+  $('tpLocal').addEventListener('click', async () => {
+    await chrome.storage.sync.set({ aiProvider: 'builtin' });
+    location.reload();
+  });
+
   // Focus the box on open so ⌘V lands in the obvious place
   $('pasteText').focus();
 
@@ -215,6 +260,7 @@ async function init() {
         if (initSeq !== aiReadSeq) return; // superseded mid-read — discard this result
         candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
         aiRan = true; // an empty answer from the AI is an answer, not a failure
+        if (provider === 'hosted') noteHostedSuccess();
       } catch (e) {
         if (initSeq !== aiReadSeq) return;
         candidates = []; // fall back to local rules, but say so
@@ -292,7 +338,7 @@ function updateSubmitLabel() {
 // 2. Chrome's built-in on-device AI — free, keyless, nothing leaves the device
 // 3. none — callers fall back to the local date-parsing rules
 async function getAiConfig() {
-  const cfg = await chrome.storage.sync.get({ aiProvider: 'gemini' });
+  const cfg = await chrome.storage.sync.get({ aiProvider: 'hosted' });
   const keys = await AiExtract.loadKeys(); // keys are local-only; loadKeys migrates old synced ones
   const keyFor = {
     gemini: keys.geminiApiKey,
@@ -300,8 +346,24 @@ async function getAiConfig() {
     openai: keys.openaiApiKey,
     kimi: keys.kimiApiKey,
   };
-  // The user explicitly picked the on-device model in Settings — honor that
-  // over any saved key; fall back to keys only when it isn't usable here
+  // New installs default to the hosted free trial. Once its 30 reads are spent
+  // a saved key continues silently (same quality); with nothing else set up the
+  // trial panel explains the two paths instead of quietly degrading.
+  let trialSpent = false;
+  if (cfg.aiProvider === 'hosted') {
+    if ((await hostedTrialUsed()) < HOSTED_TRIAL_LIMIT) {
+      const token = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ action: 'getToken' }, (resp) => {
+          void chrome.runtime.lastError;
+          resolve((resp && resp.ok && resp.data && resp.data.token) || null);
+        });
+      });
+      if (token) return { provider: 'hosted', apiKey: token };
+      // no Google session — fall through to whatever else is configured
+    } else {
+      trialSpent = true;
+    }
+  }
   if (cfg.aiProvider === 'builtin') {
     const avail = await AiExtract.builtinAvailability();
     if (avail === 'available') {
@@ -313,11 +375,18 @@ async function getAiConfig() {
   let provider = Object.prototype.hasOwnProperty.call(keyFor, cfg.aiProvider) ? cfg.aiProvider : 'gemini';
   let apiKey = keyFor[provider];
   if (!apiKey) {
-    // The chosen provider has no key — fall back to any provider that does
+    // The chosen provider has no key — fall back to any provider that does.
     const withKey = Object.keys(keyFor).find((p) => keyFor[p]);
     if (withKey) { provider = withKey; apiKey = keyFor[withKey]; }
   }
   if (apiKey) return { provider, apiKey };
+
+  if (trialSpent) {
+    // Do not silently drop to the weaker on-device model: the panel says what
+    // happened and offers both paths, one click each.
+    showTrialPanel();
+    return { provider: null, apiKey: null };
+  }
 
   const avail = await AiExtract.builtinAvailability();
   if (avail === 'available') {
@@ -476,6 +545,11 @@ async function runAi(opts) {
   const { provider, apiKey } = await getAiConfig();
   if (seq !== aiReadSeq) return; // an even newer read started meanwhile
   if (!provider) {
+    if (trialPanelShown) {
+      if (opts.text) applyLocalRules(opts.text);
+      else flashError(I18n.t('Screenshots need AI. Add a key in Settings or switch to the on-device model.'));
+      return;
+    }
     flashError(I18n.t(
       builtinOfferShown
         ? 'AI is one click away. Use the "Enable free AI" line above.'
@@ -508,6 +582,7 @@ async function runAi(opts) {
       signal,
     });
     if (seq !== aiReadSeq) return; // superseded — the newer read owns the UI now
+    if (provider === 'hosted') noteHostedSuccess();
     candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
     if (!candidates.length) {
       flashError(I18n.t(opts.emptyMsg));

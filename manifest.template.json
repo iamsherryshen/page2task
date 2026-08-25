@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Page2Task",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Turn any page, email, or screenshot into a Google Task or Calendar event, with deadlines and locations detected for you.",
   "action": {
     "default_popup": "popup.html",
@@ -11,7 +11,12 @@
     "service_worker": "background.js"
   },
   "options_page": "options.html",
-  "permissions": ["identity", "activeTab", "scripting", "storage"],
+  "permissions": [
+    "identity",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
   "host_permissions": [
     "https://tasks.googleapis.com/*",
     "https://www.googleapis.com/*",
@@ -20,6 +25,7 @@
     "https://api.openai.com/*",
     "https://api.moonshot.cn/*",
     "https://api.moonshot.ai/*",
+    "https://page2task.sherryshen.world/*",
     "https://openidconnect.googleapis.com/*",
     "https://accounts.google.com/*"
   ],

@@ -22,8 +22,16 @@
 
     <div id="notice" class="notice hidden"></div>
     <div id="chip" class="chip hidden"></div>
+    <div id="trialHint" class="trial-hint hidden"></div>
     <div id="aiStatus" class="ai-status hidden"><span class="spinner" aria-hidden="true"></span><span id="aiStatusText" data-i18n="AI is reading…">AI is reading…</span></div>
     <div id="aiWarn" class="ai-warn hidden"></div>
+    <div id="trialPanel" class="trial-panel hidden">
+      <div class="tp-title">⏳ <span data-i18n="Your 30 free reads are used up">Your 30 free reads are used up</span></div>
+      <div class="tp-desc" data-i18n="This one used basic detection, which can be less accurate. From here you can:">This one used basic detection, which can be less accurate. From here you can:</div>
+      <button id="tpKey" class="tp-btn primary" type="button" data-i18n="Use your own API key (recommended, best quality)">Use your own API key (recommended, best quality)</button>
+      <button id="tpLocal" class="tp-btn" type="button" data-i18n="Switch to the free on-device AI (basic quality, unlimited)">Switch to the free on-device AI (basic quality, unlimited)</button>
+      <div class="tp-note" data-i18n="The key button opens Settings, with steps for each provider.">The key button opens Settings, with steps for each provider.</div>
+    </div>
     <button id="builtinOffer" class="builtin-offer hidden" type="button"></button>
     <button id="aiHint" class="ai-hint hidden" type="button"></button>
     <button id="builtinHint" class="ai-hint hidden" type="button"></button>

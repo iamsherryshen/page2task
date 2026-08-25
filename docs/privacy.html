@@ -16,7 +16,7 @@
 <h1>Page2Task Privacy Policy</h1>
 <p class="updated">Last updated: August 8, 2026</p>
 
-<p>Page2Task is a Chrome extension that turns the page you are viewing, or a screenshot or text you paste, into a Google Tasks to-do or a Google Calendar event. It is designed so that <b>your data goes only where you send it</b>: to your own Google account, and (optionally) to an AI service you choose. The developer operates <b>no servers</b> and receives <b>none of your data</b>.</p>
+<p>Page2Task is a Chrome extension that turns the page you are viewing, or a screenshot or text you paste, into a Google Tasks to-do or a Google Calendar event. It is designed so that <b>your data goes only where you send it</b>: to your own Google account, and to the AI option you choose. The developer stores <b>none of your data</b>: the only server involved is an optional relay for the free trial, described below, which keeps nothing.</p>
 
 <h2>What the extension accesses, and why</h2>
 <ul>
@@ -30,12 +30,13 @@
   <li><b>Google APIs</b> (<code>tasks.googleapis.com</code>, <code>www.googleapis.com</code>): the task or event you create is sent directly from your browser to your own Google account.</li>
   <li><b>AI processing</b>, chosen by you in Settings:
     <ul>
-      <li><b>On-device</b> (Chrome's built-in AI, the default for new users): page text, pasted text, or screenshots are processed locally on your computer. Nothing leaves your device.</li>
+      <li><b>Free trial</b> (the default for new users, first 30 reads): the text or screenshot you analyze is sent over HTTPS to our relay at <code>page2task.sherryshen.world</code>, which forwards it to OpenAI for one completion and returns the result. The relay keeps <b>no logs and no copies</b>; your Google token is used only to confirm the request comes from this extension. After 30 reads this mode stops and you choose one of the options below.</li>
+      <li><b>On-device</b> (Chrome's built-in AI): page text, pasted text, or screenshots are processed locally on your computer. Nothing leaves your device.</li>
       <li><b>Your own AI key (optional)</b>: if you add a Google Gemini, Anthropic Claude, OpenAI, or Kimi (Moonshot) API key in Settings, the text/screenshot you analyze is sent directly from your browser to that provider under <b>your</b> account and their privacy terms.</li>
       <li><b>Local rules</b>: with neither of the above, dates are detected locally with no AI at all.</li>
     </ul>
   </li>
-  <li><b>Nowhere else.</b> No developer servers, no analytics, no ads, no tracking.</li>
+  <li><b>Nowhere else.</b> No analytics, no ads, no tracking, and nothing is stored on our side.</li>
 </ul>
 
 <h2>What is stored</h2>

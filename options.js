@@ -21,21 +21,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   let renderObWarn = null;
   let obStep = 0; // first-run onboarding: 0 off, 1 connect Google, 2 choose AI, 3 done
   const cfg = await chrome.storage.sync.get({
-    aiProvider: 'gemini',
+    aiProvider: 'hosted',
     defaultEventMinutes: 30,
   });
   const keys = await AiExtract.loadKeys(); // local-only storage; migrates keys old versions kept in sync
   const storedProv = normProvider(cfg.aiProvider);
   const anyKeySaved = Object.values(PROVIDERS).some((p) => keys[p.storageKey]);
   // Default to the on-device model unless the user explicitly runs on a key
-  $('srcBuiltin').checked = storedProv === 'builtin' || !anyKeySaved;
-  $('srcApi').checked = !$('srcBuiltin').checked;
+  $('srcHosted').checked = cfg.aiProvider === 'hosted';
+  $('srcBuiltin').checked = cfg.aiProvider === 'builtin';
+  $('srcApi').checked = !$('srcHosted').checked && !$('srcBuiltin').checked;
+  void anyKeySaved; // kept for the trial-panel copy below
+  const paintHostedUsage = async () => {
+    const { hostedUsed } = await chrome.storage.sync.get({ hostedUsed: 0 });
+    $('hostedUsage').textContent = t('Used {n}/30.', { n: Math.min(hostedUsed, 30) });
+  };
+  paintHostedUsage();
   $('provider').value = storedProv === 'builtin' ? 'gemini' : storedProv;
   for (const p of Object.values(PROVIDERS)) $(p.input).value = keys[p.storageKey];
   $('eventMinutes').value = cfg.defaultEventMinutes;
 
   // 'builtin' when the on-device radio is picked, else the dropdown provider
-  const currentChoice = () => ($('srcBuiltin').checked ? 'builtin' : normProvider($('provider').value));
+  const currentChoice = () => ($('srcHosted').checked ? 'hosted' : $('srcBuiltin').checked ? 'builtin' : normProvider($('provider').value));
 
   // Per-provider walkthrough, opened by the "How to get an API key" link.
   // Numbered steps beat a wall of prose: the user is mid-task, not reading.
@@ -113,9 +120,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const syncApiVisibility = () => {
     // Selected-tile styling is applied here rather than with :has(input:checked):
     // that selector matches but does not repaint on some Chrome builds.
+    $('srcHosted').closest('.tile').classList.toggle('on', $('srcHosted').checked);
     $('srcBuiltin').closest('.tile').classList.toggle('on', $('srcBuiltin').checked);
     $('srcApi').closest('.tile').classList.toggle('on', $('srcApi').checked);
-    $('apiConfig').classList.toggle('hidden', $('srcBuiltin').checked);
+    $('apiConfig').classList.toggle('hidden', !$('srcApi').checked);
     const chosen = normProvider($('provider').value);
     renderModelNote();
     for (const name of Object.keys(PROVIDERS)) {
@@ -124,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderKeyHelp();
   };
   syncApiVisibility();
-  ['srcBuiltin', 'srcApi'].forEach((id) =>
+  ['srcHosted', 'srcBuiltin', 'srcApi'].forEach((id) =>
     $(id).addEventListener('change', () => { syncApiVisibility(); refreshTier(); })
   );
 
@@ -136,10 +144,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const k = await AiExtract.loadKeys();
     const chosen = currentChoice();
     el.className = 'tier';
+    if (chosen === 'hosted') {
+      const { hostedUsed } = await chrome.storage.sync.get({ hostedUsed: 0 });
+      if (hostedUsed < 30) {
+        showHasAI(t('the free trial ({n} of 30 left)', { n: 30 - hostedUsed }));
+        return;
+      }
+      // trial spent: fall through so the line reports what actually serves
+    }
     // Explicitly choosing the on-device model skips the key logic entirely,
     // so a saved key no longer locks the user out of the built-in AI
     if (chosen !== 'builtin') {
-      const keyed = k[PROVIDERS[chosen].storageKey]
+      const keyed = (PROVIDERS[chosen] && k[PROVIDERS[chosen].storageKey])
         ? chosen
         : Object.keys(PROVIDERS).find((p) => k[PROVIDERS[p].storageKey]);
       if (keyed) {
@@ -208,6 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     keyToggles.forEach(([b, i]) => syncToggleLabel(b, i)); // keep Show/Hide truthful
     renderKeyHelp(); // re-translate the open key how-to, if any
     renderModelNote();
+    paintHostedUsage();
     if (renderTestResult) renderTestResult();
     if (renderAccountMsg) renderAccountMsg();
     if (renderObText) renderObText();
@@ -363,6 +380,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (obStep === 1) obSetStep(2);
     else obExit();
   });
+  if (location.hash === '#get-key') {
+    $('srcApi').checked = true;
+    $('srcHosted').checked = false;
+    $('srcBuiltin').checked = false;
+    syncApiVisibility();
+    refreshTier();
+    keyHelpOpen = true;
+    renderKeyHelp();
+    setTimeout(() => $('keyHelpSteps').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120);
+  }
+
   {
     // The wizard is driven by real state, not a one-time flag: without a
     // connected Google account the product cannot save anything, so every
