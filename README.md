@@ -2,6 +2,8 @@
 
 A Chrome extension that turns whatever you're looking at into a **Google Task** or a **Google Calendar event**.
 
+[![What Page2Task does. Click to watch the 50 second film.](docs/promo-poster.jpg)](https://www.youtube.com/watch?v=Cb1pTa6Fqco)
+
 Open a page, an email, or paste a screenshot. Page2Task finds the deadline, title, and location, and saves it to your own Google account.
 
 ## Install
