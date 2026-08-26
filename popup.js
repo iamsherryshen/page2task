@@ -37,10 +37,10 @@ async function hostedTrialUsed() {
 function showTrialPanel() {
   trialPanelShown = true;
   $('trialPanel').classList.remove('hidden');
-  // A fork in the road, not a warning over results: the area below stays
-  // empty until the user picks a path (own key, or the on-device model)
+  // A fork in the road, not a warning over results: everything except the
+  // panel disappears until the user picks a path (see .trial-gated in CSS)
   $('aiStatus').classList.add('hidden');
-  document.body.classList.add('reading');
+  document.body.classList.add('trial-gated');
 }
 async function noteHostedSuccess() {
   const used = (await hostedTrialUsed()) + 1;

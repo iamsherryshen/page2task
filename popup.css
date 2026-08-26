@@ -339,6 +339,11 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 body.reading #candBox, body.reading #formCard, body.reading #itemCards,
 body.reading #banner, body.reading .actions { display: none; }
 
+/* Trial exhausted: the panel is the whole interface until a path is picked */
+body.trial-gated #candBox, body.trial-gated #formCard, body.trial-gated #itemCards,
+body.trial-gated #banner, body.trial-gated .actions, body.trial-gated #importZone,
+body.trial-gated #notice, body.trial-gated #aiWarn { display: none; }
+
 /* Read finished and the date is still empty: one quick shake and a short blue
    tint on the date field, so the eye lands where the user's input is needed */
 @keyframes p2t-shake {
