@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       'Open aistudio.google.com/apikey',
       'Sign in with your Google account',
       'Click "Create API key", then "Create API key in new project"',
-      'Copy the key it shows (starts with AIza or AQ)',
+      'Copy the key it shows',
       'Paste it in the field above and click Save',
     ],
     claude: [
