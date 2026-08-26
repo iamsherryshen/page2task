@@ -282,8 +282,8 @@ async function init() {
             failMsg: "Couldn't read this page",
           },
         };
-        if (mode !== modeAtCall) { runAi(lastAiRead.opts); return; } // tab changed mid-read
         if (provider === 'hosted') noteHostedSuccess();
+        if (mode !== modeAtCall) { runAi(lastAiRead.opts); return; } // tab changed mid-read
       } catch (e) {
         if (initSeq !== aiReadSeq) return;
         candidates = []; // fall back to local rules, but say so
