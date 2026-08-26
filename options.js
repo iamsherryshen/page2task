@@ -37,6 +37,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('hostedUsage').textContent = t('Used {n}/30.', { n: Math.min(hostedUsed, 30) });
   };
   paintHostedUsage();
+  // The popup bumps hostedUsed after every free-trial read; a Settings tab
+  // that is already open repaints live instead of waiting for a reload
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync' && changes.hostedUsed) { paintHostedUsage(); refreshTier(); }
+  });
   $('provider').value = storedProv === 'builtin' ? 'gemini' : storedProv;
   for (const p of Object.values(PROVIDERS)) $(p.input).value = keys[p.storageKey];
   $('eventMinutes').value = cfg.defaultEventMinutes;
