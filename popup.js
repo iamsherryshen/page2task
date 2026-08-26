@@ -37,6 +37,10 @@ async function hostedTrialUsed() {
 function showTrialPanel() {
   trialPanelShown = true;
   $('trialPanel').classList.remove('hidden');
+  // A fork in the road, not a warning over results: the area below stays
+  // empty until the user picks a path (own key, or the on-device model)
+  $('aiStatus').classList.add('hidden');
+  document.body.classList.add('reading');
 }
 async function noteHostedSuccess() {
   const used = (await hostedTrialUsed()) + 1;
@@ -48,18 +52,6 @@ async function noteHostedSuccess() {
     });
     $('trialHint').classList.remove('hidden');
   }
-}
-
-// Offline fallback for user-initiated reads once no AI is available
-function applyLocalRules(sourceText) {
-  candidates = DateParse.extractAll(sourceText, new Date(), 5).map((c) => ({
-    title: titleFromSentence(c.matchedText),
-    dueDate: c.dueDate,
-    dueTime: c.dueTime,
-    matchedText: c.matchedText,
-  }));
-  if (candidates.length > 1) renderCandidateChooser();
-  else if (candidates.length) applyCandidate(0);
 }
 
 // Re-render closures for text set imperatively (not via data-i18n), so the
@@ -250,6 +242,7 @@ async function init() {
 
   if (sourceText) {
     const { provider, apiKey } = await getAiConfig();
+    if (!provider && trialPanelShown) return; // exhausted: the panel is the whole answer
     if (initSeq !== aiReadSeq) return; // superseded by a user paste/drop
     if (provider) {
       $('aiStatusText').textContent = I18n.t('AI is reading this page…');
@@ -596,19 +589,8 @@ async function runAi(opts) {
   if (seq !== aiReadSeq) return; // an even newer read started meanwhile
   if (!provider) {
     $('aiStatus').classList.add('hidden'); // a PDF read may have shown it already
+    if (trialPanelShown) return; // exhausted: the panel below stays the whole answer
     document.body.classList.remove('reading');
-    if (trialPanelShown) {
-      if (opts.text) {
-        pastedInput = true; // notes must not borrow the current page's URL
-        lastAnalyzedText = opts.text;
-        $('candBox').classList.add('hidden');
-        $('banner').className = 'banner hidden';
-        applyLocalRules(opts.text);
-      } else {
-        flashError(I18n.t('Screenshots need AI. Add a key in Settings or switch to the on-device model.'));
-      }
-      return;
-    }
     flashError(I18n.t(
       builtinOfferShown
         ? 'AI is one click away. Use the "Enable free AI" line above.'
