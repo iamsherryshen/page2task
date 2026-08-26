@@ -44,6 +44,9 @@ const systemPrompt = (refDateISO, listNames, mode, userEmail) =>
         'the participant whose name matches that account is the user themself: title meetings ' +
         'and events with the OTHER person\'s name, never the user\'s own. '
       : '') +
+    'When the email matches no participant, tell the user\'s side from interface cues instead: ' +
+    'chat apps mark your own messages (aligned to one side, a different color, read receipts) - ' +
+    'the meeting is with the other side. ' +
     'In chat screenshots, day dividers naming only a weekday (like SATURDAY) mean the most ' +
     'recent such day at or before the newest message, which is normally close to today; ' +
     'resolve words like "tomorrow" against the day of the message that says them. ' +
@@ -81,7 +84,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method === 'GET') return res.status(200).json({ ok: true, rev: 'r4-identity' });
+  if (req.method === 'GET') return res.status(200).json({ ok: true, rev: 'r5-sidecues' });
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   const auth = req.headers.authorization || '';
