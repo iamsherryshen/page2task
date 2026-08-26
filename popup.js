@@ -267,6 +267,7 @@ async function init() {
           provider,
           listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
           mode: modeAtCall,
+          userEmail: connectedEmail,
           signal: initSignal,
         });
         if (initSeq !== aiReadSeq) return; // superseded mid-read — discard this result
@@ -641,6 +642,7 @@ async function runAi(opts) {
       provider,
       listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
       mode: modeAtCall,
+      userEmail: connectedEmail,
       signal,
     });
     if (seq !== aiReadSeq) return; // superseded — the newer read owns the UI now

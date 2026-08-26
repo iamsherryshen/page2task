@@ -28,7 +28,7 @@ const MODE_HINTS = {
     'their deadlines AND the scheduled sessions. ',
 };
 
-const systemPrompt = (refDateISO, listNames, mode) =>
+const systemPrompt = (refDateISO, listNames, mode, userEmail) =>
     'Extract the actionable to-dos, deadlines, and scheduled events (meetings, appointments, ' +
     'calls) from the user\'s input as a list of items, most important first, at most 10 ' +
     '(when there are more, keep the most important ones). ' +
@@ -39,6 +39,14 @@ const systemPrompt = (refDateISO, listNames, mode) =>
     'text in the image carefully, including any visible message timestamps. Today is ' + refDateISO +
     '; resolve relative dates (like "next Friday") against it. ' +
     'When a date has no year, infer it: use a year stated nearby (like a "Autumn Quarter 2026" heading), else the next occurrence on or after today. A weekday printed next to the date (like "Friday, September 4") must agree with the year you pick. Never invent a year in the past. ' +
+    (userEmail
+      ? 'The user reading this input is signed in as "' + userEmail + '". In a conversation, ' +
+        'the participant whose name matches that account is the user themself: title meetings ' +
+        'and events with the OTHER person\'s name, never the user\'s own. '
+      : '') +
+    'In chat screenshots, day dividers naming only a weekday (like SATURDAY) mean the most ' +
+    'recent such day at or before the newest message, which is normally close to today; ' +
+    'resolve words like "tomorrow" against the day of the message that says them. ' +
     'When a time range is given (like "5:30 PM-8:00 PM"), set dueTime to the start time and endTime to the end time. ' +
     'Titles, in the SAME language as the input text, max 60 characters: for a to-do, a short imperative naming the SPECIFIC action ' +
     '(like "Submit health insurance waiver", never just the email subject); for an event, the event\'s own name exactly as ' +
@@ -73,7 +81,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method === 'GET') return res.status(200).json({ ok: true, rev: 'r3-yearfix' });
+  if (req.method === 'GET') return res.status(200).json({ ok: true, rev: 'r4-identity' });
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   const auth = req.headers.authorization || '';
@@ -106,6 +114,7 @@ module.exports = async (req, res) => {
       : null;
   const refDateISO = /^\d{4}-\d{2}-\d{2}$/.test(body.refDateISO || '') ? body.refDateISO : null;
   const mode = ['todo', 'calendar', 'both'].includes(body.mode) ? body.mode : null;
+  const userEmail = typeof body.userEmail === 'string' ? body.userEmail.replace(/[\s"\\]+/g, ' ').trim().slice(0, 120) || null : null;
   // List names reach the system prompt, so they are clamped hard: an
   // authenticated caller must not get to write paragraphs of system-role text
   const listNames = Array.isArray(body.listNames)
@@ -134,7 +143,7 @@ module.exports = async (req, res) => {
         max_tokens: 1600,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: systemPrompt(refDateISO, listNames, mode) + COMPAT_JSON_HINT },
+          { role: 'system', content: systemPrompt(refDateISO, listNames, mode, userEmail) + COMPAT_JSON_HINT },
           { role: 'user', content },
         ],
       }),

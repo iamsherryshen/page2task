@@ -28,7 +28,7 @@
 <h2>Where your data goes</h2>
 <ul>
   <li><b>Google APIs</b> (<code>tasks.googleapis.com</code>, <code>www.googleapis.com</code>): the task or event you create is sent directly from your browser to your own Google account.</li>
-  <li><b>AI processing</b>, chosen by you in Settings:
+  <li><b>AI processing</b>, chosen by you in Settings. Whichever option you pick, the request carries the content you asked it to read plus the email address of your connected Google account, so that meetings found in a conversation are titled with the other person's name rather than yours:
     <ul>
       <li><b>Free trial</b> (the default for new users, first 30 reads): the text or screenshot you analyze is sent over HTTPS to our relay at <code>page2task.sherryshen.world</code>, which forwards it to OpenAI for one completion and returns the result. The relay keeps <b>no logs and no copies</b>; your Google token is used only to confirm the request comes from this extension. After 30 reads this mode stops and you choose one of the options below.</li>
       <li><b>On-device</b> (Chrome's built-in AI): page text, pasted text, or screenshots are processed locally on your computer. Nothing leaves your device.</li>
