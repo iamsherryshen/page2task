@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Which model each provider runs, and why. Nobody picks a model here: pulling
   // a date out of a page is a small task, so every provider uses its fast tier.
   const MODEL_NOTE = {
-    gemini: 'Uses Gemini Flash: fast, and free within the Gemini free tier.',
+    gemini: 'Uses Gemini Flash-Lite: fast, and free within the Gemini free tier.',
     claude: 'Uses Claude Haiku: the fastest Claude model, well under 1¢ per read.',
     openai: 'Uses GPT-4o mini: fast and cheap, a fraction of a cent per read.',
     kimi: 'Uses Kimi K2.6 with thinking off: fast, reads images, a fraction of a cent per read.',
