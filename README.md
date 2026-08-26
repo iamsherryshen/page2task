@@ -4,23 +4,21 @@ A Chrome extension that turns whatever you're looking at into a **Google Task** 
 
 Open a page, an email, or paste a screenshot. Page2Task finds the deadline, title, and location, and saves it to your own Google account.
 
-## Install (about 2 minutes)
+## Install
 
-1. **[Download the latest release](../../releases/latest)** and unzip it (or clone this repo).
+**[Add it from the Chrome Web Store](https://chromewebstore.google.com/detail/page2task/ceidkihpjbnbekklighmhcpabpbcjlff)** and you're done: connect your Google account when asked (the app is verified by Google) and start saving. Your first 30 AI reads are free, no key and no setup.
+
+<details>
+<summary>Install from source instead</summary>
+
+1. Download this repo (or clone it) and unzip.
 2. Open `chrome://extensions` in Chrome.
 3. Turn on **Developer mode** (toggle, top right).
-4. Click **Load unpacked** and select the unzipped `page2task` folder.
+4. Click **Load unpacked** and select the `page2task` folder.
 
-That's it. Click the Page2Task icon in your toolbar to use it.
-
-The first time you save something, Google asks you to authorize the extension.
-Because this extension is distributed outside the Chrome Web Store, Google shows a
-**"Google hasn't verified this app"** screen — click **Advanced → Continue** to proceed.
-Page2Task only ever writes to *your* Google Tasks and Calendar; there is no server behind it.
-
-> **Keep the folder.** Chrome loads an unpacked extension from where it sits, so don't
-> delete or move the folder after installing. To update later, download the new release
-> and replace the folder's contents, then hit the reload icon on `chrome://extensions`.
+Keep the folder where it is: Chrome loads an unpacked extension from that location.
+A source install behaves exactly like the store version, free trial included.
+</details>
 
 ## What it does
 
@@ -38,24 +36,27 @@ Page2Task only ever writes to *your* Google Tasks and Calendar; there is no serv
 
 Page2Task works with no setup at all: built-in rules detect dates locally, offline and free.
 
-For better titles and screenshot reading, it uses AI when available, in this order:
+For better titles and screenshot reading, it uses AI. The options, in the order new installs get them:
 
 | Tier | Cost | Setup |
 |---|---|---|
-| **Chrome's built-in AI** (Gemini Nano) | Free | None, if your Chrome already has the model. Otherwise the popup offers a one-time ~2 GB download; the model runs entirely on your computer and nothing leaves the device |
-| **Your own API key** | Google Gemini has a free tier; Claude, OpenAI, and Kimi are pay per use, well under 1¢ per run | Paste a key in Settings |
-| **Local rules** | Free | Always available as the fallback |
+| **Free trial** (default) | First 30 reads free, on the developer's dime | None. Requests go through a small relay at `page2task.sherryshen.world` that forwards them to OpenAI and keeps nothing |
+| **Your own API key** | Google Gemini has a free tier; Claude, OpenAI, and Kimi are pay per use, well under 1c per run | Paste a key in Settings |
+| **Chrome's built-in AI** (Gemini Nano) | Free, unlimited | One-time ~2 GB model download offered in the popup; runs entirely on your computer |
+| **Local rules** | Free | Always available as the fallback when AI errors out |
 
 **API keys are stored only on the computer you type them on** (never synced to your
 Google account) and are sent only to the provider they belong to. The developer never
-sees them, and there is no backend to send them to.
+sees them. Note for source installs: the free trial also runs on the developer's
+OpenAI credits, so if you fork this for real use, please switch to your own key
+(Settings) or point `HOSTED_URL` in `lib/ai.js` at your own relay (`docs/api/extract.js`).
 
 ## Privacy
 
-- No servers, no analytics, no tracking. See the [privacy policy](docs/privacy.html).
+- No analytics, no tracking, nothing stored server-side. The only server involved is the optional free-trial relay, which forwards a request and keeps nothing. See the [privacy policy](https://page2task.sherryshen.world/privacy.html).
 - Page content is read only when you click the extension icon.
 - Tasks and events go directly from your browser to Google's official APIs.
-- Text or screenshots reach an AI provider **only** if you configured a key; with Chrome's built-in AI, nothing leaves your computer at all.
+- What you analyze is sent to the AI option you chose (the free-trial relay, or your own provider), together with your account email so meetings in a conversation are titled with the other person's name. With Chrome's built-in AI, nothing leaves your computer at all.
 
 ## Settings
 
@@ -81,7 +82,8 @@ After editing, hit the reload icon on the extension card in `chrome://extensions
 | `lib/dateparse.js` | Local rule-based date extraction (English + Chinese), multi-candidate |
 | `lib/vendor/chrono.js` | Bundled [chrono-node](https://github.com/wanasit/chrono) date parser (MIT) |
 | `lib/google.js` | Google Tasks / Calendar API wrapper |
-| `lib/ai.js` | AI extraction: built-in Gemini Nano, Gemini, Claude, OpenAI, Kimi; text & vision |
+| `lib/ai.js` | AI extraction: hosted free trial, built-in Gemini Nano, Gemini, Claude, OpenAI, Kimi; text & vision |
+| `docs/api/extract.js` | The free-trial relay (a Vercel function): Google-token gated, forwards one request to OpenAI |
 | `options.html/js` | Settings page |
 
 Forking with your own Google Cloud project? Copy `manifest.template.json` over
