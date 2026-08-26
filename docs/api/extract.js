@@ -11,10 +11,28 @@
 
 const CLIENT_ID = '741089829068-6eramf0ghkuvbvofb3smoaeolplcc0cb.apps.googleusercontent.com';
 
-const systemPrompt = (refDateISO, listNames) =>
+const MODE_HINTS = {
+  todo:
+    'The user asked for TO-DOS: concrete actions to complete (readings and assignments to ' +
+    'finish, forms or applications to submit, registrations, replies, payments, things to ' +
+    'prepare), each with its deadline. When the input pairs dates with deliverables - a ' +
+    'syllabus listing readings per session, a schedule with homework per week - extract each ' +
+    'deliverable as its own to-do due by that session\'s date (like "Read Lewis et al. (RAG)"), ' +
+    'NOT attendance of the session itself. List the sessions themselves only when the input ' +
+    'offers no such deliverables. ',
+  calendar:
+    'The user asked for CALENDAR EVENTS: sessions that happen at a time (classes, meetings, ' +
+    'appointments, event sessions), not chores or homework. ',
+  both:
+    'The user asked for both to-dos and calendar events: extract the actionable to-dos with ' +
+    'their deadlines AND the scheduled sessions. ',
+};
+
+const systemPrompt = (refDateISO, listNames, mode) =>
     'Extract the actionable to-dos, deadlines, and scheduled events (meetings, appointments, ' +
     'calls) from the user\'s input as a list of items, most important first, at most 10 ' +
     '(when there are more, keep the most important ones). ' +
+    (MODE_HINTS[mode] || '') +
     'For meetings/appointments use the agreed date and time. The input may be an email thread ' +
     'with several messages, the visible text of a web page (an event page, a form, a syllabus), ' +
     'or a SCREENSHOT (chat conversation, email, poster, form) — read the ' +
@@ -85,6 +103,7 @@ module.exports = async (req, res) => {
       ? { mimeType: rawImage.mimeType, dataBase64: rawImage.dataBase64 }
       : null;
   const refDateISO = /^\d{4}-\d{2}-\d{2}$/.test(body.refDateISO || '') ? body.refDateISO : null;
+  const mode = ['todo', 'calendar', 'both'].includes(body.mode) ? body.mode : null;
   // List names reach the system prompt, so they are clamped hard: an
   // authenticated caller must not get to write paragraphs of system-role text
   const listNames = Array.isArray(body.listNames)
@@ -113,7 +132,7 @@ module.exports = async (req, res) => {
         max_tokens: 1600,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: systemPrompt(refDateISO, listNames) + COMPAT_JSON_HINT },
+          { role: 'system', content: systemPrompt(refDateISO, listNames, mode) + COMPAT_JSON_HINT },
           { role: 'user', content },
         ],
       }),

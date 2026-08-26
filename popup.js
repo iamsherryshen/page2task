@@ -11,6 +11,11 @@ let pastedInput = false; // true when candidates came from a pasted screenshot o
 let taskLists = []; // the user's Google Tasks lists, e.g. [{id, title: 'School work'}]
 let defaultEventMinutes = 30; // fallback calendar-event length; loaded from settings
 let mode = 'todo'; // 'todo' | 'calendar' | 'both' — picked at the top, remembered across uses
+// The last successful AI read: its source and the tab it was interpreted for.
+// Switching tabs re-runs it, because To-do vs Calendar ask different questions
+// of the same page (readings to finish vs sessions to attend).
+let lastAiRead = null;
+let modeReadyPromise = null;
 let lastAnalyzedText = null; // stops the typing debounce from re-reading what a paste already read
 let aiReadSeq = 0; // stamps every AI read; a read that is no longer the newest must not touch the UI
 let aiReadAbort = null; // controller of the in-flight read; a newer read cancels it
@@ -82,7 +87,7 @@ async function init() {
   document.querySelectorAll('#modeSeg .seg').forEach((b) =>
     b.addEventListener('click', () => setMode(b.dataset.mode))
   );
-  chrome.storage.sync.get({ lastMode: 'todo' }).then((c) => setMode(c.lastMode, false));
+  modeReadyPromise = chrome.storage.sync.get({ lastMode: 'todo' }).then((c) => setMode(c.lastMode, false));
   $('timeInput').addEventListener('input', updateTimeHint);
   // When the user commits a start time and there's no end yet, propose an end
   // (start + default length) so a calendar event is a period they can adjust.
@@ -253,17 +258,31 @@ async function init() {
       let aiError = null;
       try {
         await listsPromise; // list names feed the AI's list suggestion
+        if (modeReadyPromise) await modeReadyPromise; // the remembered tab is the intent
+        const modeAtCall = mode;
         const r = await AiExtract.extract({
           text: sourceText,
           refDateISO: todayStr(),
           apiKey,
           provider,
           listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
+          mode: modeAtCall,
           signal: initSignal,
         });
         if (initSeq !== aiReadSeq) return; // superseded mid-read — discard this result
         candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
         aiRan = true; // an empty answer from the AI is an answer, not a failure
+        lastAiRead = {
+          mode: modeAtCall,
+          opts: {
+            text: sourceText,
+            keepSource: true,
+            progress: 'AI is reading this page…',
+            emptyMsg: 'Nothing to add was found on this page',
+            failMsg: "Couldn't read this page",
+          },
+        };
+        if (mode !== modeAtCall) { runAi(lastAiRead.opts); return; } // tab changed mid-read
         if (provider === 'hosted') noteHostedSuccess();
       } catch (e) {
         if (initSeq !== aiReadSeq) return;
@@ -324,7 +343,10 @@ function setMode(m, save = true) {
   renderItemCards(); // per-item cards show mode-specific fields, so rebuild them
   updateSubmitLabel();
   updateTimeHint();
-  if (save) chrome.storage.sync.set({ lastMode: m });
+  if (save) {
+    chrome.storage.sync.set({ lastMode: m });
+    if (lastAiRead && lastAiRead.mode !== m) runAi(lastAiRead.opts);
+  }
 }
 
 // The button says how many will be created: "Add 3 events" when 3 are checked
@@ -594,9 +616,11 @@ async function runAi(opts) {
     return;
   }
 
-  pastedInput = true;
-  setRelang('chip', () => { $('chip').textContent = I18n.t(opts.chip); });
-  $('chip').classList.remove('hidden');
+  if (!opts.keepSource) {
+    pastedInput = true;
+    setRelang('chip', () => { $('chip').textContent = I18n.t(opts.chip); });
+    $('chip').classList.remove('hidden');
+  }
   $('notice').classList.add('hidden');
   $('aiWarn').classList.add('hidden');
   $('banner').className = 'banner hidden';
@@ -607,6 +631,7 @@ async function runAi(opts) {
   $('aiStatus').classList.remove('hidden');
   document.body.classList.add('reading');
 
+  const modeAtCall = mode;
   try {
     const r = await AiExtract.extract({
       text: opts.text,
@@ -615,10 +640,13 @@ async function runAi(opts) {
       apiKey,
       provider,
       listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
+      mode: modeAtCall,
       signal,
     });
     if (seq !== aiReadSeq) return; // superseded — the newer read owns the UI now
     if (provider === 'hosted') noteHostedSuccess();
+    lastAiRead = { mode: modeAtCall, opts };
+    if (mode !== modeAtCall) { runAi(opts); return; } // tab changed mid-read
     candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
     if (!candidates.length) {
       flashError(I18n.t(opts.emptyMsg));
