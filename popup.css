@@ -126,6 +126,7 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
   border: 1px solid #E3B94A; background: #fff; color: #6B4E00;
   border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 12.5px;
   cursor: pointer; white-space: nowrap;
+  text-decoration: none; display: inline-block;
 }
 .rate-btn:hover { background: #FFFBEF; }
 

@@ -76,14 +76,9 @@ async function init() {
     loadAccount(); // re-renders the account line in the new language
   });
   $('submitBtn').addEventListener('click', onSubmit);
-  $('rateYes').addEventListener('click', () => {
-    chrome.tabs.create({ url: REVIEW_URL });
-    $('rateRow').classList.add('hidden');
-  });
-  $('rateNo').addEventListener('click', () => {
-    chrome.tabs.create({ url: FEEDBACK_MAIL });
-    $('rateRow').classList.add('hidden');
-  });
+  // The links navigate on their own; this only retires the row afterwards
+  $('rateYes').addEventListener('click', () => $('rateRow').classList.add('hidden'));
+  $('rateNo').addEventListener('click', () => $('rateRow').classList.add('hidden'));
   document.querySelectorAll('#modeSeg .seg').forEach((b) =>
     b.addEventListener('click', () => setMode(b.dataset.mode))
   );
@@ -1000,6 +995,8 @@ async function noteSaveForRating(n) {
   await chrome.storage.local.set({ savedCount: total });
   if (ratePromptDone || total < RATE_AFTER) return;
   await chrome.storage.local.set({ ratePromptDone: true });
+  $('rateYes').href = REVIEW_URL;
+  $('rateNo').href = FEEDBACK_MAIL; // a real link: the browser hands mailto to the mail app
   setRelang('rateRow', () => {
     $('rateAsk').textContent = I18n.t('Is Page2Task working well for you?');
     $('rateYes').textContent = I18n.t('Yes, leave a review');
