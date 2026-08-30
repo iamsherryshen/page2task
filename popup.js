@@ -992,7 +992,7 @@ const REVIEW_URL = 'https://chromewebstore.google.com/detail/page2task/ceidkihpj
 // The public address is on our own domain, forwarded to whichever inbox is
 // current: it outlives any one mailbox and can be re-pointed or retired
 const FEEDBACK_MAIL =
-  'mailto:hi@page2task.sherryshen.world?subject=' + encodeURIComponent('Page2Task feedback');
+  'mailto:page2task@sherryshen.world?subject=' + encodeURIComponent('Page2Task feedback');
 
 async function noteSaveForRating(n) {
   const { savedCount, ratePromptDone } = await chrome.storage.local.get({ savedCount: 0, ratePromptDone: false });
