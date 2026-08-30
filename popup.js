@@ -76,6 +76,14 @@ async function init() {
     loadAccount(); // re-renders the account line in the new language
   });
   $('submitBtn').addEventListener('click', onSubmit);
+  $('rateYes').addEventListener('click', () => {
+    chrome.tabs.create({ url: REVIEW_URL });
+    $('rateRow').classList.add('hidden');
+  });
+  $('rateNo').addEventListener('click', () => {
+    chrome.tabs.create({ url: FEEDBACK_MAIL });
+    $('rateRow').classList.add('hidden');
+  });
   document.querySelectorAll('#modeSeg .seg').forEach((b) =>
     b.addEventListener('click', () => setMode(b.dataset.mode))
   );
@@ -975,6 +983,29 @@ async function loadTaskLists() {
   return taskLists;
 }
 
+// After ten successful saves, ask once. Happy users are sent to the store,
+// where reviews are what let other people find the extension at all; unhappy
+// ones get an email path, so the frustration reaches the developer instead of
+// a one star review. Counted locally, shown once ever, never shown again.
+const RATE_AFTER = 10;
+const REVIEW_URL = 'https://chromewebstore.google.com/detail/page2task/ceidkihpjbnbekklighmhcpabpbcjlff/reviews';
+const FEEDBACK_MAIL =
+  'mailto:chifeng2012@gmail.com?subject=' + encodeURIComponent('Page2Task feedback');
+
+async function noteSaveForRating(n) {
+  const { savedCount, ratePromptDone } = await chrome.storage.local.get({ savedCount: 0, ratePromptDone: false });
+  const total = savedCount + n;
+  await chrome.storage.local.set({ savedCount: total });
+  if (ratePromptDone || total < RATE_AFTER) return;
+  await chrome.storage.local.set({ ratePromptDone: true });
+  setRelang('rateRow', () => {
+    $('rateAsk').textContent = I18n.t('Is Page2Task working well for you?');
+    $('rateYes').textContent = I18n.t('Yes, leave a review');
+    $('rateNo').textContent = I18n.t('Not really, tell you why');
+  });
+  $('rateRow').classList.remove('hidden');
+}
+
 // Show which Google account the extension writes to (needs one prior authorization)
 let connectedEmail = null;
 function loadAccount() {
@@ -1163,6 +1194,7 @@ async function onSubmit() {
       : mode === 'calendar' ? (n > 1 ? I18n.t('Added {n} events to Google Calendar ✓', { n }) : I18n.t('Added to Google Calendar ✓'))
       : (n > 1 ? I18n.t('Added {n} items to Tasks & Calendar ✓', { n }) : I18n.t('Added to Google Tasks & Calendar ✓'));
     showSuccess(doneMsg, links);
+    noteSaveForRating(n);
   });
 }
 
