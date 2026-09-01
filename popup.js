@@ -387,7 +387,9 @@ async function startPageRead(sourceText, cacheKey) {
   // stops and the form is what it always was. The user never asked for this
   // read, so a failure is not news to them.
   if (aiError || !aiRan || !candidates.length) {
-    if (aiError) console.warn('page read failed:', aiError);
+    // debug, not warn: Chrome badges the extension card for warnings, and a
+    // read the user never asked for failing is not something to alarm them with
+    if (aiError) console.debug('page read failed:', aiError);
     candidates = [];
     return;
   }
