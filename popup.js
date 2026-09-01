@@ -118,7 +118,7 @@ async function init() {
     defaultEventMinutes = c.defaultEventMinutes || 30;
   });
   loadAccount();
-  const listsPromise = loadTaskLists();
+  listsPromise = loadTaskLists();
 
   // Screenshot or PDF input, three ways: click the drop zone (file picker),
   // paste (⌘V), or drop a file anywhere in the popup.
@@ -264,6 +264,7 @@ async function init() {
 
 // The page read, run only when the user asks for it
 let pendingPageText = null;
+let listsPromise = null; // started in init, awaited by whichever read runs first
 async function readThisPage() {
   const sourceText = pendingPageText;
   if (!sourceText) return;
@@ -284,7 +285,7 @@ async function readThisPage() {
   let aiRan = false;
   let aiError = null;
   try {
-    await listsPromise; // list names feed the AI's list suggestion
+    if (listsPromise) await listsPromise; // list names feed the AI's list suggestion
     if (modeReadyPromise) await modeReadyPromise; // the remembered tab is the intent
     const modeAtCall = mode;
     const r = await AiExtract.extract({
