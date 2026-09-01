@@ -255,8 +255,8 @@ async function init() {
   if (!provider) return; // no AI available, or the free reads are spent
   if (initSeq !== aiReadSeq) return;
 
-  const key = normalizeUrl(pageInfo.url);
-  const cached = key && (await cacheGet(key));
+  const key = textKey(sourceText);
+  const cached = await cacheGet(key);
   if (cached) { applyResult(cached); return; } // read once, free ever after
   if (!localDateScan(sourceText)) return; // no date-shaped text: a read would find nothing
 
@@ -284,14 +284,20 @@ function setDateReading(on, label) {
 const PAGE_CACHE = 'pageCache';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const CACHE_MAX = 60;
-const TRACKING = /^(utm_|fbclid|gclid|mc_|ref|ref_src|igshid|si)$/i;
-function normalizeUrl(u) {
-  try {
-    const url = new URL(u);
-    url.hash = '';
-    [...url.searchParams.keys()].forEach((k) => { if (TRACKING.test(k)) url.searchParams.delete(k); });
-    return url.toString();
-  } catch (e) { return u || ''; }
+// Keyed by the text itself, not the URL. Gmail and other apps put the thing
+// you are looking at in the URL hash, so any URL-shaped key served one email's
+// dates for every email after it. The text is what the model reads, so the
+// text is what decides whether we have already read this.
+function textKey(text) {
+  const t = String(text || '').slice(0, 6000); // the same slice the model gets
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193;
+  for (let i = 0; i < t.length; i++) {
+    const c = t.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 0x01000193);
+    h2 = Math.imul(h2 + c, 0x85ebca6b) ^ (h2 >>> 13);
+  }
+  return ((h1 >>> 0).toString(36) + (h2 >>> 0).toString(36)) + ':' + t.length;
 }
 async function cacheGet(key) {
   const { [PAGE_CACHE]: c } = await chrome.storage.local.get({ [PAGE_CACHE]: {} });
