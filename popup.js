@@ -260,7 +260,6 @@ async function init() {
   if (cached) { applyResult(cached); return; } // read once, free ever after
   if (!localDateScan(sourceText)) return; // no date-shaped text: a read would find nothing
 
-  pendingPageText = sourceText;
   startPageRead(sourceText, key);
 }
 
@@ -337,7 +336,6 @@ function localDateScan(text) {
   return !!(m && /\d/.test(t.slice(Math.max(0, m.index - 60), m.index + 60)));
 }
 
-let pendingPageText = null;
 let listsPromise = null; // started in init, awaited by whichever read runs first
 async function startPageRead(sourceText, cacheKey) {
   const { seq: readSeq, signal: readSignal } = beginAiRead();
