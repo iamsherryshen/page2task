@@ -113,6 +113,18 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
   text-decoration: underline dotted;
   text-underline-offset: 2px;
 }
+/* Reading a page costs the user a free read, so it waits to be asked */
+.read-card {
+  background: #fff; border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px; text-align: center;
+}
+.read-btn {
+  width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 22px;
+  padding: 10px 0 8px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.read-btn:hover { background: var(--accent-hover); }
+.read-note { font-size: 11px; color: var(--muted); margin-top: 7px; }
+
 .ai-hint:hover { color: var(--label); }
 
 /* Shown once, after the tenth successful save: happy users go to the store,
@@ -357,7 +369,8 @@ body.reading #banner, body.reading .actions { display: none; }
 /* Trial exhausted: the panel is the whole interface until a path is picked */
 body.trial-gated #candBox, body.trial-gated #formCard, body.trial-gated #itemCards,
 body.trial-gated #banner, body.trial-gated .actions, body.trial-gated #importZone,
-body.trial-gated #notice, body.trial-gated #aiWarn { display: none; }
+body.trial-gated #notice, body.trial-gated #aiWarn,
+body.trial-gated #readCard { display: none; }
 
 /* Read finished and the date is still empty: one quick shake and a short blue
    tint on the date field, so the eye lands where the user's input is needed */

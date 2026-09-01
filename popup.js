@@ -76,6 +76,7 @@ async function init() {
     loadAccount(); // re-renders the account line in the new language
   });
   $('submitBtn').addEventListener('click', onSubmit);
+  $('readBtn').addEventListener('click', readThisPage);
   // The links navigate on their own; this only retires the row afterwards
   $('rateYes').addEventListener('click', () => $('rateRow').classList.add('hidden'));
   $('rateNo').addEventListener('click', () => $('rateRow').classList.add('hidden'));
@@ -241,82 +242,108 @@ async function init() {
   }
 
   const sourceText = pageInfo.selectionText || pageInfo.bodyText;
-  let aiRan = false;
 
   if (sourceText) {
-    const { provider, apiKey } = await getAiConfig();
+    const { provider } = await getAiConfig();
     if (!provider && trialPanelShown) return; // exhausted: the panel is the whole answer
     if (initSeq !== aiReadSeq) return; // superseded by a user paste/drop
+    // Reading costs the user one of their free reads, and opening the popup is
+    // not the same as asking for a read: they may have come to paste a
+    // screenshot. So the page is only read when they say so.
     if (provider) {
-      $('aiStatusText').textContent = I18n.t('AI is reading this page…');
-      $('aiStatus').classList.remove('hidden');
-      document.body.classList.add('reading'); // the form appears once, with the final result
-      let aiError = null;
-      try {
-        await listsPromise; // list names feed the AI's list suggestion
-        if (modeReadyPromise) await modeReadyPromise; // the remembered tab is the intent
-        const modeAtCall = mode;
-        const r = await AiExtract.extract({
-          text: sourceText,
-          refDateISO: todayStr(),
-          apiKey,
-          provider,
-          listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
-          mode: modeAtCall,
-          userEmail: connectedEmail,
-          signal: initSignal,
-        });
-        if (initSeq !== aiReadSeq) return; // superseded mid-read — discard this result
-        candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
-        aiRan = true; // an empty answer from the AI is an answer, not a failure
-        lastAiRead = {
-          mode: modeAtCall,
-          opts: {
-            text: sourceText,
-            keepSource: true,
-            progress: 'AI is reading this page…',
-            emptyMsg: 'Nothing to add was found on this page',
-            failMsg: "Couldn't read this page",
-          },
-        };
-        if (provider === 'hosted') noteHostedSuccess();
-        if (mode !== modeAtCall) { runAi(lastAiRead.opts); return; } // tab changed mid-read
-      } catch (e) {
-        if (initSeq !== aiReadSeq) return;
-        candidates = []; // fall back to local rules, but say so
-        aiError = (e && e.message) || 'unknown error';
-      }
-      $('aiStatus').classList.add('hidden');
-      document.body.classList.remove('reading');
-      if (aiError) {
-        setRelang('aiWarn', () => {
-          $('aiWarn').textContent = I18n.t('AI unavailable ({err}). Using local rules.', { err: I18n.t(aiError) });
-        });
-        $('aiWarn').classList.remove('hidden');
-      }
-    }
-    // Local rules only stand in when no AI answered; overriding an AI that found
-    // nothing would put dates on a page that has none
-    if (!candidates.length && !aiRan) {
-      candidates = DateParse.extractAll(sourceText, new Date(), 5).map((c) => ({
-        title: titleFromSentence(c.matchedText),
-        dueDate: c.dueDate,
-        dueTime: c.dueTime,
-        matchedText: c.matchedText,
-      }));
+      pendingPageText = sourceText;
+      $('readCard').classList.remove('hidden');
     }
   } else {
     getAiConfig(); // no readable text on this page — still surface the free-AI setup offer
+  }
+
+  applyDefaults();
+  updateTimeHint();
+}
+
+// The page read, run only when the user asks for it
+let pendingPageText = null;
+async function readThisPage() {
+  const sourceText = pendingPageText;
+  if (!sourceText) return;
+  const { seq: readSeq, signal: readSignal } = beginAiRead();
+  const { provider, apiKey } = await getAiConfig();
+  if (readSeq !== aiReadSeq) return;
+  if (!provider) {
+    if (!trialPanelShown) {
+      flashError(I18n.t('AI recognition needs a newer Chrome (built-in AI) or an API key in Settings (the gear icon)'));
+    }
+    return;
+  }
+  $('readCard').classList.add('hidden');
+  $('aiStatusText').textContent = I18n.t('AI is reading this page…');
+  $('aiStatus').classList.remove('hidden');
+  document.body.classList.add('reading'); // the form appears once, with the final result
+
+  let aiRan = false;
+  let aiError = null;
+  try {
+    await listsPromise; // list names feed the AI's list suggestion
+    if (modeReadyPromise) await modeReadyPromise; // the remembered tab is the intent
+    const modeAtCall = mode;
+    const r = await AiExtract.extract({
+      text: sourceText,
+      refDateISO: todayStr(),
+      apiKey,
+      provider,
+      listNames: taskLists.length > 1 ? taskLists.map((l) => l.title) : null,
+      mode: modeAtCall,
+      userEmail: connectedEmail,
+      signal: readSignal,
+    });
+    if (readSeq !== aiReadSeq) return; // superseded mid-read: discard this result
+    candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
+    aiRan = true; // an empty answer from the AI is an answer, not a failure
+    lastAiRead = {
+      mode: modeAtCall,
+      opts: {
+        text: sourceText,
+        keepSource: true,
+        progress: 'AI is reading this page…',
+        emptyMsg: 'Nothing to add was found on this page',
+        failMsg: "Couldn't read this page",
+      },
+    };
+    if (provider === 'hosted') noteHostedSuccess();
+    if (mode !== modeAtCall) { runAi(lastAiRead.opts); return; } // tab changed mid-read
+  } catch (e) {
+    if (readSeq !== aiReadSeq) return;
+    candidates = []; // fall back to local rules, but say so
+    aiError = (e && e.message) || 'unknown error';
+  }
+  $('aiStatus').classList.add('hidden');
+  document.body.classList.remove('reading');
+  if (aiError) {
+    setRelang('aiWarn', () => {
+      $('aiWarn').textContent = I18n.t('AI unavailable ({err}). Using local rules.', { err: I18n.t(aiError) });
+    });
+    $('aiWarn').classList.remove('hidden');
+  }
+
+  // Local rules only stand in when no AI answered; overriding an AI that found
+  // nothing would put dates on a page that has none
+  if (!candidates.length && !aiRan) {
+    candidates = DateParse.extractAll(sourceText, new Date(), 5).map((c) => ({
+      title: titleFromSentence(c.matchedText),
+      dueDate: c.dueDate,
+      dueTime: c.dueTime,
+      matchedText: c.matchedText,
+    }));
   }
 
   if (candidates.length) {
     if (candidates.length > 1) renderCandidateChooser(); // checked ones become editable cards
     else applyCandidate(0);
   } else {
-    if (pageInfo.kind === 'email' && sourceText) {
+    if (pageInfo && pageInfo.kind === 'email') {
       showNotice('No upcoming deadline found. The dates in this email may have already passed.');
     }
-    applyDefaults();
   }
   updateTimeHint();
 }
@@ -603,6 +630,7 @@ async function runAi(opts) {
   }
 
   if (!opts.keepSource) {
+    $('readCard').classList.add('hidden'); // the user moved on from reading the page
     pastedInput = true;
     setRelang('chip', () => { $('chip').textContent = I18n.t(opts.chip); });
     $('chip').classList.remove('hidden');
