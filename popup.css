@@ -116,14 +116,13 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 /* Reading a page costs the user a free read, so it waits to be asked */
 .read-card {
   background: #fff; border: 1px solid var(--border); border-radius: 12px;
-  padding: 12px; text-align: center;
+  padding: 10px; text-align: center;
 }
 .read-btn {
   width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 22px;
   padding: 10px 0 8px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
 }
 .read-btn:hover { background: var(--accent-hover); }
-.read-note { font-size: 11px; color: var(--muted); margin-top: 7px; }
 
 .ai-hint:hover { color: var(--label); }
 
