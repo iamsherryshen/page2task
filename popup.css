@@ -229,7 +229,9 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 }
 .field input::placeholder, .field textarea::placeholder { color: var(--muted); }
 .field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
-.field textarea { resize: vertical; }
+/* autoGrow sets an inline height from the content, which collapses an empty
+   notes box to a single line; the floor keeps it the size rows=3 asked for */
+.field textarea { resize: vertical; min-height: 60px; }
 #titleInput { text-overflow: ellipsis; }
 
 .row { display: flex; gap: 10px; }
