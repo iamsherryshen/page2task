@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Page2Task",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Turn any page, email, or screenshot into a Google Task or Calendar event, with deadlines and locations detected for you.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2gDl2XjosX0y+Ns1GdcUxSz3GlNielmv6T5pdRN028TJiorz8jCRfIgB+A09Qn6iUsUamH05iyRMNLJ5O18YJGFWtDAhRS4g76XKzDbEiJPEfeevH5DtpnQo3grD0+4U+ceUH4mMgeJG2ayNvggXYPnST1+VqnGdwF8h9fywj+KJ8XDQyAeaxxIAlLagWSl/PLpgKOWV5SSz6ZpUX7TSsOW//brsRKL6zhpPM0RO5B5iX2qWgIlpY3RpVEjTSShgYhskCH7FKOWXDF9kHPzMmwK2ugSCl81fpGIZWUE8duWmC26nhNpsrEkad5LZL/P/RSJT2/k5+bV8JfnObzkb1wIDAQAB",
   "action": {
