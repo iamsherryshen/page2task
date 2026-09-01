@@ -184,7 +184,7 @@
   </header>
 
   <div class="promo-video">
-    <video src="promo.mp4" poster="promo-poster.jpg" controls preload="metadata" playsinline></video>
+    <video id="promoVideo" src="promo.mp4" poster="promo-poster.jpg" controls preload="metadata" playsinline></video>
   </div>
 
   <div class="shot hero-shot"><div class="p2t-stage"><div id="anim1" class="p2t-frame">
@@ -942,6 +942,16 @@ const ZH = {"One click in your browser. The deadline is found for you, the title
     });
     document.documentElement.lang = zh ? 'zh-CN' : 'en';
     btn.textContent = zh ? 'EN' : '中文';
+    // 宣传片跟着语言走。播放中切换会打断，所以只在没播过或已暂停时换源
+    const v = document.getElementById('promoVideo');
+    const want = zh ? 'promo-zh.mp4' : 'promo.mp4';
+    if (v && !v.currentSrc.endsWith(want)) {
+      const wasPlaying = !v.paused && !v.ended;
+      v.poster = zh ? 'promo-zh-poster.jpg' : 'promo-poster.jpg';
+      v.src = want;
+      v.load();
+      if (wasPlaying) v.play().catch(() => {});
+    }
     try { localStorage.setItem('p2t-lang', lang); } catch (e) {}
   }
 
