@@ -39,16 +39,16 @@ function showTrialPanel() {
   $('trialPanel').classList.remove('hidden');
   // A fork in the road, not a warning over results: everything except the
   // panel disappears until the user picks a path (see .trial-gated in CSS)
-  $('aiStatus').classList.add('hidden');
+  setDateReading(false);
   document.body.classList.add('trial-gated');
 }
 async function noteHostedSuccess() {
   const used = (await hostedTrialUsed()) + 1;
   await chrome.storage.sync.set({ hostedUsed: used });
   const left = HOSTED_TRIAL_LIMIT - used;
-  if (left >= 0 && left <= 5) {
+  if (left >= 1 && left <= 5) {
     setRelang('trialHint', () => {
-      $('trialHint').textContent = I18n.t('Free trial: {n} reads left', { n: left });
+      $('trialHint').textContent = I18n.t('{n} free AI reads left', { n: left });
     });
     $('trialHint').classList.remove('hidden');
   }
@@ -76,7 +76,10 @@ async function init() {
     loadAccount(); // re-renders the account line in the new language
   });
   $('submitBtn').addEventListener('click', onSubmit);
-  $('readBtn').addEventListener('click', readThisPage);
+  // Touching a field during a read claims it: the result will not overwrite it
+  $('dateInput').addEventListener('input', () => { userEditedDate = true; setDateReading(false); });
+  $('dateInput').addEventListener('focus', () => setDateReading(false));
+  $('titleInput').addEventListener('input', () => { userEditedTitle = true; });
   // The links navigate on their own; this only retires the row afterwards
   $('rateYes').addEventListener('click', () => $('rateRow').classList.add('hidden'));
   $('rateNo').addEventListener('click', () => $('rateRow').classList.add('hidden'));
@@ -213,7 +216,7 @@ async function init() {
     );
 
   if (restricted) {
-    showNotice("This page can't be read automatically. Fill in the fields manually.");
+    // A settings or store page: nothing to read, and nothing to explain either
     applyDefaults();
     getAiConfig(); // the page is unreadable, but the free-AI setup offer must still show
     return;
@@ -228,7 +231,6 @@ async function init() {
   if (initSeq !== aiReadSeq) return; // superseded by a user paste/drop
 
   if (!pageInfo) {
-    showNotice("This page can't be read automatically. Fill in the fields manually.");
     applyDefaults();
     getAiConfig(); // the page is unreadable, but the free-AI setup offer must still show
     return;
@@ -237,50 +239,106 @@ async function init() {
   renderChip(pageInfo);
   $('titleInput').value = pageInfo.emailSubject || pageInfo.title || '';
   $('notesInput').value = pageInfo.url || '';
-  if (pageInfo.kind === 'pdf') {
-    showNotice("Chrome's PDF viewer doesn't let extensions read the text. Title taken from the file name.");
-  }
 
   const sourceText = pageInfo.selectionText || pageInfo.bodyText;
 
-  if (sourceText) {
-    const { provider } = await getAiConfig();
-    if (!provider && trialPanelShown) return; // exhausted: the panel is the whole answer
-    if (initSeq !== aiReadSeq) return; // superseded by a user paste/drop
-    // Reading costs the user one of their free reads, and opening the popup is
-    // not the same as asking for a read: they may have come to paste a
-    // screenshot. So the page is only read when they say so.
-    if (provider) {
-      pendingPageText = sourceText;
-      $('readCard').classList.remove('hidden');
-    }
-  } else {
-    getAiConfig(); // no readable text on this page — still surface the free-AI setup offer
-  }
-
   applyDefaults();
   updateTimeHint();
+
+  // Whether to read at all is decided here, silently. Any step that says no
+  // leaves the popup exactly as it looks now: a filled form the user can
+  // submit. Nothing announces that a read was skipped, because from the
+  // user's side nothing was promised.
+  if (!sourceText) return; // Chrome's PDF viewer and some apps expose no text
+  if (initSeq !== aiReadSeq) return; // superseded by a paste already
+  const { provider } = await getAiConfig();
+  if (!provider) return; // no AI available, or the free reads are spent
+  if (initSeq !== aiReadSeq) return;
+
+  const key = normalizeUrl(pageInfo.url);
+  const cached = key && (await cacheGet(key));
+  if (cached) { applyResult(cached); return; } // read once, free ever after
+  if (!localDateScan(sourceText)) return; // no date-shaped text: a read would find nothing
+
+  pendingPageText = sourceText;
+  startPageRead(sourceText, key);
 }
 
-// The page read, run only when the user asks for it
+// The read shows itself inside the date field. The overlay steps aside the
+// moment the user touches the field, so they can type their own date while the
+// model is still working; applyResult then leaves theirs alone.
+let userEditedDate = false;
+let userEditedTitle = false;
+function setDateReading(on, label) {
+  const busy = $('dateBusy');
+  if (on && !$('dateInput').value && !userEditedDate) {
+    if (label) $('dateBusyText').textContent = I18n.t(label);
+    busy.classList.remove('hidden');
+  } else {
+    busy.classList.add('hidden');
+  }
+}
+
+// A page the extension already read is remembered, so reopening the same tab
+// costs nothing. Keyed by the URL with the tracking noise stripped off.
+const PAGE_CACHE = 'pageCache';
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const CACHE_MAX = 60;
+const TRACKING = /^(utm_|fbclid|gclid|mc_|ref|ref_src|igshid|si)$/i;
+function normalizeUrl(u) {
+  try {
+    const url = new URL(u);
+    url.hash = '';
+    [...url.searchParams.keys()].forEach((k) => { if (TRACKING.test(k)) url.searchParams.delete(k); });
+    return url.toString();
+  } catch (e) { return u || ''; }
+}
+async function cacheGet(key) {
+  const { [PAGE_CACHE]: c } = await chrome.storage.local.get({ [PAGE_CACHE]: {} });
+  const hit = c[key];
+  if (!hit || Date.now() - hit.t > CACHE_TTL_MS) return null;
+  return hit.r;
+}
+async function cacheSet(key, r) {
+  const { [PAGE_CACHE]: c } = await chrome.storage.local.get({ [PAGE_CACHE]: {} });
+  c[key] = { t: Date.now(), r };
+  const keys = Object.keys(c);
+  if (keys.length > CACHE_MAX) {
+    keys.sort((a, b) => c[a].t - c[b].t).slice(0, keys.length - CACHE_MAX).forEach((k) => delete c[k]);
+  }
+  await chrome.storage.local.set({ [PAGE_CACHE]: c });
+}
+
+// Purely local, never leaves the machine: does this page even look like it has
+// a date? If not, calling a model would spend a read to learn nothing.
+const DATE_SHAPES = [
+  /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}\b/i,
+  /\b\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/i,
+  /\b\d{1,2}[/.\-]\d{1,2}([/.\-]\d{2,4})?\b/,
+  /\d{4}\s*年\s*\d{1,2}\s*月/,
+  /\d{1,2}\s*月\s*\d{1,2}\s*日/,
+  /\b(mon|tue|wed|thu|fri|sat|sun)[a-z]*day\b/i,
+  /(周|星期)[一二三四五六日天]/,
+  /\b(today|tomorrow|tonight)\b/i,
+  /(今天|明天|后天|今晚)/,
+];
+const DEADLINE_WORDS = /(deadline|due|rsvp|register|closes?|截止|报名|开始|提交|面试|考试)/i;
+function localDateScan(text) {
+  const t = String(text || '').slice(0, 20000);
+  if (DATE_SHAPES.some((re) => re.test(t))) return true;
+  // a keyword with a number close by also counts as date shaped
+  const m = DEADLINE_WORDS.exec(t);
+  return !!(m && /\d/.test(t.slice(Math.max(0, m.index - 60), m.index + 60)));
+}
+
 let pendingPageText = null;
 let listsPromise = null; // started in init, awaited by whichever read runs first
-async function readThisPage() {
-  const sourceText = pendingPageText;
-  if (!sourceText) return;
+async function startPageRead(sourceText, cacheKey) {
   const { seq: readSeq, signal: readSignal } = beginAiRead();
   const { provider, apiKey } = await getAiConfig();
-  if (readSeq !== aiReadSeq) return;
-  if (!provider) {
-    if (!trialPanelShown) {
-      flashError(I18n.t('AI recognition needs a newer Chrome (built-in AI) or an API key in Settings (the gear icon)'));
-    }
-    return;
-  }
-  $('readCard').classList.add('hidden');
-  $('aiStatusText').textContent = I18n.t('AI is reading this page…');
-  $('aiStatus').classList.remove('hidden');
-  document.body.classList.add('reading'); // the form appears once, with the final result
+  if (readSeq !== aiReadSeq || !provider) return;
+  setDateReading(true, 'AI is finding the date…');
+  const timeout = setTimeout(() => { if (readSeq === aiReadSeq) beginAiRead(); }, 12000);
 
   let aiRan = false;
   let aiError = null;
@@ -318,34 +376,46 @@ async function readThisPage() {
     candidates = []; // fall back to local rules, but say so
     aiError = (e && e.message) || 'unknown error';
   }
-  $('aiStatus').classList.add('hidden');
-  document.body.classList.remove('reading');
-  if (aiError) {
-    setRelang('aiWarn', () => {
-      $('aiWarn').textContent = I18n.t('AI unavailable ({err}). Using local rules.', { err: I18n.t(aiError) });
-    });
-    $('aiWarn').classList.remove('hidden');
+  clearTimeout(timeout);
+  setDateReading(false);
+
+  // Nothing found, an error, or a timeout all end the same way: the spinner
+  // stops and the form is what it always was. The user never asked for this
+  // read, so a failure is not news to them.
+  if (aiError || !aiRan || !candidates.length) {
+    if (aiError) console.warn('page read failed:', aiError);
+    candidates = [];
+    return;
   }
 
-  // Local rules only stand in when no AI answered; overriding an AI that found
-  // nothing would put dates on a page that has none
-  if (!candidates.length && !aiRan) {
-    candidates = DateParse.extractAll(sourceText, new Date(), 5).map((c) => ({
-      title: titleFromSentence(c.matchedText),
-      dueDate: c.dueDate,
-      dueTime: c.dueTime,
-      matchedText: c.matchedText,
-    }));
-  }
+  if (cacheKey) cacheSet(cacheKey, candidates);
+  applyResult(candidates);
+}
 
-  if (candidates.length) {
-    if (candidates.length > 1) renderCandidateChooser(); // checked ones become editable cards
-    else applyCandidate(0);
-  } else {
-    if (pageInfo && pageInfo.kind === 'email') {
-      showNotice('No upcoming deadline found. The dates in this email may have already passed.');
-    }
+// The result lands in the fields the user has not touched. Anything they typed
+// while the model was working is theirs and stays.
+function applyResult(items) {
+  candidates = items;
+  setDateReading(false);
+  if (candidates.length > 1) { renderCandidateChooser(); updateTimeHint(); return; }
+
+  const r = candidates[0];
+  if (!r) return;
+  if (r.title && !userEditedTitle) $('titleInput').value = r.title;
+  if (r.dueDate && !userEditedDate) {
+    $('dateInput').value = r.dueDate;
+    $('dateInput').classList.remove('nudge');
+    void $('dateInput').offsetWidth; // restart the animation if it just ran
+    $('dateInput').classList.add('nudge');
   }
+  if (r.dueTime && mode !== 'todo' && !$('timeInput').value) $('timeInput').value = r.dueTime;
+  if (r.endTime && mode !== 'todo' && !$('endTimeInput').value) $('endTimeInput').value = r.endTime;
+  if (r.location && mode !== 'todo' && !$('locationInput').value) $('locationInput').value = r.location;
+  if (r.list && taskLists.length > 1) {
+    const hit = taskLists.find((l) => l.title === r.list);
+    if (hit) $('listSelect').value = hit.id;
+  }
+  updateSubmitLabel();
   updateTimeHint();
 }
 
@@ -592,13 +662,12 @@ async function pdfToImage(file) {
 }
 
 async function handlePdf(file) {
-  $('aiStatusText').textContent = I18n.t('Reading the PDF…');
-  $('aiStatus').classList.remove('hidden');
+  setDateReading(true, 'Reading the PDF…');
   let image;
   try {
     image = await pdfToImage(file);
   } catch (e) {
-    $('aiStatus').classList.add('hidden');
+    setDateReading(false);
     flashError(I18n.t('Could not read this PDF. Try a screenshot of it instead.'));
     return;
   }
@@ -619,9 +688,8 @@ async function runAi(opts) {
   const { provider, apiKey } = await getAiConfig();
   if (seq !== aiReadSeq) return; // an even newer read started meanwhile
   if (!provider) {
-    $('aiStatus').classList.add('hidden'); // a PDF read may have shown it already
+    setDateReading(false); // a PDF read may have shown it already
     if (trialPanelShown) return; // exhausted: the panel below stays the whole answer
-    document.body.classList.remove('reading');
     flashError(I18n.t(
       builtinOfferShown
         ? 'AI is one click away. Use the "Enable free AI" line above.'
@@ -631,7 +699,6 @@ async function runAi(opts) {
   }
 
   if (!opts.keepSource) {
-    $('readCard').classList.add('hidden'); // the user moved on from reading the page
     pastedInput = true;
     setRelang('chip', () => { $('chip').textContent = I18n.t(opts.chip); });
     $('chip').classList.remove('hidden');
@@ -642,9 +709,7 @@ async function runAi(opts) {
   $('candBox').classList.add('hidden');
   updateSubmitLabel();
   renderItemCards(); // back to the single form while a new read is in flight
-  $('aiStatusText').textContent = I18n.t(opts.progress || 'AI is reading…');
-  $('aiStatus').classList.remove('hidden');
-  document.body.classList.add('reading');
+  setDateReading(true, opts.progress || 'AI is reading…');
 
   const modeAtCall = mode;
   try {
@@ -675,8 +740,7 @@ async function runAi(opts) {
     flashError(e && e.message ? I18n.t(e.message) : I18n.t(opts.failMsg));
   } finally {
     if (seq === aiReadSeq) {
-      $('aiStatus').classList.add('hidden');
-      document.body.classList.remove('reading');
+      setDateReading(false);
     }
   }
 }
@@ -955,9 +1019,10 @@ function renderChip(info) {
       info.kind === 'email' ? I18n.t('Email')
       : info.kind === 'video' ? I18n.t('Video · ~{n} min long', { n: info.videoMinutes })
       : info.kind === 'pdf' ? 'PDF'
-      : I18n.t('Page');
+      : '';
   });
-  $('chip').classList.remove('hidden');
+  // A plain web page needs no label: the popup opened on it, the user knows
+  $('chip').classList.toggle('hidden', !$('chip').textContent);
 }
 
 // When nothing was detected, make no assumptions: leave the date and time blank.

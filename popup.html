@@ -23,10 +23,6 @@
     <div id="notice" class="notice hidden"></div>
     <div id="chip" class="chip hidden"></div>
     <div id="trialHint" class="trial-hint hidden"></div>
-    <div id="readCard" class="read-card hidden">
-      <button type="button" id="readBtn" class="read-btn" data-i18n="Read this page">Read this page</button>
-    </div>
-    <div id="aiStatus" class="ai-status hidden"><span class="spinner" aria-hidden="true"></span><span id="aiStatusText" data-i18n="AI is reading…">AI is reading…</span></div>
     <div id="aiWarn" class="ai-warn hidden"></div>
     <div id="trialPanel" class="trial-panel hidden">
       <div class="tp-title">⏳ <span data-i18n="Your 30 free reads are used up">Your 30 free reads are used up</span></div>
@@ -64,7 +60,12 @@
 
       <label class="field">
         <span id="dateLabel">Date (optional)</span>
-        <input type="date" id="dateInput">
+        <div class="date-wrap">
+          <input type="date" id="dateInput">
+          <div id="dateBusy" class="date-busy hidden" aria-hidden="true">
+            <span class="spinner"></span><span id="dateBusyText" data-i18n="AI is finding the date…">AI is finding the date…</span>
+          </div>
+        </div>
       </label>
       <div class="row time-row hidden" id="timeRow">
         <label class="field">

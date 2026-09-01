@@ -113,17 +113,6 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
   text-decoration: underline dotted;
   text-underline-offset: 2px;
 }
-/* Reading a page costs the user a free read, so it waits to be asked */
-.read-card {
-  background: #fff; border: 1px solid var(--border); border-radius: 12px;
-  padding: 10px; text-align: center;
-}
-.read-btn {
-  width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 22px;
-  padding: 10px 0 8px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
-}
-.read-btn:hover { background: var(--accent-hover); }
-
 .ai-hint:hover { color: var(--label); }
 
 /* Shown once, after the tenth successful save: happy users go to the store,
@@ -364,8 +353,8 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 
 /* While an AI read is in flight the result area stays hidden: showing a
    provisional form and then replacing it reads as "the answer changed" */
-body.reading #candBox, body.reading #formCard, body.reading #itemCards,
-body.reading #banner, body.reading .actions { display: none; }
+/* The read no longer hides the form: it happens inside the date field, so the
+   rest of the popup stays usable and the result lands in place */
 
 /* Trial exhausted: the panel is the whole interface until a path is picked */
 body.trial-gated #candBox, body.trial-gated #formCard, body.trial-gated #itemCards,
@@ -387,12 +376,23 @@ body.trial-gated #readCard { display: none; }
   0%, 100% { background: var(--input-bg); border-color: var(--border); }
   8%, 65% { background: #E8F0FE; border-color: var(--accent); }
 }
-#dateInput.nudge { animation: p2t-shake .34s ease-in-out 1, p2t-nudge-tint 1.8s ease-in-out 1; }
+#dateInput.nudge { animation: p2t-nudge-tint 1.8s ease-in-out 1; }
 @media (prefers-reduced-motion: reduce) {
   #dateInput.nudge { animation: p2t-nudge-tint 1.8s ease-in-out 1; }
 }
 
 /* Hosted free-trial surfaces: the low-quota hint and the used-up panel */
+/* The page read shows itself inside the date field, not as a banner. The
+   overlay yields the moment the user touches the field: they may type their
+   own date while the model is still working, and theirs wins. */
+.date-wrap { position: relative; }
+.date-busy {
+  position: absolute; inset: 0; display: flex; align-items: center; gap: 7px;
+  padding: 0 10px; border-radius: 8px; background: var(--input-bg);
+  color: var(--muted); font-size: 13px; pointer-events: none;
+}
+.date-busy .spinner { flex: none; }
+
 .trial-hint { display: inline-block; font-size: 12px; color: #9A6B00; background: #FFF4CC; border-radius: 8px; padding: 4px 10px; margin-bottom: 8px; }
 .trial-panel { background: #fff; border: 1.5px solid #F2B705; border-radius: 12px; padding: 12px 13px; margin-bottom: 10px; }
 .tp-title { font-size: 14px; font-weight: 700; color: var(--fg); margin-bottom: 4px; }
