@@ -229,3 +229,61 @@ Hand-drawn ink illustration. Medium-weight black outlines with a slightly loose,
 
 PICTURE 0, the greeting
 A young woman with shoulder-length wavy black hair, thin round glasses and one small hoop earring, wearing a hoodie, seen from the chest up, centered, facing us with a warm relaxed smile, one hand raised in a friendly wave with the palm open. Next to her raised hand a small white speech bubble with a black outline holding only the word "Hi!". Generous empty background around her so the image can be cropped to a circle. Nothing else in the picture.
+
+---
+
+## V9 (2026-09-22): Blast Tax image, her likeness with a giant magnifying glass finding one sentence in a wall of text
+
+Please create one illustration, a 3:2 landscape image, drawn in EXACTLY the style of the attached reference image (the man with the hat and the cup): the same hand-drawn ink line, the same white fills, the same flat single-color background, the same adult proportions and dry, understated mood. Only the background color changes: pale blue #DCE8FB instead of yellow.
+
+Two reference images are attached. The FIRST (the man with the hat and the cup) defines the drawing style: copy its line quality, proportions and mood exactly. The SECOND (the woman with the pear) is ONLY for the character's likeness: her wavy black hair, round glasses, hoop earring and hoodie. Do NOT copy the second image's drawing style, its thick marker lines, its big-head proportions or its yellow palette.
+
+STYLE
+Hand-drawn ink illustration. Medium-weight black outlines with a slightly loose, uneven pen quality, like a confident quick sketch. Everything inside the outlines is filled plain white; hair is filled solid black. No gray, no shading, no hatching, no gradients, no texture. Adult proportions, NOT chibi, NOT kawaii. The background is one flat solid color, pale blue #DCE8FB, filling the whole image edge to edge. The entire image uses only three colors: #DCE8FB, black, white. The only legible text in the whole image is the one sentence inside the magnifying glass described below; every other line of "text" is drawn as illegible horizontal squiggle lines, not letters.
+
+PICTURE, the Blast Tax
+A young woman with shoulder-length wavy black hair, thin round glasses and one small hoop earring, wearing a hoodie, stands at the left side of the picture holding a comically large magnifying glass with both hands, leaning in and squinting at a huge sheet of paper that fills the rest of the picture. The sheet is a dense page of text drawn entirely as tightly packed horizontal squiggle lines, with a scribbled title bar at the top, like a long syllabus or a long email. Inside the round lens of the magnifying glass, the squiggles turn into large, clear, hand-lettered black text reading exactly: "Please make sure that you submit the assignment by Friday". The sentence fills the lens and is underlined. Three short surprise lines radiate from her head. Nothing else in the picture.
+
+---
+
+## V9 final (2026-09-22): Blast Tax = the application essay boomerang (she chose this; no thought bubble)
+
+Please create one illustration, a 3:2 landscape image, drawn in EXACTLY the style of the attached reference image (the man with the hat and the cup): the same hand-drawn ink line, the same white fills, the same flat single-color background, the same adult proportions and dry, understated mood. Only the background color changes: pale blue #DCE8FB instead of yellow.
+
+Two reference images are attached. The FIRST (the man with the hat and the cup) defines the drawing style: copy its line quality, proportions and mood exactly. The SECOND (the woman with the pear) is ONLY for the character's likeness: her wavy black hair, round glasses, hoop earring and hoodie. Do NOT copy the second image's drawing style, its thick marker lines, its big-head proportions or its yellow palette.
+
+STYLE
+Hand-drawn ink illustration. Medium-weight black outlines with a slightly loose, uneven pen quality, like a confident quick sketch. Everything inside the outlines is filled plain white; hair is filled solid black. No gray, no shading, no hatching, no gradients, no texture. Adult proportions, NOT chibi, NOT kawaii. The background is one flat solid color, pale blue #DCE8FB, filling the whole image edge to edge. The entire image uses only three colors: #DCE8FB, black, white. The only legible text in the whole image is on the letter described below; everything written on the calendar is drawn as illegible squiggle lines, not letters or numbers.
+
+PICTURE, the Blast Tax
+Three elements side by side. On the left, a sheet of letter paper held up in the young woman's hand: her hand grips the top edge of the sheet, fingers visible over the paper, the sheet hanging slightly tilted toward the viewer as if she has just lifted it to read. On the paper, a short heading in neat hand-lettered black capitals: "WHAT MATTERS MOST TO YOU, AND WHY?" and below it, in larger, looser handwriting, the single answer: "Peace of mind." with a few squiggle lines under it standing in for the rest of the essay. In the middle, the young woman herself, shoulder-length wavy black hair, thin round glasses and one small hoop earring, wearing a hoodie, standing, shoulders slightly dropped, one arm raised holding the letter, turning her head from the letter toward the right with a flat, tired mouth and half-closed eyes, one small sigh drawn as three short lines near her mouth. On the right, a large wall calendar for one month, its grid completely crammed: every square packed with tight squiggle lines, several squares with small sticky notes stuck on top, a few squiggles spilling outside the grid. No thought bubble, no speech bubble. Nothing else in the picture.
+
+---
+
+## V10 (2026-09-22): three square step icons for "Three steps, about a minute" (same ink style)
+
+Please create three separate illustrations, Picture A, Picture B and Picture C, each a 1:1 square image, drawn in EXACTLY the style of the attached reference image (the man with the hat and the cup): the same hand-drawn ink line, the same white fills, the same flat single-color background. Only the background color changes: pale blue #DCE8FB instead of yellow. No people in these three pictures, only objects, drawn large and simple so they read clearly at the size of a postage stamp.
+
+STYLE
+Hand-drawn ink illustration. Medium-weight black outlines with a slightly loose, uneven pen quality. Everything inside the outlines is filled plain white. No gray, no shading, no gradients, no texture. The background is one flat solid color, pale blue #DCE8FB, filling the whole image edge to edge. Colors: #DCE8FB, black, white, plus one exception: the Page2Task icon, a rounded square filled solid blue #0B57D0 with a white checkmark inside, wherever it appears. Text appears only where named below; no other letters anywhere. Each picture has one big central object with generous empty space around it.
+
+PICTURE A, add to Chrome
+A large rounded rectangular button, white with a black outline, with the words "Add to Chrome" hand-lettered inside. A simple arrow cursor is clicking the button, with two short motion lines. Nothing else.
+
+PICTURE B, connect Google
+A simple card, white with a black outline, showing an account row: a circle with the letter "G" inside on the left, a short squiggle line standing in for an email address beside it, and a big checkmark at the right end of the row. Nothing else, no other text.
+
+PICTURE C, pin and click
+The top strip of a browser window, drawn as a simple bar with three small circles at the left and a rounded address field. At the right end of the bar sits the Page2Task icon: a rounded square filled solid blue #0B57D0 with a white checkmark. A small pushpin is drawn just above the icon, and a simple arrow cursor is clicking the icon with two short motion lines. Nothing else, no text.
+
+---
+
+## V9 simplest (2026-09-22, chosen): Blast Tax = just a hand holding the essay page, no face, no calendar
+
+Please create one illustration, a 3:2 landscape image, drawn in EXACTLY the style of the attached reference image (the man with the hat and the cup): the same hand-drawn ink line, the same white fills, the same flat single-color background. Only the background color changes: pale blue #DCE8FB instead of yellow. No face and no person in this picture, only a hand and a sheet of paper.
+
+STYLE
+Hand-drawn ink illustration. Medium-weight black outlines with a slightly loose, uneven pen quality, like a confident quick sketch. Everything inside the outlines is filled plain white. No gray, no shading, no hatching, no gradients, no texture. The background is one flat solid color, pale blue #DCE8FB, filling the whole image edge to edge. The entire image uses only three colors: #DCE8FB, black, white. The only legible text in the whole image is the two lines on the paper named below; every other line on the paper is an illegible squiggle line, not letters.
+
+PICTURE, the Blast Tax
+A single hand enters from the bottom right of the picture, holding up a sheet of letter paper by its lower corner between thumb and fingers, the sheet slightly tilted, filling most of the frame. The paper shows, near the top, a heading in neat hand-lettered black capitals: "WHAT MATTERS MOST TO YOU, AND WHY?" Below it, in larger, looser handwriting, the single answer: "Peace of mind." Below that, six or seven horizontal squiggle lines standing in for the rest of the essay. Generous empty blue background around the paper. Nothing else in the picture.
