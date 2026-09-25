@@ -631,14 +631,109 @@ function handleImage(file) {
   img.src = url;
 }
 
-// PDFs go through the same vision path as screenshots: pdf.js (bundled, runs
-// entirely on this machine) draws the first pages onto one tall canvas.
+// A syllabus is almost always a text PDF, so read its text layer rather than
+// photographing it. Rasterizing capped us at three pages, because stacked page
+// images get too tall for a model to still read the small print, and a syllabus
+// keeps its deadlines further in than page three. Scans carry no text layer and
+// still go through the vision path below.
 const MAX_PDF_PAGES = 3;
+const PDF_TEXT_MIN = 200;  // below this there is no usable text layer: treat it as a scan
+// Just under the AI layer's own caps (lib/ai.js). Cloud models take a whole
+// syllabus; Chrome's on-device model has a small context window, so a long PDF
+// is condensed much harder for it.
+const PDF_TEXT_CAP_CLOUD = 23800;
+const PDF_TEXT_CAP_LOCAL = 5800;
 
-async function pdfToImage(file) {
+async function loadPdf(file) {
   const pdfjs = await import(chrome.runtime.getURL('lib/vendor/pdfjs/pdf.min.mjs'));
   pdfjs.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('lib/vendor/pdfjs/pdf.worker.min.mjs');
-  const doc = await pdfjs.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise;
+  return pdfjs.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise;
+}
+
+// pdf.js returns positioned fragments, not lines. Group them by their y
+// coordinate so "Final Submission: October 15, 2026" stays on one line, which
+// is what condenseDated needs to keep a label together with its date.
+async function pdfToText(doc) {
+  const lines = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const items = (await (await doc.getPage(i)).getTextContent()).items;
+    let line = [];
+    let lastY = null;
+    for (const item of items) {
+      const y = item.transform ? Math.round(item.transform[5]) : null;
+      if (line.length && lastY !== null && y !== null && Math.abs(y - lastY) > 2) {
+        lines.push(line.join('').trim());
+        line = [];
+      }
+      line.push(item.str);
+      lastY = y;
+      if (item.hasEOL) { lines.push(line.join('').trim()); line = []; }
+    }
+    if (line.length) lines.push(line.join('').trim());
+  }
+  return lines.filter(Boolean).join('\n');
+}
+
+// Unmistakably a calendar day. DATE_SHAPES is deliberately loose, since it only
+// decides whether a page is worth a model call; here that looseness is costly,
+// because it also matches "Giving 2.0" or "start today", and each false match
+// would pull its surrounding lines into a tight budget.
+const CALENDAR_DATE = [
+  /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2}(st|nd|rd|th)?\b/i,
+  /\b\d{1,2}(st|nd|rd|th)?\s+(of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\b/i,
+  /\b\d{1,2}\/\d{1,2}(\/\d{2,4})?\b/,
+  /\b\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2}\b/,
+  /\d{4}\s*年\s*\d{1,2}\s*月/,
+  /\d{1,2}\s*月\s*\d{1,2}\s*日/,
+];
+
+// Fit a long PDF's text into one model call. Every line that might hold a date
+// is kept, a loose match included, since "submit by Monday at 5 pm" is a real
+// deadline with no calendar date in it. Context is what gets rationed: lines
+// with a calendar date get the widest window that fits, which is what carries
+// a heading like "Final Project: ..." sitting a few lines above its due dates,
+// while loose matches keep little more than themselves.
+function condenseDated(text, cap) {
+  if (!text || text.length <= cap) return text;
+  // URLs only cost room, and their paths often read as dates (/2022/02/03/)
+  const lines = text.split('\n').map((l) => l.replace(/https?:\/\/\S+/g, '').trim()).filter(Boolean);
+  const tidy = lines.join('\n');
+  if (tidy.length <= cap) return tidy;
+
+  const calendar = lines.map((l) => CALENDAR_DATE.some((re) => re.test(l)));
+  const dated = lines.map((l, i) => calendar[i]
+    || DATE_SHAPES.some((re) => re.test(l)) || (DEADLINE_WORDS.test(l) && /\d/.test(l)));
+  if (!dated.includes(true)) return tidy.slice(0, cap);
+
+  // The first lines name the course. Without them five courses each hand back
+  // a "Final Submission" and nothing tells them apart.
+  const HEAD = 8;
+  // A reach of -1 leaves loose matches out altogether
+  const pick = (calendarReach, looseReach) => {
+    const keep = new Set();
+    for (let i = 0; i < Math.min(HEAD, lines.length); i++) keep.add(i);
+    dated.forEach((d, i) => {
+      if (!d) return;
+      const r = calendar[i] ? calendarReach : looseReach;
+      if (r < 0) return;
+      for (let j = Math.max(0, i - r); j <= Math.min(lines.length - 1, i + r); j++) keep.add(j);
+    });
+    return [...keep].sort((a, b) => a - b).map((i) => lines[i]).join('\n');
+  };
+  // Loose matches give up their context first, then calendar dates shrink
+  // theirs. Only when the loose matches on their own still overflow (a long
+  // reading list full of "pp. 13-43") are they dropped, so the calendar dates
+  // behind them are never the thing that gets cut.
+  const steps = [[8, 8], [8, 4], [8, 2], [8, 1], [8, 0], [6, 0], [4, 0], [3, 0], [2, 0], [1, 0], [0, 0],
+    [8, -1], [4, -1], [2, -1], [0, -1]];
+  for (const [c, l] of steps) {
+    const out = pick(c, l);
+    if (out.length <= cap) return out;
+  }
+  return pick(0, -1).slice(0, cap);
+}
+
+async function pdfToImage(doc) {
   const pages = Math.min(doc.numPages, MAX_PDF_PAGES);
   const canvases = [];
   for (let i = 1; i <= pages; i++) {
@@ -667,41 +762,69 @@ async function pdfToImage(file) {
   };
 }
 
+const PDF_OPTS = {
+  chip: 'PDF',
+  progress: 'AI is reading the PDF…',
+  emptyMsg: 'Nothing to add was found in this PDF',
+  failMsg: 'PDF recognition failed',
+};
+
 async function handlePdf(file) {
   setDateReading(true, 'Reading the PDF…');
-  let image;
+  let doc;
   try {
-    image = await pdfToImage(file);
+    doc = await loadPdf(file);
   } catch (e) {
     setDateReading(false);
     flashError(I18n.t('Could not read this PDF. Try a screenshot of it instead.'));
     return;
   }
-  await extractFromImage(image, {
-    chip: 'PDF',
-    progress: 'AI is reading the PDF…',
-    emptyMsg: 'Nothing to add was found in this PDF',
-    failMsg: 'PDF recognition failed',
-  });
-  if (image.truncated) showNotice('Long PDF: only the first 3 pages were read.');
+
+  // Text layer first: every page, no page cap, and a text request rather than
+  // a slow image one.
+  let text = '';
+  try { text = await pdfToText(doc); } catch (e) { /* fall through to the scan path */ }
+  if (text.length >= PDF_TEXT_MIN) {
+    lastAnalyzedText = text;
+    const { provider } = await getAiConfig();
+    const cap = provider === 'builtin' ? PDF_TEXT_CAP_LOCAL : PDF_TEXT_CAP_CLOUD;
+    await runAi({ text: condenseDated(text, cap), ...PDF_OPTS });
+    return;
+  }
+
+  // No text layer, so this is a scan: photograph the pages.
+  let image;
+  try {
+    image = await pdfToImage(doc);
+  } catch (e) {
+    setDateReading(false);
+    flashError(I18n.t('Could not read this PDF. Try a screenshot of it instead.'));
+    return;
+  }
+  const shown = await extractFromImage(image, PDF_OPTS);
+  // Only worth saying when the read actually returned something: after a failure
+  // it reads as an explanation for the wrong problem.
+  if (image.truncated && shown !== false) showNotice('Long PDF: only the first 3 pages were read.');
 }
 
-// Shared AI flow for pasted screenshots and pasted text — reuses the candidate UI
+// Shared AI flow for pasted screenshots and pasted text — reuses the candidate UI.
+// Resolves true only when results were actually rendered, so a caller can tell a
+// real read from one that failed, came back empty, or was superseded.
 async function runAi(opts) {
   // This user-initiated read supersedes the automatic page read and any older
   // in-flight read; stale reads see the bumped sequence and stand down.
   const { seq, signal } = beginAiRead();
   const { provider, apiKey } = await getAiConfig();
-  if (seq !== aiReadSeq) return; // an even newer read started meanwhile
+  if (seq !== aiReadSeq) return false; // an even newer read started meanwhile
   if (!provider) {
     setDateReading(false); // a PDF read may have shown it already
-    if (trialPanelShown) return; // exhausted: the panel below stays the whole answer
+    if (trialPanelShown) return false; // exhausted: the panel below stays the whole answer
     flashError(I18n.t(
       builtinOfferShown
         ? 'AI is one click away. Use the "Enable free AI" line above.'
         : 'AI recognition needs a newer Chrome (built-in AI) or an API key in Settings (the gear icon)'
     ));
-    return;
+    return false;
   }
 
   if (!opts.keepSource) {
@@ -730,20 +853,22 @@ async function runAi(opts) {
       userEmail: connectedEmail,
       signal,
     });
-    if (seq !== aiReadSeq) return; // superseded — the newer read owns the UI now
+    if (seq !== aiReadSeq) return false; // superseded — the newer read owns the UI now
     if (provider === 'hosted') noteHostedSuccess();
     lastAiRead = { mode: modeAtCall, opts };
-    if (mode !== modeAtCall) { runAi(opts); return; } // tab changed mid-read
+    if (mode !== modeAtCall) { runAi(opts); return false; } // tab changed mid-read
     candidates = (r.items || []).map((it) => ({ ...it, matchedText: null }));
     if (!candidates.length) {
       flashError(I18n.t(opts.emptyMsg));
-      return;
+      return false;
     }
     if (candidates.length > 1) renderCandidateChooser(); // checked ones become editable cards
     else applyCandidate(0);
+    return true;
   } catch (e) {
-    if (seq !== aiReadSeq) return; // a stale error must not cover the newer result
+    if (seq !== aiReadSeq) return false; // a stale error must not cover the newer result
     flashError(e && e.message ? I18n.t(e.message) : I18n.t(opts.failMsg));
+    return false;
   } finally {
     if (seq === aiReadSeq) {
       setDateReading(false);
