@@ -30,8 +30,8 @@ const MODE_HINTS = {
 
 const systemPrompt = (refDateISO, listNames, mode, userEmail) =>
     'Extract the actionable to-dos, deadlines, and scheduled events (meetings, appointments, ' +
-    'calls) from the user\'s input as a list of items, most important first, at most 10 ' +
-    '(when there are more, keep the most important ones). ' +
+    'calls) from the user\'s input as a list of items, most important first. ' +
+    'List every such item the input contains, however many there are. ' +
     (MODE_HINTS[mode] || '') +
     'For meetings/appointments use the agreed date and time. The input may be an email thread ' +
     'with several messages, the visible text of a web page (an event page, a form, a syllabus), ' +
@@ -54,6 +54,8 @@ const systemPrompt = (refDateISO, listNames, mode, userEmail) =>
     'Titles, in the SAME language as the input text, max 60 characters: for a to-do, a short imperative naming the SPECIFIC action ' +
     '(like "Submit health insurance waiver", never just the email subject); for an event, the event\'s own name exactly as ' +
     'the page gives it (like "Claude Code Workshop"), with no verb in front: never "Attend", "Go to", "Join", "参加". ' +
+    'When the input is a course document such as a syllabus, begin every title with the course code as the document ' +
+    'writes it (like "GSBGID 513: Submit Local Nonprofit Assessment"), so items from different courses stay apart in one list. ' +
     'Set location to the place name when one is mentioned. ' +
     (listNames && listNames.length
       ? 'The user\'s task lists are: ' + listNames.join(' | ') +
@@ -84,7 +86,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method === 'GET') return res.status(200).json({ ok: true, rev: 'r6-longtext' });
+  if (req.method === 'GET') return res.status(200).json({ ok: true, rev: 'r7-allitems' });
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   const auth = req.headers.authorization || '';
@@ -145,7 +147,7 @@ module.exports = async (req, res) => {
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        max_tokens: 1600,
+        max_tokens: 4000,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt(refDateISO, listNames, mode, userEmail) + COMPAT_JSON_HINT },
@@ -166,3 +168,7 @@ module.exports = async (req, res) => {
     return res.status(502).json({ error: 'AI service returned an unreadable reply' });
   }
 };
+
+// A whole syllabus can take the model half a minute to write out. Set this
+// explicitly rather than rely on the platform default.
+module.exports.config = { maxDuration: 60 };
