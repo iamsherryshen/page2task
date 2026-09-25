@@ -242,7 +242,25 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .banner.error { background: var(--red-bg); color: var(--red-fg); }
 .banner a { color: inherit; font-weight: 600; }
 
+.dock { display: flex; flex-direction: column; gap: 10px; }
+/* With a whole syllabus ticked there is one card per item, far past the
+   popup's height. The message and the button then stay docked at the bottom,
+   so pressing Add and seeing "Added" never needs a scroll past every card. */
+#itemCards:not(.hidden) + .dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin: 0 -14px;
+  padding: 12px 14px 14px;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border-soft);
+}
 .actions { display: flex; margin-top: 2px; }
+/* Tabbing through the cards scrolls a field clear of the docked button
+   instead of leaving it underneath */
+html:has(#itemCards:not(.hidden)) { scroll-padding-bottom: 110px; }
 /* A single pill CTA — the mode switch above already made the choice */
 .btn {
   flex: 1;
@@ -365,7 +383,7 @@ main { padding: 0 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 
 /* Trial exhausted: the panel is the whole interface until a path is picked */
 body.trial-gated #candBox, body.trial-gated #formCard, body.trial-gated #itemCards,
-body.trial-gated #banner, body.trial-gated .actions, body.trial-gated #importZone,
+body.trial-gated .dock, body.trial-gated #importZone,
 body.trial-gated #notice, body.trial-gated #aiWarn,
 body.trial-gated #readCard { display: none; }
 
@@ -407,5 +425,7 @@ body.trial-gated #readCard { display: none; }
 .tp-btn { display: block; width: 100%; text-align: center; border-radius: 18px; padding: 9px 0; font-size: 13px; font-weight: 600;
   margin-bottom: 7px; border: 1px solid rgba(11,87,208,.3); background: #fff; color: var(--accent); cursor: pointer; font: inherit; font-weight: 600; }
 .tp-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+/* The on-device fallback stays available but reads as the second choice */
+#tpLocal { background: #F4F5F7; border-color: transparent; color: #80868B; font-weight: 500; }
 .tp-btn:hover { filter: brightness(.97); }
 .tp-note { font-size: 11px; color: #9AA4B2; text-align: center; }

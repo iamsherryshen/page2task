@@ -257,7 +257,7 @@ async function init() {
 
   const key = textKey(sourceText);
   const cached = await cacheGet(key);
-  if (cached) { applyResult(cached); return; } // read once, free ever after
+  if (cached) { applyResult(modelOutput(cached)); return; } // read once, free ever after
   if (!localDateScan(sourceText)) return; // no date-shaped text: a read would find nothing
 
   startPageRead(sourceText, key);
@@ -304,6 +304,14 @@ async function cacheGet(key) {
   if (!hit || Date.now() - hit.t > CACHE_TTL_MS) return null;
   return hit.r;
 }
+// The cache keeps what the model found, never what the popup did with it:
+// ticks, notes and list picks are recomputed on every open, so a page read
+// in To-do mode does not reopen in Calendar mode with undated items ticked,
+// and entries saved by older versions pick up the current defaults.
+function modelOutput(items) {
+  return items.map(({ checked, notes, listId, ...c }) => ({ ...c }));
+}
+
 async function cacheSet(key, r) {
   const { [PAGE_CACHE]: c } = await chrome.storage.local.get({ [PAGE_CACHE]: {} });
   c[key] = { t: Date.now(), r };
@@ -394,7 +402,7 @@ async function startPageRead(sourceText, cacheKey) {
     return;
   }
 
-  if (cacheKey) cacheSet(cacheKey, candidates);
+  if (cacheKey) cacheSet(cacheKey, modelOutput(candidates));
   applyResult(candidates);
 }
 
@@ -999,7 +1007,10 @@ function renderCandidateChooser() {
   const list = $('candList');
   list.textContent = '';
   candidates.forEach((c, i) => {
-    if (typeof c.checked !== 'boolean') c.checked = i === 0; // first one preselected
+    // Everything preselected: a syllabus is read to add its deadlines, not to
+    // pick one. An undated item would only block the Add button for an event,
+    // so outside to-do mode those start unticked.
+    if (typeof c.checked !== 'boolean') c.checked = mode === 'todo' || !!c.dueDate;
     const row = document.createElement('div');
     row.className = 'cand-item';
     const main = document.createElement('div');
@@ -1373,7 +1384,9 @@ async function onSubmit() {
   for (let i = 0; i < items.length; i++) {
     if (!items[i].title) { flashError(I18n.t('Please enter a title')); return; }
     if (mode !== 'todo' && !items[i].dueDate) {
-      if (items.length > 1) {
+      // Item cards replace the form, so a missing date on a card is named in
+      // the banner; only the plain form has a date field to point at
+      if (checked.length) {
         flashError(I18n.t('Item {i} has no date. Calendar events need one.', { i: i + 1 }));
       } else {
         // A calendar event needs a date: the field itself asks for it

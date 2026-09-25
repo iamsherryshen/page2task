@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const keys = await AiExtract.loadKeys(); // local-only storage; migrates keys old versions kept in sync
   const storedProv = normProvider(cfg.aiProvider);
   const anyKeySaved = Object.values(PROVIDERS).some((p) => keys[p.storageKey]);
-  // Default to the on-device model unless the user explicitly runs on a key
+  // No stored choice means the 30 free reads: new installs are stamped
+  // 'hosted', and the storage default above says the same
   $('srcHosted').checked = cfg.aiProvider === 'hosted';
   $('srcBuiltin').checked = cfg.aiProvider === 'builtin';
   $('srcApi').checked = !$('srcHosted').checked && !$('srcBuiltin').checked;
@@ -109,6 +110,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     keyHelpOpen = !keyHelpOpen;
     renderKeyHelp();
   });
+  // The "?" sits inside the tile's label: clicking it opens the explanation
+  // (it takes focus) without also picking that AI source
+  document.querySelectorAll('.tile .tip').forEach((tip) =>
+    tip.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); tip.focus(); })
+  );
   // The link sitting on the radio row itself: someone who does not know what an
   // API key is needs something to click right there, before choosing anything.
   $('apiHowLink').addEventListener('click', () => {
@@ -152,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (chosen === 'hosted') {
       const { hostedUsed } = await chrome.storage.sync.get({ hostedUsed: 0 });
       if (hostedUsed < 30) {
-        showHasAI(t('the free trial ({n} of 30 left)', { n: 30 - hostedUsed }));
+        showHasAI(t('30 free reads ({n} left)', { n: 30 - hostedUsed }));
         return;
       }
       // trial spent: fall through so the line reports what actually serves
@@ -179,15 +185,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dl = avail === 'downloadable' || avail === 'downloading';
     const lines = dl
       ? [
-          t("Method 1 (recommended, free): enable Chrome's built-in AI with the button below. It downloads once (~2 GB) and runs on your computer."),
-          t('Method 2: paste your own API key below. Google Gemini has a free tier; get a key at aistudio.google.com (no credit card needed).'),
+          t('Method 1 (recommended): choose "Your own API key" below. Google Gemini has a free tier; get a key at aistudio.google.com (no credit card needed).'),
+          t("Method 2: enable Chrome's built-in AI with the button below. Basic quality; it downloads once (~2 GB) and runs on your computer."),
         ]
       : [t("This computer can't run Chrome's built-in AI, so recognition needs an API key below. Google Gemini has a free tier; get one at aistudio.google.com (no credit card needed).")];
     $('aiMethods').innerHTML = lines.join('<br>');
     $('aiMethods').classList.remove('hidden');
     const dlBtn = $('builtinDownloadBtn');
     dlBtn.classList.toggle('hidden', !dl);
-    if (dl && !dlBtn.dataset.busy) dlBtn.textContent = t('Enable free AI (one-time ~2 GB download, runs on your computer)');
+    if (dl && !dlBtn.dataset.busy) dlBtn.textContent = t('Enable on-device AI (basic quality, one-time ~2 GB download)');
   };
   const showHasAI = (what, screenshotsOK = true) => {
     const el = $('aiTier');
