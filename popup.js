@@ -120,6 +120,8 @@ async function init() {
   chrome.storage.sync.get({ defaultEventMinutes: 30 }).then((c) => {
     defaultEventMinutes = c.defaultEventMinutes || 30;
   });
+  // Other Chromium browsers cannot sign in to Google at all: say so up front
+  $('chromeOnly').classList.toggle('hidden', !isOtherChromium());
   loadAccount();
   listsPromise = loadTaskLists();
 
@@ -473,6 +475,7 @@ function updateSubmitLabel() {
 // 2. Chrome's built-in on-device AI — free, keyless, nothing leaves the device
 // 3. none — callers fall back to the local date-parsing rules
 async function getAiConfig() {
+  aiOffReason = null; // recomputed on every call: a mode switch reads again
   const cfg = await chrome.storage.sync.get({ aiProvider: 'hosted' });
   const keys = await AiExtract.loadKeys(); // keys are local-only; loadKeys migrates old synced ones
   const keyFor = {
@@ -495,6 +498,7 @@ async function getAiConfig() {
       });
       if (token) return { provider: 'hosted', apiKey: token };
       // no Google session — fall through to whatever else is configured
+      aiOffReason = 'google';
     } else {
       trialSpent = true;
     }
@@ -528,7 +532,9 @@ async function getAiConfig() {
     showBuiltinHintOnce(); // reaching here means no key is saved anywhere
     return { provider: 'builtin', apiKey: null };
   }
-  offerBuiltinSetup(avail);
+  // No AI at all: point to what gets the user reading again, the Google
+  // connection (30 free reads) or their own key. The on-device download is
+  // offered only to someone who picked that model in Settings (above).
   showAiOffHint();
   return { provider: null, apiKey: null };
 }
@@ -553,16 +559,32 @@ async function showBuiltinHintOnce() {
 // When no AI tier is active, say so instead of degrading silently — with a
 // tooltip that answers the natural worries (whose key, stored where, who sees it)
 let aiHintShown = false;
+// 'google' when the free reads are waiting on a Google connection, else the
+// fix is the user's own API key
+let aiOffReason = null;
 function showAiOffHint() {
   if (aiHintShown || builtinOfferShown) return; // the download button already offers a setup path
+  // Outside Chrome the notice at the top already says what to do, and a key
+  // would not help: nothing can be saved to Google there
+  if (isOtherChromium()) return;
   aiHintShown = true;
   const el = $('aiHint');
+  const google = aiOffReason === 'google';
   setRelang('aiHint', () => {
-    el.textContent = I18n.t('AI is off (using basic date rules). Click to set up free AI.');
-    el.title = I18n.t('Add your own AI key in Settings. Google Gemini has a free tier (no credit card needed). Your key is stored only on this computer, sent only to the AI provider, and never visible to the developer.');
+    el.textContent = google
+      ? I18n.t('AI is off (using basic date rules). Click to connect Google and use your 30 free reads.')
+      : I18n.t('AI is off (using basic date rules). Click to add your own API key.');
+    el.title = google
+      ? ''
+      : I18n.t('Add your own AI key in Settings. Google Gemini has a free tier (no credit card needed). Your key is stored only on this computer, sent only to the AI provider, and never visible to the developer.');
   });
   el.classList.remove('hidden');
-  el.addEventListener('click', () => chrome.runtime.openOptionsPage());
+  // Settings opens on the onboarding's Connect step when no account is linked;
+  // #get-key opens it with the key steps showing
+  el.addEventListener('click', () => {
+    if (google) chrome.runtime.openOptionsPage();
+    else chrome.tabs.create({ url: chrome.runtime.getURL('options.html#get-key') });
+  });
 }
 
 // The on-device model needs a one-time download, and Chrome only starts it on a
@@ -827,10 +849,13 @@ async function runAi(opts) {
   if (!provider) {
     setDateReading(false); // a PDF read may have shown it already
     if (trialPanelShown) return false; // exhausted: the panel below stays the whole answer
+    if (isOtherChromium()) return false; // the notice at the top already explains
     flashError(I18n.t(
       builtinOfferShown
         ? 'AI is one click away. Use the "Enable free AI" line above.'
-        : 'AI recognition needs a newer Chrome (built-in AI) or an API key in Settings (the gear icon)'
+        : aiOffReason === 'google'
+          ? 'To read this, connect your Google account in Settings (the gear icon) and use your 30 free reads.'
+          : 'To read this, add your own API key in Settings (the gear icon).'
     ));
     return false;
   }
@@ -1377,6 +1402,12 @@ function resolveItem(c) {
 // One submit button; the mode decides what gets created. With the checkbox
 // list showing, every checked deadline is created, each with its own values.
 async function onSubmit() {
+  // Saving needs a Google token, and outside Chrome asking for one opens
+  // Google's "Access blocked" page and never returns: stop before that
+  if (isOtherChromium()) {
+    flashError(I18n.t("Can't save here: please use Google Chrome."));
+    return;
+  }
   const multi = !$('candBox').classList.contains('hidden') && candidates.length > 1;
   const checked = multi ? candidates.filter((c) => c.checked) : [];
   const items = checked.length ? checked.map(resolveItem) : [itemFromForm()];

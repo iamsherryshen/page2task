@@ -284,6 +284,29 @@ html:has(#itemCards:not(.hidden)) { scroll-padding-bottom: 110px; }
 
 .setup { background: var(--chip-bg); border-radius: 8px; padding: 10px 12px; line-height: 1.7; }
 
+/* Shown only outside Google Chrome (lib/browser.js): Google sign-in cannot
+   work there, so the page says so instead of letting Connect or Add hang.
+   popup.css is shared with the settings page, which uses the same note. */
+.chrome-only {
+  margin: 10px 0 0; padding: 9px 11px; border-radius: 8px; line-height: 1.6;
+  background: #FEF7E0; color: #7A4F01; font-size: 12.5px;
+}
+main > .chrome-only { margin: 0; }
+.chrome-only a { color: inherit; font-weight: 600; white-space: nowrap; }
+.chrome-only.nudge { animation: chromeNudge .45s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .chrome-only.nudge { animation: chromeNudgeTint .9s ease; }
+}
+@keyframes chromeNudgeTint {
+  0%, 100% { background: #FEF7E0; }
+  35% { background: #FCE7A8; }
+}
+@keyframes chromeNudge {
+  0%, 100% { transform: none; }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
 .cand {
   background: #FFFFFF;
   border: 1px solid var(--border-soft);

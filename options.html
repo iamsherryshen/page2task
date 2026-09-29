@@ -158,6 +158,10 @@
     .tip:hover .tip-body, .tip:focus .tip-body { opacity: 1; visibility: visible; transform: none; }
     .tip-body b { color: var(--fg); font-size: 13px; font-weight: 600; }
     .tip-body b.safe { color: var(--green-fg); margin-top: 7px; }
+    /* Status next to Connect: its own line under the buttons, so a longer hint
+       ("Still waiting for Google…") never wraps around the button */
+    #accountMsg { display: block; margin-top: 8px; }
+    #accountMsg:empty { display: none; }
     .safe-line { display: flex; align-items: flex-start; gap: 6px; margin: 10px 0 2px; }
     .safe-line svg { flex: none; margin-top: 3px; }
     .safe-line b { color: var(--green-fg); font-weight: 600; }
@@ -604,6 +608,7 @@
       <button id="disconnectBtn" class="plain-btn hidden" type="button" data-i18n="Disconnect">Disconnect</button>
       <span id="accountMsg" class="hint"></span>
     </div>
+    <p id="chromeOnly" class="chrome-only hidden"><span data-i18n="Page2Task can only connect to Google in Google Chrome. Dia, Arc, Edge, Brave and other browsers don't support this sign-in, so please install Page2Task in Google Chrome.">Page2Task can only connect to Google in Google Chrome. Dia, Arc, Edge, Brave and other browsers don't support this sign-in, so please install Page2Task in Google Chrome.</span> <a href="https://www.google.com/chrome/" target="_blank" rel="noopener" data-i18n="Get Google Chrome">Get Google Chrome</a></p>
     </div><!-- /secAccount -->
 
     <div id="secMisc">
@@ -630,6 +635,7 @@
   </main>
 
   <script src="lib/i18n.js"></script>
+  <script src="lib/browser.js"></script>
   <script src="lib/ai.js"></script>
   <script src="options.js"></script>
 </body>

@@ -254,6 +254,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     $('connectBtn').classList.toggle('hidden', !!email);
     $('disconnectBtn').classList.toggle('hidden', !email);
+    // Say it before the click: in other Chromium browsers Connect can only fail
+    $('chromeOnly').classList.toggle('hidden', !!email || !isOtherChromium());
     if (obStep === 1 && email) obSetStep(2); // onboarding: account connected, move on
   };
   const refreshAccount = () => {
@@ -268,10 +270,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   // an interactive consent window can outlive the worker, and when Chrome
   // recycles it the response never arrives and the UI hangs on "Connecting…".
   $('connectBtn').addEventListener('click', () => {
+    // Not Chrome: Connect would open Google's "Access blocked" page and hang
+    // on "Connecting…" forever, so point at the notice instead
+    if (isOtherChromium()) {
+      const note = $('chromeOnly');
+      note.classList.remove('hidden', 'nudge');
+      void note.offsetWidth; // restart the animation on a repeat click
+      note.classList.add('nudge');
+      return;
+    }
     renderAccountMsg = () => { $('accountMsg').textContent = t('Connecting…'); };
     renderAccountMsg();
     $('connectBtn').disabled = true;
+    // A sign-in can stall (a closed or buried Google window). After 20 seconds
+    // give the button back and say what to try, without cancelling: a slow
+    // Stanford login with Duo still completes and replaces this line. Other
+    // Chromium browsers never get here; the check above stops them first.
+    let answered = false;
+    const slow = setTimeout(() => {
+      if (answered) return;
+      $('connectBtn').disabled = false;
+      renderAccountMsg = () => {
+        $('accountMsg').textContent = t('Still waiting for Google. Finish signing in in the Google window, or click Connect to try again.');
+      };
+      renderAccountMsg();
+      if (obStep === 1) $('obSkip').classList.remove('hidden');
+    }, 20000);
     const failed = (raw) => {
+      answered = true;
+      clearTimeout(slow);
       $('connectBtn').disabled = false;
       renderAccountMsg = () => { $('accountMsg').textContent = '✗ ' + t(raw); };
       renderAccountMsg();
@@ -279,6 +306,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     try {
       chrome.identity.getAuthToken({ interactive: true }, async (token) => {
+        answered = true;
+        clearTimeout(slow);
         if (chrome.runtime.lastError || !token) {
           failed((chrome.runtime.lastError && chrome.runtime.lastError.message) || 'Authorization failed');
           return;
@@ -311,8 +340,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (n >= 1 && n <= 5) document.body.classList.add('ob-' + n);
     $('obPrimary').classList.toggle('hidden', n === 1 || n === 5);
     // Step 1 has no escape hatch by default: connecting Google is what makes
-    // the product do anything. It only appears if an attempt fails.
-    $('obSkip').classList.add('hidden');
+    // the product do anything. It only appears if an attempt fails, or right
+    // away in a browser where connecting cannot work.
+    $('obSkip').classList.toggle('hidden', !(n === 1 && isOtherChromium()));
     $('obBack').classList.toggle('hidden', n === 1 || n === 5);
     $('obActions').classList.toggle('hidden', n === 5);
     $('obDots').classList.toggle('hidden', n === 5);
